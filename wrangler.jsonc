@@ -1,7 +1,20 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "changelogs-directory",
-  "compatibility_date": "2025-09-02",
-  "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry"
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "changelogs-directory",
+	"compatibility_date": "2025-09-02",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "@tanstack/react-start/server-entry",
+	"d1_databases": [
+		{
+			"binding": "changelogs_directory_prod",
+			"database_name": "changelogs-directory-prod",
+			"database_id": "5900b548-7178-4200-97d5-27b2f29a7459"
+		}
+	],
+	"vars": {
+		"VITE_PUBLIC_POSTHOG_KEY": "phc_ktyeYQwb5o9iXbFxxhDSpntv0duiqzVIFgQ9iRBGB62",
+		"VITE_PUBLIC_POSTHOG_HOST": "https://us.i.posthog.com"
+	}
 }

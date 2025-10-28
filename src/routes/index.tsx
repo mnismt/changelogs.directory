@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
 import { GitHub } from '@/components/logo/github'
 import { XformerlyTwitter } from '@/components/logo/x'
 import { LogoShowcase } from '@/components/shared/logo-showcase'
@@ -6,10 +7,58 @@ import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { posthog } from '@/integrations/posthog'
+import { subscribeToWaitlist } from '@/server/waitlist'
 
 export const Route = createFileRoute('/')({ component: ComingSoon })
 
 function ComingSoon() {
+	const [email, setEmail] = useState('')
+	const [isLoading, setIsLoading] = useState(false)
+	const [status, setStatus] = useState<{
+		type: 'success' | 'error' | null
+		message: string
+	}>({ type: null, message: '' })
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault()
+		setIsLoading(true)
+		setStatus({ type: null, message: '' })
+
+		posthog.capture('waitlist_subscribe_attempted', {
+			source: 'hero_section',
+		})
+
+		try {
+			const result = await subscribeToWaitlist({ data: { email } })
+
+			setStatus({
+				type: 'success',
+				message: result.message,
+			})
+			setEmail('')
+
+			posthog.capture('waitlist_subscribe_success', {
+				source: 'hero_section',
+			})
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error ? error.message : 'Something went wrong'
+
+			setStatus({
+				type: 'error',
+				message: errorMessage,
+			})
+
+			posthog.capture('waitlist_subscribe_failed', {
+				source: 'hero_section',
+				error: errorMessage,
+			})
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
 	return (
 		<div className="flex min-h-screen flex-col overflow-y-hidden">
 			{/* Hero Section - Full Screen */}
@@ -46,25 +95,46 @@ function ComingSoon() {
 							Get notified when we launch
 						</p>
 
-						<div className="flex flex-col gap-3 sm:flex-row">
+						<form
+							onSubmit={handleSubmit}
+							className="flex flex-col gap-3 sm:flex-row"
+						>
 							<Input
 								type="email"
 								placeholder="your@email.com"
-								disabled
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								disabled={isLoading}
+								required
 								className="h-11 flex-1 border-border bg-card font-mono text-sm placeholder:text-muted-foreground/50"
 							/>
 							<Button
+								type="submit"
 								size="lg"
-								disabled
+								disabled={isLoading || !email}
 								className="h-11 border border-border bg-primary px-6 font-mono text-sm text-primary-foreground hover:bg-primary/90"
 							>
-								Notify me
+								{isLoading ? 'Adding...' : 'Notify me'}
 							</Button>
-						</div>
+						</form>
 
-						<p className="mt-4 text-xs text-muted-foreground/60">
-							No spam. Unsubscribe anytime.
-						</p>
+						{status.type && (
+							<p
+								className={`mt-4 text-sm ${
+									status.type === 'success'
+										? 'text-foreground'
+										: 'text-muted-foreground'
+								}`}
+							>
+								{status.message}
+							</p>
+						)}
+
+						{!status.type && (
+							<p className="mt-4 text-xs text-muted-foreground/60">
+								No spam. Unsubscribe anytime.
+							</p>
+						)}
 					</div>
 				</div>
 			</section>
