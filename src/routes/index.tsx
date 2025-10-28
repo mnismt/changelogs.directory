@@ -1,6 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Github, X } from 'lucide-react'
+import { Github } from 'lucide-react'
+import { GitHub } from '@/components/logo/github'
+import { XformerlyTwitter } from '@/components/logo/x'
 import { LogoShowcase } from '@/components/shared/logo-showcase'
+import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,8 +14,9 @@ function ComingSoon() {
 	return (
 		<div className="flex min-h-screen flex-col">
 			{/* Hero Section - Full Screen */}
-			<section className="flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-				<div className="mx-auto w-full max-w-2xl text-center">
+			<section className="relative flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+				<BackgroundRippleEffect />
+				<div className="relative z-10 mx-auto w-full max-w-2xl text-center">
 					{/* Status Badge */}
 					<Badge
 						variant="outline"
@@ -83,9 +87,9 @@ function ComingSoon() {
 								target="_blank"
 								rel="noopener noreferrer"
 								aria-label="X (@leodoan_)"
-								className="text-muted-foreground transition-colors hover:text-foreground"
+								className="text-muted-foreground transition-colors hover:text-foreground opacity-75 hover:opacity-100 "
 							>
-								<X className="h-5 w-5" />
+								<XformerlyTwitter className="size-5" />
 								<span className="sr-only">X</span>
 							</a>
 							<a
@@ -93,9 +97,9 @@ function ComingSoon() {
 								target="_blank"
 								rel="noopener noreferrer"
 								aria-label="GitHub (mnismt)"
-								className="text-muted-foreground transition-colors hover:text-foreground"
+								className="text-muted-foreground transition-colors hover:text-foreground opacity-75 hover:opacity-100"
 							>
-								<Github className="h-5 w-5" />
+								<GitHub className="size-5" />
 								<span className="sr-only">GitHub</span>
 							</a>
 						</div>

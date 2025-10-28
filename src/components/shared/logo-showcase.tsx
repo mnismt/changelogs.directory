@@ -1,14 +1,14 @@
 import { Link } from '@tanstack/react-router'
-import { Ampcode } from '../logo/amp'
-import { ClaudeAI } from '../logo/claude'
-import { Cursor } from '../logo/cursor'
-import { Droid } from '../logo/droid'
-import { OpenAI } from '../logo/openai'
+import { Ampcode } from '@/components/logo/amp'
+import { ClaudeAI } from '@/components/logo/claude'
+import { Cursor } from '@/components/logo/cursor'
+import { Droid } from '@/components/logo/droid'
+import { OpenAI } from '@/components/logo/openai'
 
 const tools = [
-	{ name: 'Ampcode', Logo: Ampcode, url: 'https://ampcode.com' },
+	{ name: 'Amp', Logo: Ampcode, url: 'https://ampcode.com' },
 	{
-		name: 'Claude AI',
+		name: 'Claude Code',
 		Logo: ClaudeAI,
 		url: 'https://www.claude.com/product/claude-code',
 	},
