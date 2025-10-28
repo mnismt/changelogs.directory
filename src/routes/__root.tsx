@@ -6,7 +6,7 @@ import {
 	Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import Header from '../components/Header'
+import { Header } from '../components/header'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
@@ -25,10 +25,28 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: 'width=device-width, initial-scale=1',
 			},
 			{
-				title: 'TanStack Start Starter',
+				title: 'changelogs.directory - Track CLI Tool Updates',
+			},
+			{
+				name: 'description',
+				content:
+					'Stay updated with the latest changes in your favorite CLI developer tools. Track releases, features, and breaking changes all in one place.',
 			},
 		],
 		links: [
+			{
+				rel: 'preconnect',
+				href: 'https://fonts.googleapis.com',
+			},
+			{
+				rel: 'preconnect',
+				href: 'https://fonts.gstatic.com',
+				crossOrigin: 'anonymous',
+			},
+			{
+				rel: 'stylesheet',
+				href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap',
+			},
 			{
 				rel: 'stylesheet',
 				href: appCss,
@@ -41,7 +59,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" className="dark">
 			<head>
 				<HeadContent />
 			</head>
