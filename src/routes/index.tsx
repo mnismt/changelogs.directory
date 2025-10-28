@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Github } from 'lucide-react'
 import { GitHub } from '@/components/logo/github'
 import { XformerlyTwitter } from '@/components/logo/x'
 import { LogoShowcase } from '@/components/shared/logo-showcase'
@@ -12,10 +11,10 @@ export const Route = createFileRoute('/')({ component: ComingSoon })
 
 function ComingSoon() {
 	return (
-		<div className="flex min-h-screen flex-col">
+		<div className="flex min-h-screen flex-col overflow-y-hidden">
 			{/* Hero Section - Full Screen */}
 			<section className="relative flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-				<BackgroundRippleEffect />
+				<BackgroundRippleEffect rows={15} />
 				<div className="relative z-10 mx-auto w-full max-w-2xl text-center">
 					{/* Status Badge */}
 					<Badge
@@ -32,14 +31,13 @@ function ComingSoon() {
 
 					{/* Subheading */}
 					<p className="mb-4 text-lg text-muted-foreground sm:text-xl">
-						Track updates for CLI developer tools
+						Track updates for developer tools
 					</p>
 
 					{/* Description */}
 					<p className="mx-auto mb-12 max-w-xl text-sm leading-relaxed text-muted-foreground/80 sm:text-base">
 						Stay informed about the latest releases, features, improvements, and
-						breaking changes in your favorite command-line tools. All in one
-						place.
+						breaking changes in your favorite tools. All in one place.
 					</p>
 
 					{/* Newsletter/Notification Signup */}

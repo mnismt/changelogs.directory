@@ -31,10 +31,10 @@ export function LogoShowcase() {
 						key={`${tool.name}-${index}`}
 						className="group flex min-w-[240px] shrink-0 items-center gap-4 px-6 opacity-60 transition-opacity duration-300 hover:opacity-100"
 					>
-						<div className="flex size-10 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground">
+						<div className="flex size-9 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground">
 							<tool.Logo />
 						</div>
-						<span className="whitespace-nowrap font-mono text-sm text-muted-foreground">
+						<span className="whitespace-nowrap font-mono text-lg text-muted-foreground font-bold">
 							{tool.name}
 						</span>
 					</Link>
