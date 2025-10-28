@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { posthog } from '@/integrations/posthog'
-import { subscribeToWaitlist } from '@/server/waitlist'
+// import { subscribeToWaitlist } from '@/server/waitlist'
 
 export const Route = createFileRoute('/')({ component: ComingSoon })
 
@@ -29,34 +29,34 @@ function ComingSoon() {
 			source: 'hero_section',
 		})
 
-		try {
-			const result = await subscribeToWaitlist({ data: { email } })
+		// try {
+		// 	const result = await subscribeToWaitlist({ data: { email } })
 
-			setStatus({
-				type: 'success',
-				message: result.message,
-			})
-			setEmail('')
+		// 	setStatus({
+		// 		type: 'success',
+		// 		message: result.message,
+		// 	})
+		// 	setEmail('')
 
-			posthog.capture('waitlist_subscribe_success', {
-				source: 'hero_section',
-			})
-		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'Something went wrong'
+		// 	posthog.capture('waitlist_subscribe_success', {
+		// 		source: 'hero_section',
+		// 	})
+		// } catch (error) {
+		// 	const errorMessage =
+		// 		error instanceof Error ? error.message : 'Something went wrong'
 
-			setStatus({
-				type: 'error',
-				message: errorMessage,
-			})
+		// 	setStatus({
+		// 		type: 'error',
+		// 		message: errorMessage,
+		// 	})
 
-			posthog.capture('waitlist_subscribe_failed', {
-				source: 'hero_section',
-				error: errorMessage,
-			})
-		} finally {
-			setIsLoading(false)
-		}
+		// 	posthog.capture('waitlist_subscribe_failed', {
+		// 		source: 'hero_section',
+		// 		error: errorMessage,
+		// 	})
+		// } finally {
+		// 	setIsLoading(false)
+		// }
 	}
 
 	return (
