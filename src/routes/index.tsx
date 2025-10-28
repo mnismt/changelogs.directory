@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Github, X } from 'lucide-react'
-import { LogoShowcase } from '@/components/logo-showcase'
+import { LogoShowcase } from '@/components/shared/logo-showcase'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { Ampcode } from './logo/amp'
-import { ClaudeAI } from './logo/claude'
-import { Cursor } from './logo/cursor'
-import { Droid } from './logo/droid'
-import { OpenAI } from './logo/openai'
+import { Ampcode } from '../logo/amp'
+import { ClaudeAI } from '../logo/claude'
+import { Cursor } from '../logo/cursor'
+import { Droid } from '../logo/droid'
+import { OpenAI } from '../logo/openai'
 
 const tools = [
 	{ name: 'Ampcode', Logo: Ampcode, url: 'https://ampcode.com' },
@@ -29,7 +29,7 @@ export function LogoShowcase() {
 						to={tool.url}
 						target="_blank"
 						key={`${tool.name}-${index}`}
-						className="flex min-w-[240px] shrink-0 items-center gap-4 px-6 hover:text-foreground/80 transition-colors"
+						className="group flex min-w-[240px] shrink-0 items-center gap-4 px-6 opacity-60 transition-opacity duration-300 hover:opacity-100"
 					>
 						<div className="flex size-10 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground">
 							<tool.Logo />
