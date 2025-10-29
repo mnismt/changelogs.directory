@@ -11,7 +11,69 @@ import { Input } from '@/components/ui/input'
 import { posthog } from '@/integrations/posthog'
 import { getErrorMessage } from '@/lib/errors'
 
-export const Route = createFileRoute('/')({ component: ComingSoon })
+export const Route = createFileRoute('/')({
+	head: () => ({
+		meta: [
+			{
+				title: 'changelogs.directory - Track developer tool updates',
+			},
+			{
+				name: 'description',
+				content:
+					'Stay informed about the latest releases, features, improvements, and breaking changes in developer tools you rely on.',
+			},
+			{
+				property: 'og:type',
+				content: 'website',
+			},
+			{
+				property: 'og:title',
+				content: 'changelogs.directory',
+			},
+			{
+				property: 'og:description',
+				content:
+					'Track changelogs, releases, and updates for your favorite developer tools with a single, searchable hub.',
+			},
+			{
+				property: 'og:url',
+				content: 'https://changelogs.directory/',
+			},
+			{
+				property: 'og:image',
+				content: 'https://changelogs.directory/android-chrome-512x512.png',
+			},
+			{
+				name: 'twitter:card',
+				content: 'summary_large_image',
+			},
+			{
+				name: 'twitter:creator',
+				content: '@leodoan_',
+			},
+			{
+				name: 'twitter:title',
+				content: 'changelogs.directory',
+			},
+			{
+				name: 'twitter:description',
+				content:
+					'Stay informed about the latest releases, features, improvements, and breaking changes in your favorite developer tools.',
+			},
+			{
+				name: 'twitter:image',
+				content: 'https://changelogs.directory/android-chrome-512x512.png',
+			},
+		],
+		links: [
+			{
+				rel: 'canonical',
+				href: 'https://changelogs.directory/',
+			},
+		],
+	}),
+	component: ComingSoon,
+})
 
 function ComingSoon() {
 	const [email, setEmail] = useState('')
