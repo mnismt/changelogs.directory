@@ -1,5 +1,4 @@
 import type { SVGProps } from 'react'
-import * as React from 'react'
 
 export const Ampcode = (props: SVGProps<SVGSVGElement>) => (
 	<svg

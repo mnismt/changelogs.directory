@@ -126,6 +126,26 @@ code {
 	}
 }
 
+@keyframes scroll-reverse {
+	0% {
+		transform: translateX(calc(-100% / 3));
+	}
+	100% {
+		transform: translateX(0);
+	}
+}
+
+@keyframes pulse-subtle {
+	0%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.9;
+		transform: scale(1.02);
+	}
+}
+
 .animate-scroll {
 	animation: scroll 15s linear infinite;
 	will-change: transform;
@@ -133,6 +153,19 @@ code {
 
 .animate-scroll:hover {
 	animation-play-state: paused;
+}
+
+.animate-scroll-reverse {
+	animation: scroll-reverse 20s linear infinite;
+	will-change: transform;
+}
+
+.animate-scroll-reverse:hover {
+	animation-play-state: paused;
+}
+
+.animate-pulse-subtle {
+	animation: pulse-subtle 3s ease-in-out infinite;
 }
 
 @theme inline {

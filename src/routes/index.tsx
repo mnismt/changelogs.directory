@@ -17,10 +17,16 @@ export const Route = createFileRoute('/')({ component: ComingSoon })
 function ComingSoon() {
 	const [email, setEmail] = useState('')
 	const [isLoading, setIsLoading] = useState(false)
+	const [isMounted, setIsMounted] = useState(false)
 	const [status, setStatus] = useState<{
 		type: 'success' | 'error' | null
 		message: string
 	}>({ type: null, message: '' })
+
+	// Trigger mount animation
+	useEffect(() => {
+		setIsMounted(true)
+	}, [])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -75,33 +81,65 @@ function ComingSoon() {
 			{/* Hero Section - Full Screen */}
 			<section className="relative flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
 				<BackgroundRippleEffect rows={15} />
-				<div className="relative z-10 mx-auto w-full max-w-2xl text-center">
+				<div
+					className={`relative z-10 mx-auto w-full max-w-2xl text-center transition-all duration-1000 ${
+						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+					}`}
+				>
 					{/* Status Badge */}
 					<Badge
 						variant="outline"
-						className="mb-8 border-border bg-card px-4 py-1.5 text-xs font-mono uppercase tracking-wider"
+						className={`mb-8 border-border bg-card px-4 py-1.5 text-xs font-mono uppercase tracking-wider transition-all duration-700 delay-[900ms] ${
+							isMounted
+								? 'scale-100 opacity-100 animate-pulse-subtle'
+								: 'scale-95 opacity-0'
+						}`}
 					>
 						Coming Soon
 					</Badge>
 
 					{/* Main Heading */}
-					<h1 className="mb-6 font-mono text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
+					<h1
+						className={`mb-6 font-mono text-4xl font-semibold tracking-tight transition-all duration-700 delay-200 sm:text-5xl md:text-6xl ${
+							isMounted
+								? 'translate-y-0 opacity-100'
+								: 'translate-y-4 opacity-0'
+						}`}
+					>
 						changelogs.directory
 					</h1>
 
 					{/* Subheading */}
-					<p className="mb-4 text-lg text-muted-foreground sm:text-xl">
+					<p
+						className={`mb-4 text-lg text-muted-foreground transition-all duration-700 delay-300 sm:text-xl ${
+							isMounted
+								? 'translate-y-0 opacity-100'
+								: 'translate-y-4 opacity-0'
+						}`}
+					>
 						Track updates for developer tools
 					</p>
 
 					{/* Description */}
-					<p className="mx-auto mb-12 max-w-xl text-sm leading-relaxed text-muted-foreground/80 sm:text-base">
+					<p
+						className={`mx-auto mb-12 max-w-xl text-sm leading-relaxed text-muted-foreground/80 transition-all duration-700 delay-[400ms] sm:text-base ${
+							isMounted
+								? 'translate-y-0 opacity-100'
+								: 'translate-y-4 opacity-0'
+						}`}
+					>
 						Stay informed about the latest releases, features, improvements, and
 						breaking changes in your favorite tools. All in one place.
 					</p>
 
 					{/* Newsletter/Notification Signup */}
-					<div className="mx-auto max-w-md">
+					<div
+						className={`mx-auto max-w-md transition-all duration-700 delay-500 ${
+							isMounted
+								? 'translate-y-0 opacity-100'
+								: 'translate-y-4 opacity-0'
+						}`}
+					>
 						<p className="mb-6 text-sm text-muted-foreground">
 							Get notified when we launch
 						</p>
@@ -171,10 +209,20 @@ function ComingSoon() {
 			</section>
 
 			{/* Logo Showcase - Scrolling */}
-			<LogoShowcase />
+			<div
+				className={`transition-all duration-700 delay-700 ${
+					isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+				}`}
+			>
+				<LogoShowcase />
+			</div>
 
 			{/* Footer */}
-			<footer className="border-t border-border px-4 py-6 sm:px-6 lg:px-8">
+			<footer
+				className={`border-t border-border px-4 py-6 transition-all duration-700 delay-[800ms] sm:px-6 lg:px-8 ${
+					isMounted ? 'opacity-100' : 'opacity-0'
+				}`}
+			>
 				<div className="mx-auto max-w-7xl">
 					<div className="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
 						<code className="text-xs text-muted-foreground sm:text-sm">

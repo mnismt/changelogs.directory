@@ -22,27 +22,29 @@ export function LogoShowcase() {
 	const allTools = [...tools, ...tools, ...tools]
 
 	return (
-		<div className="relative w-full overflow-hidden border-y border-border bg-background py-6">
-			<div className="flex animate-scroll">
+		<div className="group/showcase relative w-full overflow-hidden border-y border-border bg-background py-6">
+			{/* Single row - Scrolls left to right */}
+			<div className="flex animate-scroll group-hover/showcase:animation-play-state-paused">
 				{allTools.map((tool, index) => (
 					<Link
 						to={tool.url}
 						target="_blank"
 						key={`${tool.name}-${index}`}
-						className="group flex min-w-[240px] shrink-0 items-center gap-4 px-6 opacity-60 transition-opacity duration-300 hover:opacity-100"
+						className="group flex min-w-[260px] shrink-0 items-center gap-4 rounded-lg border border-transparent px-8 py-3 opacity-60 transition-all duration-300 hover:scale-105 hover:border-border hover:bg-card hover:opacity-100 sm:min-w-[280px]"
 					>
-						<div className="flex size-9 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground">
+						<div className="flex size-10 shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-110 sm:size-12 [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground">
 							<tool.Logo />
 						</div>
-						<span className="whitespace-nowrap font-mono text-lg text-muted-foreground font-bold">
+						<span className="whitespace-nowrap font-mono text-lg font-bold text-muted-foreground transition-colors duration-300 group-hover:text-foreground sm:text-xl">
 							{tool.name}
 						</span>
 					</Link>
 				))}
 			</div>
-			{/* Fade overlays */}
-			<div className="pointer-events-none absolute inset-y-0 left-0 w-32 md:w-64 bg-linear-to-r from-background to-transparent" />
-			<div className="pointer-events-none absolute inset-y-0 right-0 w-32 md:w-64 bg-linear-to-l from-background to-transparent" />
+
+			{/* Enhanced fade overlays with stronger gradient */}
+			<div className="pointer-events-none absolute inset-y-0 left-0 w-48 bg-linear-to-r from-background via-background/80 to-transparent md:w-80" />
+			<div className="pointer-events-none absolute inset-y-0 right-0 w-48 bg-linear-to-l from-background via-background/80 to-transparent md:w-80" />
 		</div>
 	)
 }
