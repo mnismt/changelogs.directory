@@ -3,19 +3,33 @@ import { useEffect, useState } from 'react'
 import { Ampcode } from '@/components/logo/amp'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
-import { Droid } from '@/components/logo/droid'
 import { OpenAI } from '@/components/logo/openai'
 
 const tools = [
-	{ name: 'Amp', Logo: Ampcode, url: 'https://ampcode.com' },
+	{
+		name: 'Amp',
+		Logo: Ampcode,
+		url: 'https://ampcode.com',
+		subtitle: 'by Sourcegraph',
+	},
 	{
 		name: 'Claude Code',
 		Logo: ClaudeAI,
 		url: 'https://www.claude.com/product/claude-code',
+		subtitle: 'by Anthropic',
 	},
-	{ name: 'Cursor', Logo: Cursor, url: 'https://cursor.com' },
-	// { name: 'Droid', Logo: Droid, url: 'https://factory.ai' },
-	{ name: 'Codex', Logo: OpenAI, url: 'https://openai.com/codex' },
+	{
+		name: 'Cursor',
+		Logo: Cursor,
+		url: 'https://cursor.com',
+		subtitle: 'by Cursor',
+	},
+	{
+		name: 'Codex',
+		Logo: OpenAI,
+		url: 'https://openai.com/codex',
+		subtitle: 'by OpenAI',
+	},
 ]
 
 export function LogoShowcase() {
@@ -46,7 +60,7 @@ export function LogoShowcase() {
 							to={tool.url}
 							target="_blank"
 							key={`${tool.name}-${index}`}
-							className={`group flex min-w-[260px] shrink-0 items-center gap-4 rounded-lg border border-transparent px-8 py-3 transition-all duration-500 hover:scale-105 hover:border-border hover:bg-card sm:min-w-[280px] ${
+							className={`group/item flex min-w-[260px] shrink-0 items-center gap-4 rounded-lg border border-transparent px-8 py-3 transition-all duration-500 hover:scale-105 hover:border-border hover:bg-card sm:min-w-[280px] ${
 								isMounted
 									? 'translate-y-0 opacity-60 hover:opacity-100'
 									: 'translate-y-4 opacity-0'
@@ -55,12 +69,19 @@ export function LogoShowcase() {
 								transitionDelay: isMounted ? `${delayMs}ms` : '0ms',
 							}}
 						>
-							<div className="flex size-10 shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-110 sm:size-12 [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground">
+							<div className="flex size-10 shrink-0 items-center justify-center transition-transform duration-300 group-hover/item:scale-110 sm:size-12 [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground">
 								<tool.Logo />
 							</div>
-							<span className="whitespace-nowrap font-mono text-lg font-bold text-muted-foreground transition-colors duration-300 group-hover:text-foreground sm:text-xl">
-								{tool.name}
-							</span>
+							<div className="relative flex items-center w-full">
+								<div className="flex flex-col w-full">
+									<span className="whitespace-nowrap font-mono text-lg font-bold text-muted-foreground transition-all duration-300 group-hover/item:-translate-y-2 group-hover/item:text-foreground sm:text-xl">
+										{tool.name}
+									</span>
+									<span className="absolute top-full mt-0.5 font-mono text-xs text-muted-foreground transition-all duration-300 group-hover/item:translate-y-0 group-hover/item:opacity-100 sm:text-sm -translate-y-2 opacity-0 w-full">
+										{tool.subtitle}
+									</span>
+								</div>
+							</div>
 						</Link>
 					)
 				})}

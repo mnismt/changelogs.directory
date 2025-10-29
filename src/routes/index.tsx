@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { GitHub } from '@/components/logo/github'
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { posthog } from '@/integrations/posthog'
 import { getErrorMessage } from '@/lib/errors'
+import { subscribeToWaitlist } from '@/server/waitlist'
 
 export const Route = createFileRoute('/')({
 	head: () => ({
@@ -83,6 +85,7 @@ function ComingSoon() {
 		type: 'success' | 'error' | null
 		message: string
 	}>({ type: null, message: '' })
+	const submitWaitlist = useServerFn(subscribeToWaitlist)
 
 	// Trigger mount animation
 	useEffect(() => {
@@ -99,19 +102,7 @@ function ComingSoon() {
 		})
 
 		try {
-			const response = await fetch('/api/waitlist', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ email }),
-			})
-
-			const result = await response.json()
-
-			if (!response.ok || !result.success) {
-				throw new Error(result.message || 'Failed to subscribe')
-			}
+			const result = await submitWaitlist({ data: { email } })
 
 			setStatus({
 				type: 'success',

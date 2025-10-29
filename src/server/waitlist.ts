@@ -39,7 +39,7 @@ const ALLOWED_EMAIL_DOMAINS = [
 	'edu',
 ] as const
 
-const inputValidator = z.object({
+const waitlistSchema = z.object({
 	email: z
 		.string()
 		.trim()
@@ -66,7 +66,15 @@ const inputValidator = z.object({
 })
 
 export const subscribeToWaitlist = createServerFn({ method: 'POST' })
-	.inputValidator(inputValidator)
+	.inputValidator((data) => {
+		const result = waitlistSchema.safeParse(data)
+		if (!result.success) {
+			const message = result.error.issues[0]?.message || 'Invalid email address'
+			throw new Error(message)
+		}
+
+		return result.data
+	})
 	.handler(async ({ data }) => {
 		const prisma = getPrisma()
 
