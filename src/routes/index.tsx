@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { posthog } from '@/integrations/posthog'
 import { getErrorMessage } from '@/lib/errors'
-import { subscribeToWaitlist } from '@/server/waitlist'
 
 export const Route = createFileRoute('/')({ component: ComingSoon })
 
@@ -38,7 +37,19 @@ function ComingSoon() {
 		})
 
 		try {
-			const result = await subscribeToWaitlist({ data: { email } })
+			const response = await fetch('/api/waitlist', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ email }),
+			})
+
+			const result = await response.json()
+
+			if (!response.ok || !result.success) {
+				throw new Error(result.message || 'Failed to subscribe')
+			}
 
 			setStatus({
 				type: 'success',
