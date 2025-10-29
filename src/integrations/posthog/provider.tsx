@@ -11,9 +11,12 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 				posthog.init(apiKey, {
 					api_host: apiHost,
 					person_profiles: 'identified_only',
-					capture_pageview: false, // Disable automatic pageview capture
+					capture_pageview: true,
 					capture_pageleave: true,
+					defaults: '2025-05-24',
 				})
+
+				console.log('Posthog initialized!')
 			}
 		}
 	}, [])
