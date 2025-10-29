@@ -68,11 +68,9 @@ const inputValidator = z.object({
 export const subscribeToWaitlist = createServerFn({ method: 'POST' })
 	.inputValidator(inputValidator)
 	.handler(async ({ data }) => {
-		try {
-			// Get Prisma client with driver adapter
-			const prisma = getPrisma()
+		const prisma = getPrisma()
 
-			// Check if email already exists
+		try {
 			const existingEmail = await prisma.waitlist.findUnique({
 				where: { email: data.email },
 			})
@@ -81,7 +79,6 @@ export const subscribeToWaitlist = createServerFn({ method: 'POST' })
 				throw new Error('Email already registered')
 			}
 
-			// Insert email into database
 			await prisma.waitlist.create({
 				data: {
 					email: data.email,
@@ -94,12 +91,13 @@ export const subscribeToWaitlist = createServerFn({ method: 'POST' })
 			}
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				// Re-throw known errors (like "Email already registered")
 				if (error.message === 'Email already registered') {
 					throw error
 				}
 				console.error('Database error:', error)
 			}
 			throw new Error('Failed to save email')
+		} finally {
+			await prisma.$disconnect()
 		}
 	})
