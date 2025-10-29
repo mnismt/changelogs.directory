@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { GitHub } from '@/components/logo/github'
 import { XformerlyTwitter } from '@/components/logo/x'
 import { LogoShowcase } from '@/components/shared/logo-showcase'
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { posthog } from '@/integrations/posthog'
+import { getErrorMessage } from '@/lib/errors'
 import { subscribeToWaitlist } from '@/server/waitlist'
 
 export const Route = createFileRoute('/')({ component: ComingSoon })
@@ -42,8 +44,7 @@ function ComingSoon() {
 				source: 'hero_section',
 			})
 		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'Something went wrong'
+			const errorMessage = getErrorMessage(error)
 
 			setStatus({
 				type: 'error',
@@ -58,6 +59,16 @@ function ComingSoon() {
 			setIsLoading(false)
 		}
 	}
+
+	// Auto-dismiss messages after 5 seconds
+	useEffect(() => {
+		if (status.type) {
+			const timer = setTimeout(() => {
+				setStatus({ type: null, message: '' })
+			}, 5000)
+			return () => clearTimeout(timer)
+		}
+	}, [status.type])
 
 	return (
 		<div className="flex min-h-screen flex-col overflow-y-hidden">
@@ -112,29 +123,49 @@ function ComingSoon() {
 								type="submit"
 								size="lg"
 								disabled={isLoading || !email}
-								className="h-11 border border-border bg-primary px-6 font-mono text-sm text-primary-foreground hover:bg-primary/90"
+								className="h-11 border border-border bg-primary px-6 font-mono text-sm text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
 							>
-								{isLoading ? 'Adding...' : 'Notify me'}
+								{isLoading ? (
+									<span className="flex items-center gap-2">
+										<Loader2 className="h-4 w-4 animate-spin" />
+										Adding...
+									</span>
+								) : (
+									'Notify me'
+								)}
 							</Button>
 						</form>
 
-						{status.type && (
-							<p
-								className={`mt-4 text-sm ${
-									status.type === 'success'
-										? 'text-foreground'
-										: 'text-muted-foreground'
-								}`}
-							>
-								{status.message}
-							</p>
-						)}
+						{/* Status Messages with Animations */}
+						<div className="min-h-[60px] transition-all">
+							{status.type === 'success' && (
+								<div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+									<div className="flex items-start justify-center gap-2 rounded-lg border border-foreground/20 bg-card px-4 py-3 text-sm">
+										<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+										<span className="font-mono text-foreground">
+											{status.message}
+										</span>
+									</div>
+								</div>
+							)}
 
-						{!status.type && (
-							<p className="mt-4 text-xs text-muted-foreground/60">
-								No spam. Unsubscribe anytime.
-							</p>
-						)}
+							{status.type === 'error' && (
+								<div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+									<div className="flex items-start justify-center gap-2 rounded-lg border border-destructive/30 bg-card px-4 py-3 text-sm">
+										<XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+										<span className="font-mono text-destructive">
+											{status.message}
+										</span>
+									</div>
+								</div>
+							)}
+
+							{!status.type && (
+								<p className="mt-4 animate-in fade-in duration-300 text-xs text-muted-foreground/60">
+									No spam. Unsubscribe anytime.
+								</p>
+							)}
+						</div>
 					</div>
 				</div>
 			</section>
