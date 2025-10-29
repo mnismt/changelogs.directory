@@ -14,7 +14,7 @@ const tools = [
 		url: 'https://www.claude.com/product/claude-code',
 	},
 	{ name: 'Cursor', Logo: Cursor, url: 'https://cursor.com' },
-	{ name: 'Droid', Logo: Droid, url: 'https://factory.ai' },
+	// { name: 'Droid', Logo: Droid, url: 'https://factory.ai' },
 	{ name: 'Codex', Logo: OpenAI, url: 'https://openai.com/codex' },
 ]
 

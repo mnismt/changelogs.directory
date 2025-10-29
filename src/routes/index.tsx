@@ -41,7 +41,7 @@ export const Route = createFileRoute('/')({
 			},
 			{
 				property: 'og:image',
-				content: 'https://changelogs.directory/android-chrome-512x512.png',
+				content: 'https://changelogs.directory/og-image.png',
 			},
 			{
 				name: 'twitter:card',
@@ -62,7 +62,7 @@ export const Route = createFileRoute('/')({
 			},
 			{
 				name: 'twitter:image',
-				content: 'https://changelogs.directory/android-chrome-512x512.png',
+				content: 'https://changelogs.directory/og-image.png',
 			},
 		],
 		links: [
