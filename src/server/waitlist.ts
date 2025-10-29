@@ -1,81 +1,47 @@
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
+import { getPrisma } from './db'
+
+const emailValidator = z
+	.object({
+		email: z.email(),
+	})
+	.refine(
+		(data) => {
+			const email = data.email
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+			return emailRegex.test(email)
+		},
+		{
+			message: 'Invalid email format',
+		},
+	)
+	.transform((data) => {
+		return { email: data.email.toLowerCase().trim() }
+	})
 
 export const subscribeToWaitlist = createServerFn({ method: 'POST' })
-	.inputValidator((data: unknown) => {
-		if (!data || typeof data !== 'object' || !('email' in data)) {
-			throw new Error('Email is required')
-		}
-
-		const email = (data as { email: unknown }).email
-
-		if (typeof email !== 'string') {
-			throw new Error('Email must be a string')
-		}
-
-		// Basic email validation
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-		if (!emailRegex.test(email)) {
-			throw new Error('Invalid email format')
-		}
-
-		return { email: email.toLowerCase().trim() }
-	})
+	.inputValidator(emailValidator)
 	.handler(async ({ data }) => {
-		// Get MongoDB Data API credentials from environment
-		const apiUrl = process.env.MONGODB_DATA_API_URL
-		const apiKey = process.env.MONGODB_DATA_API_KEY
-
-		if (!apiUrl || !apiKey) {
-			console.error('MongoDB Data API credentials not found in environment')
-			throw new Error('Database not configured')
-		}
-
 		try {
+			// Get Prisma client with driver adapter
+			const prisma = getPrisma()
+
 			// Check if email already exists
-			const findResponse = await fetch(`${apiUrl}/action/findOne`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'api-key': apiKey,
-				},
-				body: JSON.stringify({
-					dataSource: 'Cluster0', // Default cluster name, adjust if different
-					database: 'changelogs-directory',
-					collection: 'waitlist',
-					filter: { email: data.email },
-				}),
+			const existingEmail = await prisma.waitlist.findUnique({
+				where: { email: data.email },
 			})
 
-			const findResult = await findResponse.json()
-
-			if (findResult.document) {
+			if (existingEmail) {
 				throw new Error('Email already registered')
 			}
 
 			// Insert email into database
-			const insertResponse = await fetch(`${apiUrl}/action/insertOne`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'api-key': apiKey,
+			await prisma.waitlist.create({
+				data: {
+					email: data.email,
 				},
-				body: JSON.stringify({
-					dataSource: 'Cluster0', // Default cluster name, adjust if different
-					database: 'changelogs-directory',
-					collection: 'waitlist',
-					document: {
-						email: data.email,
-						createdAt: new Date().toISOString(),
-					},
-				}),
 			})
-
-			const insertResult = await insertResponse.json()
-
-			if (!insertResponse.ok || !insertResult.insertedId) {
-				console.error('Insert failed:', insertResult)
-				throw new Error('Failed to save email')
-			}
 
 			return {
 				success: true,

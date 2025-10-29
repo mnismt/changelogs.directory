@@ -31,8 +31,9 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 ## Architecture
 
 - Frontend framework: TanStack Start with full-document SSR, streaming, and server functions for typed data loaders and outputs.
-- Backend services: server functions for read endpoints, cron workers for ingestion, and a document store (MongoDB or Postgres) with a normalized release schema.
+- Backend services: server functions for read endpoints, cron workers for ingestion, and PostgreSQL (Neon) database with a normalized release schema.
 - Caching: in-memory plus Redis layer for feeds and tool pages to minimize GitHub traffic and speed up SSR responses.
+- Database: **✅ COMPLETED** - PostgreSQL with Prisma ORM using Neon serverless driver adapter for edge runtime compatibility.
 
 ## Ingestion pipeline
 
@@ -45,6 +46,7 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 - Tool: id, slug, name, vendor, homepage, sourceAdapters[], tags[], createdAt/updatedAt.
 - Release: id, toolId, version, releaseDate, sourceUrl, digest, changes[], tags[], createdAt/updatedAt.
 - Change: type, title, description, impact, components[], links[].
+- **✅ COMPLETED** - Waitlist: id, email (unique), createdAt - implemented with Prisma + Neon PostgreSQL for launch notifications.
 
 ## Routes (TanStack Start)
 
@@ -56,6 +58,7 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 
 ## Core features (MVP)
 
+- **✅ COMPLETED** - Waitlist subscription with email validation and duplicate checking for launch notifications.
 - Aggregated "What's new" feed, per-tool release lists, and release details with grouped change types and direct source attribution.
 - Version diff for CLI tools by comparing normalized change arrays between two selected versions.
 - Search and filters: full-text search over title/description and chips for change type and time windows, implemented via server functions.
@@ -68,7 +71,12 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 
 ## Milestones
 
-- Week 1: Scaffold TanStack Start app, base routes, layout, design tokens, and data models.
+- **Week 1: ✅ COMPLETED** - Scaffold TanStack Start app, base routes, layout, design tokens, and data models.
+  - ✅ TanStack Start framework initialized with SSR
+  - ✅ PostgreSQL (Neon) database with Prisma ORM configured
+  - ✅ Waitlist feature with email subscription implemented
+  - ✅ Monochrome dark design system established
+  - ✅ Homepage with hero section and waitlist form
 - Week 2: Implement flexible connector system and end-to-end pages for first tools (OpenAI Codex, Claude Code) with initial feed live.
 - Week 3: Implement AMP Code and Droid CLI connectors, expand tool directory, plus global feed with multi-tool support.
 - Week 4: Search, filters, RSS, cache strategy, internal status page, and production deployment with scheduled ingestion.
