@@ -144,7 +144,7 @@ function ComingSoon() {
 		<div className="flex min-h-screen flex-col overflow-y-hidden">
 			{/* Hero Section - Full Screen */}
 			<section className="relative flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-				<BackgroundRippleEffect rows={12} />
+				<BackgroundRippleEffect rows={13} />
 				<div
 					className={`relative z-10 mt-10 mx-auto w-full max-w-2xl text-center transition-all duration-1000 ${
 						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'

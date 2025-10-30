@@ -10,43 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiWaitlistRouteImport } from './routes/api/waitlist'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiWaitlistRoute = ApiWaitlistRouteImport.update({
-  id: '/api/waitlist',
-  path: '/api/waitlist',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/waitlist': typeof ApiWaitlistRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/api/waitlist': typeof ApiWaitlistRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/waitlist': typeof ApiWaitlistRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/waitlist'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/waitlist'
-  id: '__root__' | '/' | '/api/waitlist'
+  to: '/'
+  id: '__root__' | '/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiWaitlistRoute: typeof ApiWaitlistRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,19 +48,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/waitlist': {
-      id: '/api/waitlist'
-      path: '/api/waitlist'
-      fullPath: '/api/waitlist'
-      preLoaderRoute: typeof ApiWaitlistRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiWaitlistRoute: ApiWaitlistRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
