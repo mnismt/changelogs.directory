@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { logger, task } from '@trigger.dev/sdk'
+import { logger, schedules, task } from '@trigger.dev/sdk'
 import { enrichStep } from './steps/enrich'
 import { fetchStep } from './steps/fetch'
 import { filterStep } from './steps/filter'
@@ -117,5 +117,17 @@ export const ingestClaudeCode = task({
 			// Re-throw for Trigger.dev retry logic
 			throw error
 		}
+	},
+})
+
+/**
+ * Schedule: Run ingestion every 6 hours
+ * Runs at minute 0 of every 6th hour (00:00, 06:00, 12:00, 18:00 UTC)
+ */
+export const ingestClaudeCodeSchedule = schedules.task({
+	id: 'ingest-claude-code-schedule',
+	cron: '0 */6 * * *',
+	run: async () => {
+		await ingestClaudeCode.trigger({})
 	},
 })

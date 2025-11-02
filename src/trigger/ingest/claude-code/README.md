@@ -56,6 +56,8 @@ Fetches `CHANGELOG.md` from GitHub, parses releases, enriches with LLM classific
 ## Configuration
 
 - **Task ID**: `ingest-claude-code`
+- **Schedule ID**: `ingest-claude-code-schedule`
+- **Schedule**: Every 6 hours (cron: `0 */6 * * *`)
 - **Concurrency**: 1 (prevents duplicate runs)
 - **Max Duration**: 5 minutes
 - **Default Tool**: `claude-code`
