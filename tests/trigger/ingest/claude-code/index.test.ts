@@ -14,6 +14,9 @@ vi.mock('@trigger.dev/sdk', () => ({
 		error: vi.fn(),
 	},
 	task: vi.fn((config) => config),
+	schedules: {
+		task: vi.fn((config) => config),
+	},
 }))
 
 vi.mock('@/lib/enrichment/llm', () => ({
