@@ -49,6 +49,7 @@ src/
 ├── data/               # Static/demo data files
 ├── integrations/       # Third-party integrations (e.g., tanstack-query/)
 ├── lib/                # Utility functions (e.g., utils.ts)
+├── trigger/            # Trigger.dev background jobs (@trigger)
 ├── routes/             # File-based routing (TanStack Router)
 │   ├── __root.tsx      # Root layout/shell
 │   ├── index.tsx       # Home page (/)
