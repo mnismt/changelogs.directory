@@ -7,9 +7,9 @@ The Claude Code changelog ingestion runs automatically every 6 hours via Trigger
 ## Current Status
 
 - ✅ Trigger.dev SDK configured (v4.0.5)
-- ✅ Ingestion task implemented (`src/trigger/ingest-claude-code.ts`)
+- ✅ Ingestion task implemented (`src/trigger/ingest/claude-code/index.ts`)
 - ✅ Task tested locally and working
-- ⏳ Schedule configuration pending
+- ✅ Schedule configured (runs every 6 hours)
 
 ## Development Testing
 
@@ -31,42 +31,30 @@ pnpm exec trigger.dev@latest dev
 pnpm exec trigger.dev@latest deploy
 ```
 
-### 2. Configure Schedule
+### 2. Schedule
 
-There are two ways to schedule the task:
-
-#### Option A: Using Trigger.dev Dashboard (Recommended)
-
-1. Go to https://cloud.trigger.dev
-2. Navigate to your project (`proj_bcoqvcqkiytlhpiuehfb`)
-3. Find the `ingest-claude-code` task
-4. Click "Schedules" → "New Schedule"
-5. Configure:
-   - **Name**: `claude-code-ingestion`
-   - **Cron**: `0 */6 * * *` (every 6 hours)
-   - **Timezone**: UTC
-   - **Payload**: `{}`
-6. Save and enable
-
-#### Option B: Using Code (Programmatic)
-
-Update `src/trigger/ingest-claude-code.ts` to include a schedule:
+The schedule is already configured in code at `src/trigger/ingest/claude-code/index.ts`:
 
 ```typescript
-import { schedules } from "@trigger.dev/sdk/v3"
-
 export const ingestClaudeCodeSchedule = schedules.task({
-  id: "ingest-claude-code-schedule",
-  // Run every 6 hours
-  cron: "0 */6 * * *",
-  task: ingestClaudeCode,
+  id: 'ingest-claude-code-schedule',
+  cron: '0 */6 * * *', // Every 6 hours
+  run: async () => {
+    await ingestClaudeCode.trigger({})
+  },
 })
 ```
 
-Then redeploy:
+The schedule will be automatically registered when you deploy:
 ```bash
 pnpm exec trigger.dev@latest deploy
 ```
+
+**Note**: After deployment, verify the schedule is active in the Trigger.dev dashboard. The schedule runs at:
+- 00:00 UTC
+- 06:00 UTC
+- 12:00 UTC
+- 18:00 UTC
 
 ## Task Configuration
 
