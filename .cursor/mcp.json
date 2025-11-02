@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "trigger": {
+      "command": "bunx",
+      "args": [
+        "trigger.dev@4.0.5",
+        "mcp",
+        "--dev-only"
+      ]
+    }
+  }
+}

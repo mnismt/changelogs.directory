@@ -2,11 +2,11 @@
 
 ## Executive Summary
 
-Changelogs.directory is a centralized platform that tracks, aggregates, and presents changelog information for CLI developer tools. The platform addresses the growing challenge developers face in staying updated with the rapidly evolving landscape of command-line AI coding tools like Claude Code, OpenAI Codex, AMP Code, and Droid CLI.
+Changelogs.directory is a centralized platform that tracks, aggregates, and presents changelog information for CLI developer tools. The platform addresses the growing challenge developers face in staying updated with the rapidly evolving landscape of command-line AI coding tools like Claude Code, OpenAI Codex, and AMP Code.
 
 ## Problem Statement
 
-With the explosion of CLI development tools in 2025 (Claude Code, Codex, AMP, Droid, Gemini CLI, etc.), developers struggle to:
+With the explosion of CLI development tools in 2025 (Claude Code, Codex, AMP, Gemini CLI, etc.), developers struggle to:
 
 - Track feature updates and breaking changes across multiple tools
 - Understand which tool versions are compatible with their workflows
@@ -21,7 +21,7 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 
 - MVP tracks CLI developer tools via their respective GitHub repositories (CHANGELOG files, releases, and commit history), rendered in a public directory with search, filters, and basic version diffing.
 - No auth in MVP; read-only UI with fast SSR pages and server functions using TanStack Start for data loading and cache revalidation.
-- Initial focus on popular CLI AI coding tools: Claude Code, OpenAI Codex, AMP Code, and Droid CLI.
+- Initial focus on popular CLI AI coding tools: Claude Code, OpenAI Codex, and AMP Code.
 
 ## Canonical sources
 
@@ -31,21 +31,25 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 ## Architecture
 
 - Frontend framework: TanStack Start with full-document SSR, streaming, and server functions for typed data loaders and outputs.
-- Backend services: server functions for read endpoints, cron workers for ingestion, and PostgreSQL (Neon) database with a normalized release schema.
-- Caching: in-memory plus Redis layer for feeds and tool pages to minimize GitHub traffic and speed up SSR responses.
+- Backend services: server functions for read endpoints, and PostgreSQL (Neon) database with a normalized release schema.
+- Background jobs: **Trigger.dev** for scheduled changelog ingestion tasks with built-in retries, observability, and job orchestration.
+- Caching: in-memory plus Redis (Upstash) layer for feeds and tool pages to minimize GitHub traffic and speed up SSR responses.
 - Database: **✅ COMPLETED** - PostgreSQL with Prisma ORM using Neon serverless driver adapter for edge runtime compatibility.
 
 ## Ingestion pipeline
 
 - Flexible connector system supporting multiple source formats (CHANGELOG.md, GitHub Releases, etc.), each with fetch, map, validate, and idempotent upsert steps keyed by tool+version.
-- Schedule: periodic polling via a job runner; store raw payloads and normalized records to enable re-mapping without refetching.
+- Schedule: **periodic polling via Trigger.dev scheduled tasks** (every 6 hours); store raw payloads and normalized records to enable re-mapping without refetching.
 - Change classification: map upstream entries to feature, improvement, bugfix, breaking, and security for consistent UI filters.
+- Job tracking: FetchLog model records every ingestion run with status, duration, metrics, and errors for observability.
 
 ## Minimal data model
 
-- Tool: id, slug, name, vendor, homepage, sourceAdapters[], tags[], createdAt/updatedAt.
-- Release: id, toolId, version, releaseDate, sourceUrl, digest, changes[], tags[], createdAt/updatedAt.
-- Change: type, title, description, impact, components[], links[].
+- **📝 DESIGNED** - See `docs/DATABASE_SCHEMA.md` for complete schema documentation.
+- Tool: id, slug, name, vendor, homepage, sourceType, sourceUrl, sourceConfig, tags[], isActive, lastFetchedAt, createdAt/updatedAt.
+- Release: id, toolId, version, versionSort, releaseDate, publishedAt, sourceUrl, rawContent, contentHash, tags[], createdAt/updatedAt.
+- Change: type, title, description, platform, isBreaking, isSecurity, isDeprecation, impact, links[], order, createdAt.
+- FetchLog: id, toolId, status, startedAt, completedAt, duration, releasesFound, releasesNew, releasesUpdated, changesCreated, error, errorStack.
 - **✅ COMPLETED** - Waitlist: id, email (unique), createdAt - implemented with Prisma + Neon PostgreSQL for launch notifications.
 
 ## Routes (TanStack Start)
@@ -66,8 +70,9 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 
 ## Admin and ops
 
-- Internal status page: last successful fetch per connector, job queue depth, and mapper validation results for safe deploys.
-- Observability: structured logs for connector runs and cache status; alerts on mapper failures or upstream structure changes.
+- Internal status page: last successful fetch per connector via FetchLog queries, and mapper validation results for safe deploys.
+- Observability: Trigger.dev dashboard for job monitoring, execution history, and error tracking; FetchLog database records for historical analysis.
+- Structured logs for connector runs and cache status; alerts on mapper failures or upstream structure changes.
 
 ## Milestones
 
@@ -77,8 +82,10 @@ A comprehensive directory that automatically tracks, curates, and presents chang
   - ✅ Waitlist feature with email subscription implemented
   - ✅ Monochrome dark design system established
   - ✅ Homepage with hero section and waitlist form
-- Week 2: Implement flexible connector system and end-to-end pages for first tools (OpenAI Codex, Claude Code) with initial feed live.
-- Week 3: Implement AMP Code and Droid CLI connectors, expand tool directory, plus global feed with multi-tool support.
+  - ✅ Trigger.dev integration set up for background jobs
+  - ✅ Database schema designed (see `docs/DATABASE_SCHEMA.md`)
+- Week 2: Implement Tool/Release/Change models, Claude Code changelog connector with Trigger.dev task, and `/tools/claude-code` page with releases list.
+- Week 3: Implement AMP Code connector, expand tool directory, plus global feed with multi-tool support.
 - Week 4: Search, filters, RSS, cache strategy, internal status page, and production deployment with scheduled ingestion.
 
 ## Next tools (post-MVP)
