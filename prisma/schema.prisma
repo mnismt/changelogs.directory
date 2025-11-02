@@ -79,3 +79,188 @@ model Verification {
 
   @@map("verification")
 }
+
+// ============================================================================
+// Changelog Models
+// ============================================================================
+
+model Tool {
+  id            String     @id @default(cuid())
+  slug          String     @unique // URL-friendly: "claude-code", "openai-codex"
+  name          String // Display name: "Claude Code"
+  vendor        String // Company: "Anthropic", "OpenAI"
+  description   String? // Short description for directory listing
+  homepage      String // Official website
+  repositoryUrl String // GitHub repo URL
+
+  // Source configuration (flexible connector system)
+  sourceType   SourceType
+  sourceUrl    String // Direct URL to changelog source
+  sourceConfig Json? // Additional connector-specific config
+
+  // Metadata
+  logoUrl  String? // Logo for directory display
+  tags     String[] // ["ai", "cli", "code-editor", "agent"]
+  isActive Boolean  @default(true) // For pausing ingestion
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastFetchedAt DateTime? // Last successful ingestion run
+
+  // Relations
+  releases  Release[]
+  fetchLogs FetchLog[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([lastFetchedAt])
+  @@map("tool")
+}
+
+model Release {
+  id       String @id @default(cuid())
+  toolId   String
+  tool     Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Version info
+  version     String // "2.0.31", "1.5.0-beta.1"
+  versionSort String // For semantic version sorting
+
+  // Dates
+  releaseDate DateTime? // Actual release date (if available in source)
+  publishedAt DateTime  @default(now()) // When WE ingested it
+
+  // Source tracking
+  sourceUrl   String @db.Text // Direct link to release (GitHub tag, etc.)
+  rawContent  String @db.Text // Original markdown/JSON for re-parsing
+  contentHash String // SHA256 hash for change detection
+
+  // Parsed metadata
+  title   String? // Optional release title
+  summary String? @db.Text // Auto-generated summary (first N chars)
+
+  // Classification tags
+  tags String[] // ["breaking", "security", "deprecation"]
+
+  // Relations
+  changes Change[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([toolId, version])
+  @@index([toolId, releaseDate(sort: Desc)])
+  @@index([publishedAt(sort: Desc)])
+  @@index([tags])
+  @@map("release")
+}
+
+model Change {
+  id        String  @id @default(cuid())
+  releaseId String
+  release   Release @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  // Change classification (inferred from text)
+  type ChangeType
+
+  // Content
+  title       String // The bullet point text (cleaned)
+  description String? @db.Text // Extended description (if multi-line)
+
+  // Context
+  platform  String? // "windows", "macos", "linux", "vscode", "ide"
+  component String? // Affected component/module (if known)
+
+  // Flags (inferred from text)
+  isBreaking    Boolean @default(false)
+  isSecurity    Boolean @default(false)
+  isDeprecation Boolean @default(false)
+
+  // Impact assessment
+  impact ImpactLevel?
+
+  // Links (extracted from markdown)
+  links Json? // [{ url: "...", text: "...", type: "docs|issue|pr" }]
+
+  // Order within release
+  order Int @default(0) // Preserve original order from changelog
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([releaseId, order])
+  @@index([type])
+  @@index([isBreaking])
+  @@index([isSecurity])
+  @@index([platform])
+  @@map("change")
+}
+
+model FetchLog {
+  id     String @id @default(cuid())
+  toolId String
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Job metadata
+  status      FetchStatus
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  duration    Int? // milliseconds
+
+  // Results
+  releasesFound   Int @default(0) // Total releases in source
+  releasesNew     Int @default(0) // New releases created
+  releasesUpdated Int @default(0) // Existing releases updated
+  changesCreated  Int @default(0) // Total changes inserted
+
+  // Error tracking
+  error      String? @db.Text
+  errorStack String? @db.Text
+
+  // Source info
+  sourceUrl   String // URL fetched
+  sourceEtag  String? // For HTTP caching (if supported)
+
+  @@index([toolId, startedAt(sort: Desc)])
+  @@index([status])
+  @@map("fetch_log")
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+enum SourceType {
+  CHANGELOG_MD // CHANGELOG.md file (like Claude Code)
+  GITHUB_RELEASES // GitHub Releases API
+  RSS_FEED // RSS/Atom feed
+  CUSTOM_API // Custom endpoint
+}
+
+enum ChangeType {
+  FEATURE // New functionality ("Added", "Implemented")
+  BUGFIX // Bug fixes ("Fixed", "Resolved")
+  IMPROVEMENT // Enhancements ("Improved", "Enhanced", "Updated")
+  BREAKING // Breaking changes
+  SECURITY // Security patches
+  DEPRECATION // Deprecated features
+  PERFORMANCE // Performance improvements
+  DOCUMENTATION // Docs updates
+  OTHER // Misc changes
+}
+
+enum ImpactLevel {
+  MAJOR // Breaking changes, major features
+  MINOR // New features, non-breaking
+  PATCH // Bug fixes, small improvements
+}
+
+enum FetchStatus {
+  PENDING // Job queued but not started
+  IN_PROGRESS // Currently running
+  SUCCESS // Completed successfully
+  FAILED // Failed (all releases)
+  PARTIAL // Some releases succeeded, some failed
+}
