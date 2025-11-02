@@ -2,7 +2,7 @@ import { logger } from '@trigger.dev/sdk'
 import type { EnrichResult, IngestionContext, UpsertResult } from '../types'
 
 /**
- * Phase 4: Upsert Releases & Changes
+ * Phase 6: Upsert Releases & Changes
  * - Check if release exists (by toolId + version)
  * - If exists and content changed: update release + recreate changes
  * - If new: create release with changes
@@ -12,7 +12,7 @@ export async function upsertStep(
 	ctx: IngestionContext,
 	enrichResult: EnrichResult,
 ): Promise<UpsertResult> {
-	logger.info('Phase 4: Upsert releases and changes')
+	logger.info('Phase 6: Upsert releases and changes')
 
 	let releasesNew = 0
 	let releasesUpdated = 0
