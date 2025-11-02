@@ -4,6 +4,7 @@ import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
 import { nitroV2Plugin } from '@tanstack/nitro-v2-vite-plugin'
+import { resolve } from 'path'
 
 const config = defineConfig({
   plugins: [
@@ -18,6 +19,17 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['tests/**/*.test.ts'],
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      'tests': resolve(__dirname, './tests'),
+    },
+  },
 })
 
 export default config

@@ -71,7 +71,7 @@
 		"tsx": "^4.20.6",
 		"typescript": "^5.7.2",
 		"vite": "^7.1.7",
-		"vitest": "^3.0.5",
+		"vitest": "^3.2.4",
 		"web-vitals": "^5.1.0",
 		"wrangler": "^4.45.1"
 	},
