@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { logger, task } from '@trigger.dev/sdk'
 import { enrichStep } from './steps/enrich'
 import { fetchStep } from './steps/fetch'
+import { filterStep } from './steps/filter'
 import { finalizeStep, handleFailure } from './steps/finalize'
 import { parseStep } from './steps/parse'
 import { setupStep } from './steps/setup'
@@ -48,25 +49,39 @@ export const ingestClaudeCode = task({
 			// ============================================================================
 			const parseResult = parseStep(fetchResult)
 
-			// ============================================================================
-			// Phase 3.5: Enrich with LLM
-			// ============================================================================
-			const enrichResult = await enrichStep(parseResult)
+			parseResult.releases = parseResult.releases.slice(0, 7)
 
 			// ============================================================================
-			// Phase 4: Upsert
+			// Phase 4: Filter unchanged releases
+			// ============================================================================
+			const filterResult = await filterStep(ctx, parseResult)
+
+			// ============================================================================
+			// Phase 5: Enrich with LLM
+			// ============================================================================
+			const enrichResult = await enrichStep(filterResult)
+
+			// ============================================================================
+			// Phase 6: Upsert
 			// ============================================================================
 			const upsertResult = await upsertStep(ctx, enrichResult)
 
 			// ============================================================================
-			// Phase 5: Finalize
+			// Phase 7: Finalize
 			// ============================================================================
-			await finalizeStep(ctx, fetchResult, parseResult, upsertResult)
+			await finalizeStep(
+				ctx,
+				fetchResult,
+				parseResult,
+				filterResult,
+				upsertResult,
+			)
 
 			return {
 				success: true,
 				duration: Date.now() - startTime,
 				releasesFound: parseResult.releases.length,
+				releasesSkipped: filterResult.releasesSkipped,
 				releasesNew: upsertResult.releasesNew,
 				releasesUpdated: upsertResult.releasesUpdated,
 				changesCreated: upsertResult.changesCreated,

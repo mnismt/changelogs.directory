@@ -1,13 +1,14 @@
 import { logger } from '@trigger.dev/sdk'
 import type {
 	FetchResult,
+	FilterResult,
 	IngestionContext,
 	ParseResult,
 	UpsertResult,
 } from '../types'
 
 /**
- * Phase 5: Finalize
+ * Phase 7: Finalize
  * - Update Tool.lastFetchedAt
  * - Update FetchLog with SUCCESS status and metrics
  */
@@ -15,9 +16,10 @@ export async function finalizeStep(
 	ctx: IngestionContext,
 	fetchResult: FetchResult,
 	parseResult: ParseResult,
+	filterResult: FilterResult,
 	upsertResult: UpsertResult,
 ): Promise<void> {
-	logger.info('Phase 5: Finalize')
+	logger.info('Phase 7: Finalize')
 
 	const duration = Date.now() - ctx.startTime
 
@@ -45,6 +47,7 @@ export async function finalizeStep(
 	logger.info('Ingestion completed successfully', {
 		duration,
 		releasesFound: parseResult.releases.length,
+		releasesSkipped: filterResult.releasesSkipped,
 		releasesNew: upsertResult.releasesNew,
 		releasesUpdated: upsertResult.releasesUpdated,
 		changesCreated: upsertResult.changesCreated,

@@ -28,6 +28,14 @@ export interface ParseResult {
 }
 
 /**
+ * Result from filter step
+ */
+export interface FilterResult {
+	releases: ParsedRelease[]
+	releasesSkipped: number
+}
+
+/**
  * Result from enrich step
  */
 export interface EnrichResult {
