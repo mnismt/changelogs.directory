@@ -8,12 +8,12 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 
 **Goal**: Get Claude Code changelog data flowing into the database.
 
-- [ ] Implement Prisma schema (Tool, Release, Change, FetchLog models)
-- [ ] Run migrations and seed Claude Code tool record
-- [ ] Build changelog parser (`src/lib/parsers/changelog-md.ts`)
-- [ ] Create Trigger.dev ingestion task (`src/trigger/ingest-claude-code.ts`)
-- [ ] Test ingestion manually - verify data in database
-- [ ] Schedule Trigger.dev task (every 6 hours)
+- [x] Implement Prisma schema (Tool, Release, Change, FetchLog models)
+- [x] Run migrations and seed Claude Code tool record
+- [x] Build changelog parser (`src/lib/parsers/changelog-md.ts`)
+- [x] Create Trigger.dev ingestion task (`src/trigger/ingest-claude-code.ts`)
+- [x] Test ingestion manually - verify data in database
+- [x] Schedule Trigger.dev task (every 6 hours)
 
 **Success metric**: Claude Code releases appear in database after ingestion runs.
 

@@ -2,11 +2,11 @@ import { PrismaNeon } from '@prisma/adapter-neon'
 import { PrismaClient } from '@prisma/client'
 
 /**
- * Creates a Prisma Client instance with Neon's serverless driver adapter.
- * This enables low-latency queries over HTTP/WebSockets instead of TCP,
- * making it perfect for edge runtimes like Cloudflare Workers.
+ * Creates a Prisma Client instance.
+ * - In production: Uses Neon's serverless driver adapter for edge runtimes
+ * - In local/dev: Uses standard PostgreSQL connection
  *
- * @returns A configured PrismaClient instance ready to use with Neon
+ * @returns A configured PrismaClient instance
  *
  * @example
  * ```typescript
@@ -28,9 +28,12 @@ export function getPrisma(): PrismaClient {
 		throw new Error('DATABASE_URL environment variable is not set')
 	}
 
-	// Create Neon adapter with connection string
-	const adapter = new PrismaNeon({ connectionString })
+	const isProduction = process.env.NODE_ENV === 'production'
 
-	// Return new PrismaClient with the Neon adapter
-	return new PrismaClient({ adapter })
+	if (isProduction) {
+		const adapter = new PrismaNeon({ connectionString })
+		return new PrismaClient({ adapter })
+	}
+
+	return new PrismaClient()
 }
