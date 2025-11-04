@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/card'
 
 interface ReleaseCardProps {
-	toolSlug: string
 	version: string
 	releaseDate?: Date | null
 	summary?: string | null
@@ -18,7 +17,6 @@ interface ReleaseCardProps {
 }
 
 export function ReleaseCard({
-	toolSlug,
 	version,
 	releaseDate,
 	summary,
@@ -35,8 +33,8 @@ export function ReleaseCard({
 
 	return (
 		<Link
-			to="/tools/$toolSlug/releases/$version"
-			params={{ toolSlug, version }}
+			to="/tools/claude-code/releases/$version"
+			params={{ version }}
 			className="block h-full"
 		>
 			<Card className="h-full border-border bg-card transition-colors hover:border-accent">

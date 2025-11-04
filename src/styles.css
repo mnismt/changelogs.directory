@@ -168,6 +168,32 @@ code {
 	animation: pulse-subtle 3s ease-in-out infinite;
 }
 
+@keyframes accordion-down {
+	from {
+		height: 0;
+	}
+	to {
+		height: var(--radix-accordion-content-height);
+	}
+}
+
+@keyframes accordion-up {
+	from {
+		height: var(--radix-accordion-content-height);
+	}
+	to {
+		height: 0;
+	}
+}
+
+.animate-accordion-down {
+	animation: accordion-down 0.2s ease-out;
+}
+
+.animate-accordion-up {
+	animation: accordion-up 0.2s ease-out;
+}
+
 @theme inline {
   --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
   var(--delay, 0ms);
