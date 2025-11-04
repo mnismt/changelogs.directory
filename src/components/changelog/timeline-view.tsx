@@ -1,0 +1,101 @@
+import { TimelineItem } from './timeline-item'
+
+interface Release {
+	id: string
+	version: string
+	releaseDate: Date | null
+	summary: string | null
+	tags: string[]
+	_count: {
+		changes: number
+	}
+}
+
+interface TimelineViewProps {
+	releases: Release[]
+}
+
+function groupReleasesByYear(releases: Release[]) {
+	const groups: Record<string, Release[]> = {}
+
+	for (const release of releases) {
+		let year = 'Date Unknown'
+		if (release.releaseDate) {
+			const date = new Date(release.releaseDate)
+			if (!Number.isNaN(date.getTime())) {
+				year = date.getFullYear().toString()
+			}
+		}
+
+		if (!groups[year]) {
+			groups[year] = []
+		}
+		groups[year].push(release)
+	}
+
+	return groups
+}
+
+export function TimelineView({ releases }: TimelineViewProps) {
+	const groupedByYear = groupReleasesByYear(releases)
+
+	// Sort years in descending order (newest first)
+	// Put "Date Unknown" at the end
+	const sortedYears = Object.keys(groupedByYear).sort((a, b) => {
+		if (a === 'Date Unknown') return 1
+		if (b === 'Date Unknown') return -1
+		return Number.parseInt(b, 10) - Number.parseInt(a, 10)
+	})
+
+	if (sortedYears.length === 0) {
+		return null
+	}
+
+	return (
+		<div className="mx-auto max-w-5xl">
+			{sortedYears.map((year, yearIndex) => {
+				const yearReleases = groupedByYear[year]
+				const isFirstYear = yearIndex === 0
+
+				return (
+					<div key={year} className={isFirstYear ? '' : 'mt-12'}>
+						{/* Year header */}
+						<h2 className="mb-8 font-mono text-2xl font-semibold text-foreground">
+							{year}
+						</h2>
+
+						{/* Timeline items for this year */}
+						<div>
+							{yearReleases.map((release, releaseIndex) => {
+								const isLastInYear = releaseIndex === yearReleases.length - 1
+								const isLastOverall =
+									yearIndex === sortedYears.length - 1 && isLastInYear
+
+								// Calculate global index for alternating sides
+								const globalIndex =
+									sortedYears
+										.slice(0, yearIndex)
+										.reduce((acc, y) => acc + groupedByYear[y].length, 0) +
+									releaseIndex
+								const isLeft = globalIndex % 2 === 0
+
+								return (
+									<TimelineItem
+										key={release.id}
+										version={release.version}
+										releaseDate={release.releaseDate}
+										summary={release.summary}
+										tags={release.tags}
+										changeCount={release._count.changes}
+										isLast={isLastOverall}
+										isLeft={isLeft}
+									/>
+								)
+							})}
+						</div>
+					</div>
+				)
+			})}
+		</div>
+	)
+}

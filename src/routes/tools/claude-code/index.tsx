@@ -3,7 +3,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { FilterBar } from '@/components/changelog/filter-bar'
 import { ReleaseCard } from '@/components/changelog/release-card'
+import { TimelineView } from '@/components/changelog/timeline-view'
 import { ToolHeader } from '@/components/changelog/tool-header'
+import { ViewToggle } from '@/components/changelog/view-toggle'
 import { ClaudeAI } from '@/components/logo/claude'
 import { getToolWithReleases } from '@/server/tools'
 
@@ -26,6 +28,7 @@ export const Route = createFileRoute('/tools/claude-code/')({
 function ClaudeCodePage() {
 	const search = Route.useSearch() as {
 		type?: string | string[]
+		view?: 'grid' | 'timeline'
 	}
 
 	// Fetch tool data
@@ -142,10 +145,15 @@ function ClaudeCodePage() {
 					logo={<ClaudeAI />}
 				/>
 
-				{/* Filter Bar */}
-				<FilterBar />
+				{/* Filter Bar and View Toggle */}
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+					<div className="flex-1">
+						<FilterBar />
+					</div>
+					<ViewToggle />
+				</div>
 
-				{/* Releases Grid */}
+				{/* Releases - Grid or Timeline */}
 				{filteredReleases.length === 0 ? (
 					<div className="rounded-lg border border-border bg-card p-8 text-center">
 						<p className="text-muted-foreground">
@@ -154,12 +162,13 @@ function ClaudeCodePage() {
 								: 'No releases found.'}
 						</p>
 					</div>
+				) : search.view === 'timeline' ? (
+					<TimelineView releases={filteredReleases} />
 				) : (
 					<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 						{filteredReleases.map((release) => (
 							<ReleaseCard
 								key={release.id}
-								toolSlug="claude-code"
 								version={release.version}
 								releaseDate={release.releaseDate}
 								summary={release.summary}

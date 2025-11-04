@@ -105,3 +105,97 @@ export const getReleaseWithChanges = createServerFn({ method: 'GET' })
 			throw new Error('Failed to fetch release data')
 		}
 	})
+
+/**
+ * Get adjacent versions (prev/next) for navigation
+ */
+export const getAdjacentVersions = createServerFn({ method: 'GET' })
+	.inputValidator((data) => {
+		const result = releaseParamsSchema.safeParse(data)
+		if (!result.success) {
+			const message = result.error.issues[0]?.message || 'Invalid parameters'
+			throw new Error(message)
+		}
+		return result.data
+	})
+	.handler(async ({ data }) => {
+		const prisma = getPrisma()
+
+		try {
+			// Get current release
+			const currentRelease = await prisma.release.findFirst({
+				where: {
+					tool: { slug: data.toolSlug },
+					version: data.version,
+				},
+				select: { versionSort: true },
+			})
+
+			if (!currentRelease) {
+				return { prev: null, next: null }
+			}
+
+			// Get next version (higher versionSort)
+			const next = await prisma.release.findFirst({
+				where: {
+					tool: { slug: data.toolSlug },
+					versionSort: { gt: currentRelease.versionSort },
+				},
+				orderBy: { versionSort: 'asc' },
+				select: { version: true },
+			})
+
+			// Get prev version (lower versionSort)
+			const prev = await prisma.release.findFirst({
+				where: {
+					tool: { slug: data.toolSlug },
+					versionSort: { lt: currentRelease.versionSort },
+				},
+				orderBy: { versionSort: 'desc' },
+				select: { version: true },
+			})
+
+			return {
+				next: next?.version || null,
+				prev: prev?.version || null,
+			}
+		} catch (error: unknown) {
+			console.error('Error fetching adjacent versions:', error)
+			return { prev: null, next: null }
+		}
+	})
+
+/**
+ * Get all versions for dropdown/list
+ */
+export const getAllVersions = createServerFn({ method: 'GET' })
+	.inputValidator((data) => {
+		const result = toolSlugSchema.safeParse(data)
+		if (!result.success) {
+			const message = result.error.issues[0]?.message || 'Invalid tool slug'
+			throw new Error(message)
+		}
+		return result.data
+	})
+	.handler(async ({ data }) => {
+		const prisma = getPrisma()
+
+		try {
+			const versions = await prisma.release.findMany({
+				where: { tool: { slug: data.slug } },
+				orderBy: { versionSort: 'desc' },
+				select: {
+					version: true,
+					releaseDate: true,
+					_count: {
+						select: { changes: true },
+					},
+				},
+			})
+
+			return versions
+		} catch (error: unknown) {
+			console.error('Error fetching versions:', error)
+			throw new Error('Failed to fetch versions')
+		}
+	})
