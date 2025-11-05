@@ -77,7 +77,7 @@ src/
 - **Framework**: TanStack Start (React 19)
 - **Router**: TanStack Router (file-based)
 - **Styling**: Tailwind CSS v4 + shadcn/ui components
-- **Data Fetching**: TanStack Query
+- **Data Fetching**: TanStack Start SSR loaders (primary), TanStack Query (mutations only)
 - **Tables**: TanStack Table
 - **Build Tool**: Vite
 - **Linter/Formatter**: Biome
@@ -110,7 +110,7 @@ Files prefixed with `demo` can be safely deleted - they're examples only.
 
 ### Imports
 - Import from `@tanstack/react-router` for routing components (Link, Outlet, etc.)
-- Import from `@tanstack/react-query` for data fetching
+- Import from `@tanstack/react-query` only for mutations/subscriptions (not initial page data)
 - Use path aliases (`@/`) for local imports
 
 ### React Components
@@ -130,6 +130,72 @@ Files prefixed with `demo` can be safely deleted - they're examples only.
 - Use `Route` as the export name for file-based routes
 - Use `shellComponent` in root route to define HTML document structure
 - Use `head` property for meta tags and links
+
+### Data Fetching with SSR
+**CRITICAL**: Always use SSR loaders for initial page data. Never use client-side `useQuery` for initial data fetching.
+
+#### Pattern: Use `loader` + `Route.useLoaderData()`
+```tsx
+import { createFileRoute } from '@tanstack/react-router'
+import { getToolWithReleases } from '@/server/tools'
+
+export const Route = createFileRoute('/tools/claude-code/')({
+	loader: async () => {
+		return await getToolWithReleases({ data: { slug: 'claude-code' } })
+	},
+	component: ClaudeCodePage,
+})
+
+function ClaudeCodePage() {
+	const tool = Route.useLoaderData()
+	// Use tool data directly - no loading states needed for SSR
+}
+```
+
+#### For Multiple Data Sources
+```tsx
+export const Route = createFileRoute('/tools/claude-code/releases/$version')({
+	loader: async ({ params }) => {
+		const [release, adjacentVersions, allVersions] = await Promise.all([
+			getReleaseWithChanges({
+				data: { toolSlug: 'claude-code', version: params.version },
+			}),
+			getAdjacentVersions({
+				data: { toolSlug: 'claude-code', version: params.version },
+			}),
+			getAllVersions({
+				data: { slug: 'claude-code' },
+			}),
+		])
+
+		return {
+			release,
+			adjacentVersions,
+			allVersions,
+		}
+	},
+	component: ReleaseDetailPage,
+})
+
+function ReleaseDetailPage() {
+	const { release, adjacentVersions, allVersions } = Route.useLoaderData()
+	// All data is available immediately via SSR
+}
+```
+
+#### Rules
+- ✅ **ALWAYS** use `loader` function in route definition for page data
+- ✅ **ALWAYS** use `Route.useLoaderData()` to access data in components
+- ✅ **ALWAYS** use `Promise.all()` for parallel data fetching in loaders
+- ❌ **NEVER** use `useQuery` from `@tanstack/react-query` for initial page data
+- ❌ **NEVER** add loading states (`isPending`) for SSR-loaded data
+- ❌ **NEVER** add error states (`error`) from React Query for SSR data
+
+#### Benefits
+- Data loads on the server, improving initial page load
+- Better SEO - content is available in initial HTML
+- No loading spinners on first render
+- Type-safe data access via `Route.useLoaderData()`
 
 ### Component Structure Example
 ```tsx
@@ -305,7 +371,8 @@ className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
 
 ### State Management
 - React hooks (useState, useEffect, etc.)
-- TanStack Query for server state
+- TanStack Start SSR loaders for initial page data (via `Route.useLoaderData()`)
+- TanStack Query only for mutations, invalidations, and client-side updates
 - Consider TanStack Store for complex global state (not currently installed)
 
 ## Cursor Rules

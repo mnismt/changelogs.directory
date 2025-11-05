@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { FilterBar } from '@/components/changelog/filter-bar'
@@ -10,6 +9,9 @@ import { ClaudeAI } from '@/components/logo/claude'
 import { getToolWithReleases } from '@/server/tools'
 
 export const Route = createFileRoute('/tools/claude-code/')({
+	loader: async () => {
+		return await getToolWithReleases({ data: { slug: 'claude-code' } })
+	},
 	component: ClaudeCodePage,
 	head: () => ({
 		meta: [
@@ -31,17 +33,7 @@ function ClaudeCodePage() {
 		view?: 'grid' | 'timeline'
 	}
 
-	// Fetch tool data
-	const {
-		data: tool,
-		isPending,
-		error,
-	} = useQuery({
-		queryKey: ['tool', 'claude-code'],
-		queryFn: async () => {
-			return await getToolWithReleases({ data: { slug: 'claude-code' } })
-		},
-	})
+	const tool = Route.useLoaderData()
 
 	// Normalize selected types to array
 	const selectedTypes = search.type
@@ -56,64 +48,28 @@ function ClaudeCodePage() {
 		if (selectedTypes.length === 0) return tool.releases
 
 		// Filter releases that have changes matching the selected types
-		// This requires checking the changes for each release
-		// For now, we'll filter based on release tags
 		return tool.releases.filter((release) => {
-			// If no type filter, show all
-			if (selectedTypes.length === 0) return true
-
 			// Check if release has any of the selected types in its tags
-			const hasMatchingTag = release.tags.some((tag) =>
-				selectedTypes.some((type) => type.toLowerCase() === tag.toLowerCase()),
-			)
+			const hasMatchingType = release.tags.some((tag) => {
+				// Map common tag names to filter types
+				const tagMap: Record<string, string[]> = {
+					breaking: ['BREAKING'],
+					security: ['SECURITY'],
+					feature: ['FEATURE'],
+					improvement: ['IMPROVEMENT'],
+					performance: ['PERFORMANCE'],
+					deprecation: ['DEPRECATION'],
+					docs: ['DOCUMENTATION'],
+					documentation: ['DOCUMENTATION'],
+				}
 
-			return hasMatchingTag
+				const mappedTypes = tagMap[tag.toLowerCase()] || []
+				return selectedTypes.some((type) => mappedTypes.includes(type))
+			})
+
+			return hasMatchingType
 		})
 	}, [tool?.releases, selectedTypes])
-
-	// Loading state
-	if (isPending) {
-		return (
-			<div className="container mx-auto max-w-7xl px-4 pt-20 pb-12">
-				<div className="space-y-8">
-					{/* Skeleton header */}
-					<div className="space-y-4 border-b border-border pb-8">
-						<div className="h-8 w-48 animate-pulse rounded bg-card" />
-						<div className="h-12 w-96 animate-pulse rounded bg-card" />
-						<div className="h-6 w-full max-w-2xl animate-pulse rounded bg-card" />
-					</div>
-
-					{/* Skeleton cards */}
-					<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-						{Array.from({ length: 6 }, (_, i) => `skeleton-${i}`).map((key) => (
-							<div
-								key={key}
-								className="h-48 animate-pulse rounded-lg border border-border bg-card"
-							/>
-						))}
-					</div>
-				</div>
-			</div>
-		)
-	}
-
-	// Error state
-	if (error) {
-		return (
-			<div className="container mx-auto max-w-7xl px-4 pt-20 pb-12">
-				<div className="rounded-lg border border-border bg-card p-8 text-center">
-					<h2 className="mb-2 text-xl font-semibold">
-						Failed to load tool data
-					</h2>
-					<p className="text-muted-foreground">
-						{error instanceof Error
-							? error.message
-							: 'An unexpected error occurred'}
-					</p>
-				</div>
-			</div>
-		)
-	}
 
 	// Not found state
 	if (!tool) {
@@ -162,9 +118,7 @@ function ClaudeCodePage() {
 								: 'No releases found.'}
 						</p>
 					</div>
-				) : search.view === 'timeline' ? (
-					<TimelineView releases={filteredReleases} />
-				) : (
+				) : search.view === 'grid' ? (
 					<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 						{filteredReleases.map((release) => (
 							<ReleaseCard
@@ -177,6 +131,8 @@ function ClaudeCodePage() {
 							/>
 						))}
 					</div>
+				) : (
+					<TimelineView releases={filteredReleases} />
 				)}
 			</div>
 		</div>
