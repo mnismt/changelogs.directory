@@ -80,6 +80,12 @@ function ClaudeCodePage() {
 					repositoryUrl={tool.repositoryUrl}
 					releaseCount={tool.releases.length}
 					lastFetchedAt={tool.lastFetchedAt}
+					latestVersion={tool.releases[0]?.version}
+					latestReleaseDate={tool.releases[0]?.releaseDate}
+					firstVersion={tool.releases[tool.releases.length - 1]?.version}
+					firstReleaseDate={
+						tool.releases[tool.releases.length - 1]?.releaseDate
+					}
 					tags={tool.tags}
 					logo={<ClaudeAI />}
 				/>
