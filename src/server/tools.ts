@@ -216,6 +216,7 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 				where: { tool: { slug: data.slug } },
 				orderBy: { versionSort: 'desc' },
 				select: {
+					id: true,
 					version: true,
 					releaseDate: true,
 					_count: {
@@ -224,7 +225,37 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 				},
 			})
 
-			return versions
+			// Fetch change counts grouped by type for all releases
+			const releaseIds = versions.map((v) => v.id)
+			const changesByTypeRaw = await prisma.change.groupBy({
+				by: ['releaseId', 'type'],
+				where: {
+					releaseId: { in: releaseIds },
+				},
+				_count: { id: true },
+			})
+
+			// Transform into a map: releaseId -> { type: count }
+			const changesByTypeMap = new Map<string, Record<string, number>>()
+			for (const item of changesByTypeRaw) {
+				if (!changesByTypeMap.has(item.releaseId)) {
+					changesByTypeMap.set(item.releaseId, {})
+				}
+				const typeCounts = changesByTypeMap.get(item.releaseId)
+				if (typeCounts) {
+					typeCounts[item.type] = item._count.id
+				}
+			}
+
+			// Attach changesByType to each version
+			const versionsWithTypes = versions.map((version) => ({
+				version: version.version,
+				releaseDate: version.releaseDate,
+				_count: version._count,
+				changesByType: changesByTypeMap.get(version.id) || {},
+			}))
+
+			return versionsWithTypes
 		} catch (error: unknown) {
 			console.error('Error fetching versions:', error)
 			throw new Error('Failed to fetch versions')
