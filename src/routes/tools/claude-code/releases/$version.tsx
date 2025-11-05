@@ -1,13 +1,10 @@
 import type { Change, ChangeType } from '@prisma/client'
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, ChevronRight, Copy, ExternalLink } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ChangeItem } from '@/components/changelog/change-item'
 import { CollapsibleSection } from '@/components/changelog/collapsible-section'
-import { FilterBar } from '@/components/changelog/filter-bar'
 import { ReleaseStickyHeader } from '@/components/changelog/release-sticky-header'
-import { ReleaseTOC } from '@/components/changelog/release-toc'
 import { VersionList } from '@/components/changelog/version-list'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Accordion } from '@/components/ui/accordion'
@@ -20,6 +17,25 @@ import {
 } from '@/server/tools'
 
 export const Route = createFileRoute('/tools/claude-code/releases/$version')({
+	loader: async ({ params }) => {
+		const [release, adjacentVersions, allVersions] = await Promise.all([
+			getReleaseWithChanges({
+				data: { toolSlug: 'claude-code', version: params.version },
+			}),
+			getAdjacentVersions({
+				data: { toolSlug: 'claude-code', version: params.version },
+			}),
+			getAllVersions({
+				data: { slug: 'claude-code' },
+			}),
+		])
+
+		return {
+			release,
+			adjacentVersions,
+			allVersions,
+		}
+	},
 	component: ReleaseDetailPage,
 	head: ({ params }) => ({
 		meta: [
@@ -37,57 +53,9 @@ export const Route = createFileRoute('/tools/claude-code/releases/$version')({
 function ReleaseDetailPage() {
 	const { version } = Route.useParams()
 	const navigate = useNavigate()
-	const search = Route.useSearch() as {
-		type?: string | string[]
-		platform?: string | string[]
-	}
 	const [copied, setCopied] = useState(false)
 
-	// Fetch release data
-	const {
-		data: release,
-		isPending,
-		error,
-	} = useQuery({
-		queryKey: ['release', 'claude-code', version],
-		queryFn: async () => {
-			return await getReleaseWithChanges({
-				data: { toolSlug: 'claude-code', version },
-			})
-		},
-	})
-
-	// Fetch adjacent versions
-	const { data: adjacentVersions } = useQuery({
-		queryKey: ['adjacent-versions', 'claude-code', version],
-		queryFn: async () => {
-			return await getAdjacentVersions({
-				data: { toolSlug: 'claude-code', version },
-			})
-		},
-	})
-
-	// Fetch all versions
-	const { data: allVersions } = useQuery({
-		queryKey: ['all-versions', 'claude-code'],
-		queryFn: async () => {
-			return await getAllVersions({
-				data: { slug: 'claude-code' },
-			})
-		},
-	})
-
-	// Normalize filters
-	const selectedTypes = search.type
-		? Array.isArray(search.type)
-			? search.type
-			: [search.type]
-		: []
-	const selectedPlatforms = search.platform
-		? Array.isArray(search.platform)
-			? search.platform
-			: [search.platform]
-		: []
+	const { release, adjacentVersions, allVersions } = Route.useLoaderData()
 
 	// Group changes by type and apply filters
 	const groupedChanges = useMemo((): Record<ChangeType, Change[]> => {
@@ -105,22 +73,6 @@ function ReleaseDetailPage() {
 
 		if (!release?.changes) return empty
 
-		const filtered = release.changes.filter((change) => {
-			// Filter by type
-			if (selectedTypes.length > 0 && !selectedTypes.includes(change.type)) {
-				return false
-			}
-
-			// Filter by platform
-			if (selectedPlatforms.length > 0 && change.platform) {
-				if (!selectedPlatforms.includes(change.platform.toLowerCase())) {
-					return false
-				}
-			}
-
-			return true
-		})
-
 		// Group by type
 		const grouped: Record<ChangeType, Change[]> = {
 			FEATURE: [],
@@ -134,12 +86,12 @@ function ReleaseDetailPage() {
 			OTHER: [],
 		}
 
-		filtered.forEach((change) => {
+		release.changes.forEach((change) => {
 			grouped[change.type].push(change)
 		})
 
 		return grouped
-	}, [release?.changes, selectedTypes, selectedPlatforms])
+	}, [release?.changes])
 
 	// Section titles and order
 	const sections: Array<{ type: ChangeType; title: string }> = [
@@ -163,15 +115,6 @@ function ReleaseDetailPage() {
 				section.type === 'FEATURE',
 		)
 		.map((section) => section.type)
-
-	// Filter sections with changes for TOC
-	const tocSections = sections
-		.filter((section) => groupedChanges[section.type]?.length > 0)
-		.map((section) => ({
-			type: section.type,
-			title: section.title,
-			count: groupedChanges[section.type].length,
-		}))
 
 	// Keyboard navigation
 	useEffect(() => {
@@ -206,52 +149,8 @@ function ReleaseDetailPage() {
 		const url = window.location.href
 		navigator.clipboard.writeText(url).then(() => {
 			setCopied(true)
-			setTimeout(() => setCopied(false), 2000)
+			setTimeout(() => setCopied(false), 3000)
 		})
-	}
-
-	// Loading state
-	if (isPending) {
-		return (
-			<div className="container mx-auto max-w-7xl px-4 py-12">
-				<div className="space-y-8">
-					{/* Skeleton breadcrumbs */}
-					<div className="h-4 w-64 animate-pulse rounded bg-card" />
-
-					{/* Skeleton header */}
-					<div className="space-y-4 border-b border-border pb-8">
-						<div className="h-12 w-48 animate-pulse rounded bg-card" />
-						<div className="h-6 w-96 animate-pulse rounded bg-card" />
-					</div>
-
-					{/* Skeleton sections */}
-					{Array.from({ length: 3 }, (_, i) => `skeleton-section-${i}`).map(
-						(key) => (
-							<div
-								key={key}
-								className="h-32 animate-pulse rounded-lg border border-border bg-card"
-							/>
-						),
-					)}
-				</div>
-			</div>
-		)
-	}
-
-	// Error state
-	if (error) {
-		return (
-			<div className="container mx-auto max-w-7xl px-4 py-12">
-				<div className="rounded-lg border border-border bg-card p-8 text-center">
-					<h2 className="mb-2 text-xl font-semibold">Failed to load release</h2>
-					<p className="text-muted-foreground">
-						{error instanceof Error
-							? error.message
-							: 'An unexpected error occurred'}
-					</p>
-				</div>
-			</div>
-		)
 	}
 
 	// Not found state
@@ -277,7 +176,7 @@ function ReleaseDetailPage() {
 		: 'Date unknown'
 
 	return (
-		<>
+		<div className="animate-fade-in">
 			{/* Sticky Header */}
 			{adjacentVersions && allVersions && (
 				<ReleaseStickyHeader
@@ -291,174 +190,173 @@ function ReleaseDetailPage() {
 			)}
 
 			<div className="container mx-auto max-w-7xl px-4 py-12">
-				<div className="flex gap-8">
-					{/* Main content */}
-					<div className="flex-1 min-w-0 space-y-8">
-						{/* Back Button & Breadcrumbs */}
-						<div className="space-y-4">
-							<Link
-								to="/tools/claude-code"
-								className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-							>
-								<ArrowLeft className="h-4 w-4" />
-								<span>Back to all releases</span>
-							</Link>
+				<div className="space-y-8">
+					{/* Back Button & Breadcrumbs */}
+					<div className="space-y-4">
+						<Link
+							to="/tools/claude-code"
+							className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							<span>Back to all releases</span>
+						</Link>
 
-							{/* Breadcrumbs with Logo */}
-							<nav className="flex items-center gap-3">
-								<div className="flex items-center gap-3">
-									<div className="[&>svg]:h-8 [&>svg]:w-8 [&>svg]:fill-foreground [&>svg_path]:fill-foreground">
-										<ClaudeAI />
-									</div>
-									<div className="flex items-center gap-2 text-sm">
-										<Link
-											to="/tools/claude-code"
-											className="font-mono text-foreground transition-colors hover:text-muted-foreground"
-										>
-											{release.tool.name}
-										</Link>
-										<ChevronRight className="h-4 w-4 text-muted-foreground" />
-										<span className="text-muted-foreground">Releases</span>
-										<ChevronRight className="h-4 w-4 text-muted-foreground" />
-										<span className="font-mono text-foreground">{version}</span>
-									</div>
+						{/* Breadcrumbs with Logo */}
+						<nav className="flex items-center gap-3">
+							<div className="flex items-center gap-3">
+								<div className="[&>svg]:h-8 [&>svg]:w-8 [&>svg]:fill-foreground [&>svg_path]:fill-foreground">
+									<ClaudeAI />
 								</div>
-							</nav>
+								<div className="flex items-center gap-2 text-sm">
+									<Link
+										to="/tools/claude-code"
+										className="font-mono text-foreground transition-colors hover:text-muted-foreground"
+									>
+										{release.tool.name}
+									</Link>
+									<ChevronRight className="h-4 w-4 text-muted-foreground" />
+									<span className="text-muted-foreground">Releases</span>
+									<ChevronRight className="h-4 w-4 text-muted-foreground" />
+									<span className="font-mono text-foreground">{version}</span>
+								</div>
+							</div>
+						</nav>
+					</div>
+
+					{/* Release Header */}
+					<div className="space-y-4 border-b border-border pb-8">
+						<div className="flex items-start justify-between gap-4">
+							<h1 className="font-mono text-4xl font-bold">{version}</h1>
+							<div className="flex items-center gap-2">
+								{release.tags.length > 0 && (
+									<div className="flex flex-wrap gap-2">
+										{release.tags.map((tag) => (
+											<Badge
+												key={tag}
+												variant={
+													tag === 'breaking' || tag === 'security'
+														? 'destructive'
+														: 'outline'
+												}
+												className="font-mono text-xs uppercase"
+											>
+												{tag}
+											</Badge>
+										))}
+									</div>
+								)}
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={copyPermalink}
+									className="gap-1 font-mono text-xs transition-all"
+								>
+									<Copy
+										className={`h-3 w-3 transition-all duration-300 ${
+											copied ? 'scale-110 text-green-500' : ''
+										}`}
+									/>
+									<span
+										className={`transition-all duration-300 ${
+											copied ? 'text-green-500' : ''
+										}`}
+									>
+										{copied ? 'Copied!' : 'Copy link'}
+									</span>
+								</Button>
+							</div>
 						</div>
 
-						{/* Release Header */}
-						<div className="space-y-4 border-b border-border pb-8">
-							<div className="flex items-start justify-between gap-4">
-								<h1 className="font-mono text-4xl font-bold">{version}</h1>
-								<div className="flex items-center gap-2">
-									{release.tags.length > 0 && (
-										<div className="flex flex-wrap gap-2">
-											{release.tags.map((tag) => (
-												<Badge
-													key={tag}
-													variant={
-														tag === 'breaking' || tag === 'security'
-															? 'destructive'
-															: 'outline'
-													}
-													className="font-mono text-xs uppercase"
-												>
-													{tag}
-												</Badge>
-											))}
-										</div>
-									)}
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={copyPermalink}
-										className="gap-1 font-mono text-xs"
+						<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+							<span>Released on {formattedDate}</span>
+							<span>•</span>
+							<span>
+								{release.changes.length}{' '}
+								{release.changes.length === 1 ? 'change' : 'changes'}
+							</span>
+							{release.sourceUrl && (
+								<>
+									<span>•</span>
+									<a
+										href={release.sourceUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex items-center gap-1 transition-colors hover:text-foreground"
 									>
-										<Copy className="h-3 w-3" />
-										{copied ? 'Copied!' : 'Copy link'}
-									</Button>
-								</div>
-							</div>
-
-							<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-								<span>Released on {formattedDate}</span>
-								<span>•</span>
-								<span>
-									{release.changes.length}{' '}
-									{release.changes.length === 1 ? 'change' : 'changes'}
-								</span>
-								{release.sourceUrl && (
-									<>
-										<span>•</span>
-										<a
-											href={release.sourceUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="flex items-center gap-1 transition-colors hover:text-foreground"
-										>
-											View source
-											<ExternalLink className="h-3 w-3" />
-										</a>
-									</>
-								)}
-							</div>
-
-							{release.summary && (
-								<p className="text-muted-foreground">{release.summary}</p>
+										View source
+										<ExternalLink className="h-3 w-3" />
+									</a>
+								</>
 							)}
 						</div>
 
-						{/* Filter Bar */}
-						<FilterBar showPlatformFilter />
-
-						{/* Changes by Type */}
-						{Object.values(groupedChanges).every(
-							(changes) => changes.length === 0,
-						) ? (
-							<div className="rounded-lg border border-border bg-card p-8 text-center">
-								<p className="text-muted-foreground">
-									{selectedTypes.length > 0 || selectedPlatforms.length > 0
-										? 'No changes match the selected filters.'
-										: 'No changes found in this release.'}
-								</p>
-							</div>
-						) : (
-							<Accordion
-								type="multiple"
-								defaultValue={defaultOpenSections}
-								className="space-y-0"
-							>
-								{sections.map((section) => {
-									const changes = groupedChanges[section.type]
-									if (!changes || changes.length === 0) return null
-
-									return (
-										<CollapsibleSection
-											key={section.type}
-											value={section.type}
-											title={section.title}
-											count={changes.length}
-										>
-											{changes.map((change) => (
-												<ChangeItem
-													key={change.id}
-													title={change.title}
-													description={change.description}
-													platform={change.platform}
-													isBreaking={change.isBreaking}
-													isSecurity={change.isSecurity}
-													isDeprecation={change.isDeprecation}
-													links={
-														change.links
-															? (change.links as Array<{
-																	url: string
-																	text: string
-																	type?: string
-																}>)
-															: null
-													}
-												/>
-											))}
-										</CollapsibleSection>
-									)
-								})}
-							</Accordion>
-						)}
-
-						{/* Version List at Bottom */}
-						{allVersions && (
-							<VersionList
-								toolSlug="claude-code"
-								currentVersion={version}
-								versions={allVersions}
-							/>
+						{release.summary && (
+							<p className="text-muted-foreground">{release.summary}</p>
 						)}
 					</div>
 
-					{/* Table of Contents */}
-					<ReleaseTOC sections={tocSections} />
+					{/* Changes by Type */}
+					{Object.values(groupedChanges).every(
+						(changes) => changes.length === 0,
+					) ? (
+						<div className="rounded-lg border border-border bg-card p-8 text-center">
+							<p className="text-muted-foreground">
+								No changes found in this release.
+							</p>
+						</div>
+					) : (
+						<Accordion
+							type="multiple"
+							defaultValue={defaultOpenSections}
+							className="space-y-0"
+						>
+							{sections.map((section) => {
+								const changes = groupedChanges[section.type]
+								if (!changes || changes.length === 0) return null
+
+								return (
+									<CollapsibleSection
+										key={section.type}
+										value={section.type}
+										title={section.title}
+										count={changes.length}
+									>
+										{changes.map((change) => (
+											<ChangeItem
+												key={change.id}
+												title={change.title}
+												description={change.description}
+												platform={change.platform}
+												isBreaking={change.isBreaking}
+												isSecurity={change.isSecurity}
+												isDeprecation={change.isDeprecation}
+												links={
+													change.links
+														? (change.links as Array<{
+																url: string
+																text: string
+																type?: string
+															}>)
+														: null
+												}
+											/>
+										))}
+									</CollapsibleSection>
+								)
+							})}
+						</Accordion>
+					)}
+
+					{/* Version List at Bottom */}
+					{allVersions && (
+						<VersionList
+							toolSlug="claude-code"
+							currentVersion={version}
+							versions={allVersions}
+						/>
+					)}
 				</div>
 			</div>
-		</>
+		</div>
 	)
 }

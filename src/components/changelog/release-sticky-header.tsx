@@ -1,7 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface ReleaseStickyHeaderProps {
 	toolSlug: string
@@ -24,8 +29,6 @@ export function ReleaseStickyHeader({
 	allVersions,
 	logo,
 }: ReleaseStickyHeaderProps) {
-	const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false)
-
 	return (
 		<div className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
 			<div className="container mx-auto max-w-7xl px-4">
@@ -40,62 +43,50 @@ export function ReleaseStickyHeader({
 						<span className="font-mono text-sm font-semibold">{version}</span>
 
 						{/* Version Switcher */}
-						<div className="relative">
-							<button
-								type="button"
-								onClick={() => setIsVersionDropdownOpen(!isVersionDropdownOpen)}
-								className="flex items-center gap-2 rounded border border-border bg-card px-3 py-1.5 text-sm font-mono transition-colors hover:border-accent"
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<button
+									type="button"
+									className="flex items-center gap-2 rounded border border-border bg-card px-3 py-1.5 text-sm font-mono transition-colors hover:border-accent"
+								>
+									Switch version
+									<ChevronRight className="h-3 w-3" />
+								</button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="start"
+								className="max-h-96 w-64 overflow-auto"
 							>
-								Switch version
-								<ChevronRight
-									className={`h-3 w-3 transition-transform ${
-										isVersionDropdownOpen ? 'rotate-90' : ''
-									}`}
-								/>
-							</button>
-
-							{/* Dropdown */}
-							{isVersionDropdownOpen && (
-								<>
-									{/* biome-ignore lint/a11y/useKeyWithClickEvents: This is an overlay backdrop that closes the dropdown */}
-									{/* biome-ignore lint/a11y/noStaticElementInteractions: This is an overlay backdrop that closes the dropdown */}
-									<div
-										className="fixed inset-0 z-40"
-										onClick={() => setIsVersionDropdownOpen(false)}
-									/>
-									<div className="absolute left-0 top-full z-50 mt-2 max-h-96 w-64 overflow-auto rounded-lg border border-border bg-card shadow-lg">
-										{allVersions.map((v) => (
-											<Link
-												key={v.version}
-												to="/tools/$toolSlug/releases/$version"
-												params={{ toolSlug, version: v.version }}
-												onClick={() => setIsVersionDropdownOpen(false)}
-												className={`block border-b border-border px-4 py-3 text-sm transition-colors hover:bg-accent last:border-b-0 ${
-													v.version === version
-														? 'bg-secondary font-semibold'
-														: ''
-												}`}
-											>
-												<div className="font-mono">{v.version}</div>
-												<div className="text-xs text-muted-foreground">
-													{v.releaseDate
-														? new Date(v.releaseDate).toLocaleDateString(
-																'en-US',
-																{
-																	year: 'numeric',
-																	month: 'short',
-																	day: 'numeric',
-																},
-															)
-														: 'Date unknown'}{' '}
-													• {v._count.changes} changes
-												</div>
-											</Link>
-										))}
-									</div>
-								</>
-							)}
-						</div>
+								{allVersions.map((v) => (
+									<DropdownMenuItem key={v.version} asChild>
+										<Link
+											to="/tools/claude-code/releases/$version"
+											params={{ version: v.version }}
+											className={`flex flex-col items-start gap-1 px-4 py-3 ${
+												v.version === version
+													? 'bg-secondary font-semibold'
+													: ''
+											}`}
+										>
+											<div className="font-mono">{v.version}</div>
+											<div className="text-xs text-muted-foreground">
+												{v.releaseDate
+													? new Date(v.releaseDate).toLocaleDateString(
+															'en-US',
+															{
+																year: 'numeric',
+																month: 'short',
+																day: 'numeric',
+															},
+														)
+													: 'Date unknown'}{' '}
+												• {v._count.changes} changes
+											</div>
+										</Link>
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 
 					{/* Navigation Buttons */}
@@ -109,8 +100,8 @@ export function ReleaseStickyHeader({
 						>
 							{prevVersion ? (
 								<Link
-									to="/tools/$toolSlug/releases/$version"
-									params={{ toolSlug, version: prevVersion }}
+									to="/tools/claude-code/releases/$version"
+									params={{ version: prevVersion }}
 								>
 									<ChevronLeft className="h-3 w-3" />
 									Prev
@@ -132,8 +123,8 @@ export function ReleaseStickyHeader({
 						>
 							{nextVersion ? (
 								<Link
-									to="/tools/$toolSlug/releases/$version"
-									params={{ toolSlug, version: nextVersion }}
+									to="/tools/claude-code/releases/$version"
+									params={{ version: nextVersion }}
 								>
 									Next
 									<ChevronRight className="h-3 w-3" />

@@ -1,5 +1,6 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Grid3x3, List } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export function ViewToggle() {
 	const navigate = useNavigate()
@@ -9,7 +10,7 @@ export function ViewToggle() {
 		platform?: string | string[]
 	}
 
-	const currentView = search.view || 'grid'
+	const currentView = search.view || 'timeline'
 
 	const handleViewChange = (view: 'grid' | 'timeline') => {
 		navigate({
@@ -30,7 +31,7 @@ export function ViewToggle() {
 				type="button"
 				onClick={() => handleViewChange('grid')}
 				aria-pressed={currentView === 'grid'}
-				className={`flex items-center gap-2 rounded-md px-3 py-2 font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground ${
+				className={`flex items-center gap-2 cursor-pointer rounded-md px-3 py-2 font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground  ${
 					currentView === 'grid'
 						? 'bg-foreground text-background'
 						: 'hover:bg-accent hover:text-foreground'
@@ -43,7 +44,7 @@ export function ViewToggle() {
 				type="button"
 				onClick={() => handleViewChange('timeline')}
 				aria-pressed={currentView === 'timeline'}
-				className={`flex items-center gap-2 rounded-md px-3 py-2 font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground ${
+				className={`flex items-center gap-2 cursor-pointer rounded-md px-3 py-2 font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground  ${
 					currentView === 'timeline'
 						? 'bg-foreground text-background'
 						: 'hover:bg-accent hover:text-foreground'
