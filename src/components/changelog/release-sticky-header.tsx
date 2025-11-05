@@ -7,6 +7,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { formatDate } from '@/lib/date-utils'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ReleaseStickyHeaderProps {
 	toolSlug: string
@@ -36,13 +38,15 @@ export function ReleaseStickyHeader({
 					{/* Version Display */}
 					<div className="flex items-center gap-4">
 						{logo && (
-							<Link to="/tools/claude-code">
+							<Link to="/tools/$slug" params={{ slug: toolSlug }}>
 								<div className="[&>svg]:h-6 [&>svg]:w-6 [&>svg]:fill-foreground [&>svg_path]:fill-foreground">
 									{logo}
 								</div>
 							</Link>
 						)}
-						<span className="font-mono text-sm font-semibold">{version}</span>
+						<span className="font-mono text-sm font-semibold">
+							{formatVersionForDisplay(version, toolSlug)}
+						</span>
 
 						{/* Version Switcher */}
 						<DropdownMenu>
@@ -62,27 +66,20 @@ export function ReleaseStickyHeader({
 								{allVersions.map((v) => (
 									<DropdownMenuItem key={v.version} asChild>
 										<Link
-											to="/tools/claude-code/releases/$version"
-											params={{ version: v.version }}
+											to="/tools/$slug/releases/$version"
+											params={{ slug: toolSlug, version: v.version }}
 											className={`flex flex-col items-start gap-1 px-4 py-3 ${
 												v.version === version
 													? 'bg-secondary font-semibold'
 													: ''
 											}`}
 										>
-											<div className="font-mono">{v.version}</div>
+											<div className="font-mono">
+												{formatVersionForDisplay(v.version, toolSlug)}
+											</div>
 											<div className="text-xs text-muted-foreground">
-												{v.releaseDate
-													? new Date(v.releaseDate).toLocaleDateString(
-															'en-US',
-															{
-																year: 'numeric',
-																month: 'short',
-																day: 'numeric',
-															},
-														)
-													: 'Date unknown'}{' '}
-												• {v._count.changes} changes
+												{formatDate(v.releaseDate, 'MMM d, yyyy')} •{' '}
+												{v._count.changes} changes
 											</div>
 										</Link>
 									</DropdownMenuItem>
@@ -102,8 +99,8 @@ export function ReleaseStickyHeader({
 						>
 							{prevVersion ? (
 								<Link
-									to="/tools/claude-code/releases/$version"
-									params={{ version: prevVersion }}
+									to="/tools/$slug/releases/$version"
+									params={{ slug: toolSlug, version: prevVersion }}
 								>
 									<ChevronLeft className="h-3 w-3" />
 									Prev
@@ -125,8 +122,8 @@ export function ReleaseStickyHeader({
 						>
 							{nextVersion ? (
 								<Link
-									to="/tools/claude-code/releases/$version"
-									params={{ version: nextVersion }}
+									to="/tools/$slug/releases/$version"
+									params={{ slug: toolSlug, version: nextVersion }}
 								>
 									Next
 									<ChevronRight className="h-3 w-3" />

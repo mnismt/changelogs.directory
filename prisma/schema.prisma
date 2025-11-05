@@ -124,8 +124,9 @@ model Release {
   tool     Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   // Version info
-  version     String // "2.0.31", "1.5.0-beta.1"
-  versionSort String // For semantic version sorting
+  version       String // "2.0.31", "1.5.0-beta.1"
+  versionSort   String // For semantic version sorting
+  isPrerelease  Boolean @default(false) // Whether this is a pre-release (alpha/beta/rc)
 
   // Dates
   releaseDate DateTime? // Actual release date (if available in source)
@@ -148,6 +149,7 @@ model Release {
   updatedAt DateTime @updatedAt
 
   @@unique([toolId, version])
+  @@index([toolId, isPrerelease])
   @@index([toolId, releaseDate(sort: Desc)])
   @@index([publishedAt(sort: Desc)])
   @@map("release")

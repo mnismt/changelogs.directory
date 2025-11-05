@@ -1,10 +1,12 @@
-import { format } from 'date-fns'
 import { Calendar, ExternalLink, Github, Home, Package } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { formatDate } from '@/lib/date-utils'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ToolHeaderProps {
+	slug: string
 	name: string
 	vendor: string
 	description?: string | null
@@ -21,6 +23,7 @@ interface ToolHeaderProps {
 }
 
 export function ToolHeader({
+	slug,
 	name,
 	vendor,
 	description,
@@ -35,12 +38,12 @@ export function ToolHeader({
 	tags,
 	logo,
 }: ToolHeaderProps) {
-	const formatDate = (date?: Date | null) => {
+	const formatDateValue = (date?: Date | null) => {
 		if (!date) return 'Unknown'
-		return format(new Date(date), 'MMM d, yyyy')
+		return formatDate(date)
 	}
 
-	const lastSynced = formatDate(lastFetchedAt)
+	const lastSynced = formatDateValue(lastFetchedAt)
 
 	return (
 		<div className="space-y-6 border-b border-border pb-8">
@@ -91,10 +94,10 @@ export function ToolHeader({
 							</div>
 							<div className="space-y-0.5">
 								<div className="font-mono text-sm font-semibold">
-									{latestVersion}
+									{formatVersionForDisplay(latestVersion, slug)}
 								</div>
 								<div className="font-mono text-xs text-muted-foreground">
-									{formatDate(latestReleaseDate)}
+									{formatDateValue(latestReleaseDate)}
 								</div>
 							</div>
 						</div>
@@ -108,10 +111,10 @@ export function ToolHeader({
 							</div>
 							<div className="space-y-0.5">
 								<div className="font-mono text-sm font-semibold">
-									{firstVersion}
+									{formatVersionForDisplay(firstVersion, slug)}
 								</div>
 								<div className="font-mono text-xs text-muted-foreground">
-									{formatDate(firstReleaseDate)}
+									{formatDateValue(firstReleaseDate)}
 								</div>
 							</div>
 						</div>

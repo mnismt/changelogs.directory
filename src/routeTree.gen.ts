@@ -10,58 +10,54 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ToolsClaudeCodeIndexRouteImport } from './routes/tools/claude-code/index'
-import { Route as ToolsClaudeCodeReleasesVersionRouteImport } from './routes/tools/claude-code/releases/$version'
+import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
+import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ToolsClaudeCodeIndexRoute = ToolsClaudeCodeIndexRouteImport.update({
-  id: '/tools/claude-code/',
-  path: '/tools/claude-code/',
+const ToolsSlugIndexRoute = ToolsSlugIndexRouteImport.update({
+  id: '/tools/$slug/',
+  path: '/tools/$slug/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ToolsClaudeCodeReleasesVersionRoute =
-  ToolsClaudeCodeReleasesVersionRouteImport.update({
-    id: '/tools/claude-code/releases/$version',
-    path: '/tools/claude-code/releases/$version',
+const ToolsSlugReleasesVersionRoute =
+  ToolsSlugReleasesVersionRouteImport.update({
+    id: '/tools/$slug/releases/$version',
+    path: '/tools/$slug/releases/$version',
     getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/tools/claude-code': typeof ToolsClaudeCodeIndexRoute
-  '/tools/claude-code/releases/$version': typeof ToolsClaudeCodeReleasesVersionRoute
+  '/tools/$slug': typeof ToolsSlugIndexRoute
+  '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/tools/claude-code': typeof ToolsClaudeCodeIndexRoute
-  '/tools/claude-code/releases/$version': typeof ToolsClaudeCodeReleasesVersionRoute
+  '/tools/$slug': typeof ToolsSlugIndexRoute
+  '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/tools/claude-code/': typeof ToolsClaudeCodeIndexRoute
-  '/tools/claude-code/releases/$version': typeof ToolsClaudeCodeReleasesVersionRoute
+  '/tools/$slug/': typeof ToolsSlugIndexRoute
+  '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/tools/claude-code' | '/tools/claude-code/releases/$version'
+  fullPaths: '/' | '/tools/$slug' | '/tools/$slug/releases/$version'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tools/claude-code' | '/tools/claude-code/releases/$version'
-  id:
-    | '__root__'
-    | '/'
-    | '/tools/claude-code/'
-    | '/tools/claude-code/releases/$version'
+  to: '/' | '/tools/$slug' | '/tools/$slug/releases/$version'
+  id: '__root__' | '/' | '/tools/$slug/' | '/tools/$slug/releases/$version'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ToolsClaudeCodeIndexRoute: typeof ToolsClaudeCodeIndexRoute
-  ToolsClaudeCodeReleasesVersionRoute: typeof ToolsClaudeCodeReleasesVersionRoute
+  ToolsSlugIndexRoute: typeof ToolsSlugIndexRoute
+  ToolsSlugReleasesVersionRoute: typeof ToolsSlugReleasesVersionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -73,18 +69,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tools/claude-code/': {
-      id: '/tools/claude-code/'
-      path: '/tools/claude-code'
-      fullPath: '/tools/claude-code'
-      preLoaderRoute: typeof ToolsClaudeCodeIndexRouteImport
+    '/tools/$slug/': {
+      id: '/tools/$slug/'
+      path: '/tools/$slug'
+      fullPath: '/tools/$slug'
+      preLoaderRoute: typeof ToolsSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tools/claude-code/releases/$version': {
-      id: '/tools/claude-code/releases/$version'
-      path: '/tools/claude-code/releases/$version'
-      fullPath: '/tools/claude-code/releases/$version'
-      preLoaderRoute: typeof ToolsClaudeCodeReleasesVersionRouteImport
+    '/tools/$slug/releases/$version': {
+      id: '/tools/$slug/releases/$version'
+      path: '/tools/$slug/releases/$version'
+      fullPath: '/tools/$slug/releases/$version'
+      preLoaderRoute: typeof ToolsSlugReleasesVersionRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -92,8 +88,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ToolsClaudeCodeIndexRoute: ToolsClaudeCodeIndexRoute,
-  ToolsClaudeCodeReleasesVersionRoute: ToolsClaudeCodeReleasesVersionRoute,
+  ToolsSlugIndexRoute: ToolsSlugIndexRoute,
+  ToolsSlugReleasesVersionRoute: ToolsSlugReleasesVersionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

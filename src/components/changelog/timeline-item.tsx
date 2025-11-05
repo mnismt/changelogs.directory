@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
 import { Package } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -9,9 +8,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import { formatDate } from '@/lib/date-utils'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 import { ChangeCount } from './change-count'
 
 interface TimelineItemProps {
+	toolSlug: string
 	version: string
 	releaseDate?: Date | null
 	summary?: string | null
@@ -22,6 +24,7 @@ interface TimelineItemProps {
 }
 
 export function TimelineItem({
+	toolSlug,
 	version,
 	releaseDate,
 	summary,
@@ -30,9 +33,7 @@ export function TimelineItem({
 	isLast = false,
 	isLeft = true,
 }: TimelineItemProps) {
-	const formattedDate = releaseDate
-		? format(new Date(releaseDate), 'MMM d, yyyy')
-		: 'Date unknown'
+	const formattedDate = formatDate(releaseDate)
 
 	const ariaLabel = `Version ${version}${releaseDate ? ` released on ${formattedDate}` : ''}`
 
@@ -56,8 +57,8 @@ export function TimelineItem({
 			{/* Left content (or empty space) */}
 			{isLeft ? (
 				<Link
-					to="/tools/claude-code/releases/$version"
-					params={{ version }}
+					to="/tools/$slug/releases/$version"
+					params={{ slug: toolSlug, version }}
 					className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 					aria-label={ariaLabel}
 				>
@@ -67,7 +68,9 @@ export function TimelineItem({
 								<div className="space-y-1">
 									<CardTitle className="flex items-center font-mono text-xl">
 										<Package className="size-5" />
-										<span className="ml-2">{version}</span>
+										<span className="ml-2">
+											{formatVersionForDisplay(version, toolSlug)}
+										</span>
 									</CardTitle>
 									<CardDescription className="text-muted-foreground">
 										{formattedDate}
@@ -134,8 +137,8 @@ export function TimelineItem({
 			{/* Right content (or empty space) */}
 			{!isLeft ? (
 				<Link
-					to="/tools/claude-code/releases/$version"
-					params={{ version }}
+					to="/tools/$slug/releases/$version"
+					params={{ slug: toolSlug, version }}
 					className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 					aria-label={ariaLabel}
 				>
@@ -145,7 +148,9 @@ export function TimelineItem({
 								<div className="space-y-1">
 									<CardTitle className="flex items-center font-mono text-xl">
 										<Package className="size-5" />
-										<span className="ml-2">{version}</span>
+										<span className="ml-2">
+											{formatVersionForDisplay(version, toolSlug)}
+										</span>
 									</CardTitle>
 									<CardDescription className="text-muted-foreground">
 										{formattedDate}
