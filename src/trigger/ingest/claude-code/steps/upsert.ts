@@ -62,7 +62,6 @@ export async function upsertStep(
 					contentHash: parsedRelease.contentHash,
 					title: parsedRelease.title,
 					summary: parsedRelease.summary,
-					tags: parsedRelease.tags,
 					changes: {
 						create: parsedRelease.changes.map((change) => ({
 							type: change.type,
@@ -100,7 +99,6 @@ export async function upsertStep(
 					contentHash: parsedRelease.contentHash,
 					title: parsedRelease.title,
 					summary: parsedRelease.summary,
-					tags: parsedRelease.tags,
 					changes: {
 						create: parsedRelease.changes.map((change) => ({
 							type: change.type,

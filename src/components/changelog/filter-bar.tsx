@@ -54,23 +54,21 @@ export function FilterBar({ showPlatformFilter = false }: FilterBarProps) {
 			? selectedTypes.filter((t) => t !== type)
 			: [...selectedTypes, type]
 
-		const params = new URLSearchParams()
+		const searchObj: Record<string, string | string[]> = {}
 
 		if (newTypes.length > 0) {
-			for (const t of newTypes) {
-				params.append('type', t)
-			}
+			searchObj.type = newTypes.length === 1 ? newTypes[0] : newTypes
 		}
 
 		if (selectedPlatforms.length > 0) {
-			for (const p of selectedPlatforms) {
-				params.append('platform', p)
-			}
+			searchObj.platform =
+				selectedPlatforms.length === 1
+					? selectedPlatforms[0]
+					: selectedPlatforms
 		}
 
-		const newSearch = params.toString()
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
-		navigate({ search: newSearch ? `?${newSearch}` : '' } as any)
+		navigate({ search: searchObj } as any)
 	}
 
 	const togglePlatform = (platform: string) => {
@@ -78,28 +76,25 @@ export function FilterBar({ showPlatformFilter = false }: FilterBarProps) {
 			? selectedPlatforms.filter((p) => p !== platform)
 			: [...selectedPlatforms, platform]
 
-		const params = new URLSearchParams()
+		const searchObj: Record<string, string | string[]> = {}
 
 		if (selectedTypes.length > 0) {
-			for (const t of selectedTypes) {
-				params.append('type', t)
-			}
+			searchObj.type =
+				selectedTypes.length === 1 ? selectedTypes[0] : selectedTypes
 		}
 
 		if (newPlatforms.length > 0) {
-			for (const p of newPlatforms) {
-				params.append('platform', p)
-			}
+			searchObj.platform =
+				newPlatforms.length === 1 ? newPlatforms[0] : newPlatforms
 		}
 
-		const newSearch = params.toString()
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
-		navigate({ search: newSearch ? `?${newSearch}` : '' } as any)
+		navigate({ search: searchObj } as any)
 	}
 
 	const clearFilters = () => {
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
-		navigate({ search: '' } as any)
+		navigate({ search: {} } as any)
 	}
 
 	return (

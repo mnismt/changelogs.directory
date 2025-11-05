@@ -49,25 +49,8 @@ function ClaudeCodePage() {
 
 		// Filter releases that have changes matching the selected types
 		return tool.releases.filter((release) => {
-			// Check if release has any of the selected types in its tags
-			const hasMatchingType = release.tags.some((tag) => {
-				// Map common tag names to filter types
-				const tagMap: Record<string, string[]> = {
-					breaking: ['BREAKING'],
-					security: ['SECURITY'],
-					feature: ['FEATURE'],
-					improvement: ['IMPROVEMENT'],
-					performance: ['PERFORMANCE'],
-					deprecation: ['DEPRECATION'],
-					docs: ['DOCUMENTATION'],
-					documentation: ['DOCUMENTATION'],
-				}
-
-				const mappedTypes = tagMap[tag.toLowerCase()] || []
-				return selectedTypes.some((type) => mappedTypes.includes(type))
-			})
-
-			return hasMatchingType
+			// Check if release has any of the selected types in changesByType
+			return selectedTypes.some((type) => release.changesByType?.[type])
 		})
 	}, [tool?.releases, selectedTypes])
 
@@ -126,8 +109,8 @@ function ClaudeCodePage() {
 								version={release.version}
 								releaseDate={release.releaseDate}
 								summary={release.summary}
-								tags={release.tags}
 								changeCount={release._count.changes}
+								changesByType={release.changesByType}
 							/>
 						))}
 					</div>

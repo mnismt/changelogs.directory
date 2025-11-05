@@ -81,7 +81,6 @@ export function createMockRelease(overrides?: Partial<Parameters<PrismaClient['r
 		contentHash: '4b6f114c7c6cec0c7c1e77ba52b9986c018cfe11687e38636c577ebf6b603a70',
 		title: null,
 		summary: 'This release focuses on improving usability...',
-		tags: [],
 		createdAt: new Date('2025-11-02T08:29:30.198Z'),
 		updatedAt: new Date('2025-11-02T08:29:30.198Z'),
 		...overrides,
@@ -121,7 +120,6 @@ export function createMockParsedRelease(overrides?: Partial<ParsedRelease>): Par
 		releaseDate: undefined,
 		title: undefined,
 		summary: 'This release focuses on improving usability...',
-		tags: [],
 		rawContent: '## 2.0.31\n- Windows: native installation...',
 		contentHash: '4b6f114c7c6cec0c7c1e77ba52b9986c018cfe11687e38636c577ebf6b603a70',
 		changes: [

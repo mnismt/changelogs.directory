@@ -30,15 +30,17 @@ export function ReleaseStickyHeader({
 	logo,
 }: ReleaseStickyHeaderProps) {
 	return (
-		<div className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+		<div className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
 			<div className="container mx-auto max-w-7xl px-4">
 				<div className="flex h-14 items-center justify-between gap-4">
 					{/* Version Display */}
 					<div className="flex items-center gap-4">
 						{logo && (
-							<div className="[&>svg]:h-6 [&>svg]:w-6 [&>svg]:fill-foreground [&>svg_path]:fill-foreground">
-								{logo}
-							</div>
+							<Link to="/tools/claude-code">
+								<div className="[&>svg]:h-6 [&>svg]:w-6 [&>svg]:fill-foreground [&>svg_path]:fill-foreground">
+									{logo}
+								</div>
+							</Link>
 						)}
 						<span className="font-mono text-sm font-semibold">{version}</span>
 
@@ -47,7 +49,7 @@ export function ReleaseStickyHeader({
 							<DropdownMenuTrigger asChild>
 								<button
 									type="button"
-									className="flex items-center gap-2 rounded border border-border bg-card px-3 py-1.5 text-sm font-mono transition-colors hover:border-accent"
+									className="cursor-pointer flex items-center gap-2 rounded border border-border bg-card px-3 py-1.5 text-sm font-mono transition-colors hover:border-accent"
 								>
 									Switch version
 									<ChevronRight className="h-3 w-3" />
