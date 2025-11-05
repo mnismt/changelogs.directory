@@ -62,6 +62,7 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 
 ## Core features (MVP)
 
+- Launch requirement: Connectors and UI coverage for both Claude Code and OpenAI Codex must be live before launch.
 - **✅ COMPLETED** - Waitlist subscription with email validation and duplicate checking for launch notifications.
 - Aggregated "What's new" feed, per-tool release lists, and release details with grouped change types and direct source attribution.
 - Version diff for CLI tools by comparing normalized change arrays between two selected versions.
@@ -84,7 +85,7 @@ A comprehensive directory that automatically tracks, curates, and presents chang
   - ✅ Homepage with hero section and waitlist form
   - ✅ Trigger.dev integration set up for background jobs
   - ✅ Database schema designed (see `docs/DATABASE_SCHEMA.md`)
-- Week 2: Implement Tool/Release/Change models, Claude Code changelog connector with Trigger.dev task, and `/tools/claude-code` page with releases list.
+- Week 2: Implement connectors and Trigger.dev tasks for Claude Code and OpenAI Codex, and build `/tools/claude-code` and `/tools/codex` pages with releases lists.
 - Week 3: Implement AMP Code connector, expand tool directory, plus global feed with multi-tool support.
 - Week 4: Search, filters, RSS, cache strategy, internal status page, and production deployment with scheduled ingestion.
 

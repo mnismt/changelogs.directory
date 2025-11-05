@@ -6,7 +6,7 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 
 ## Phase 1: Database & Ingestion Pipeline
 
-**Goal**: Get Claude Code changelog data flowing into the database.
+**Goal**: Get Claude Code and OpenAI Codex changelog data flowing into the database.
 
 - [x] Implement Prisma schema (Tool, Release, Change, FetchLog models)
 - [x] Run migrations and seed Claude Code tool record
@@ -14,22 +14,28 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 - [x] Create Trigger.dev ingestion task (`src/trigger/ingest-claude-code.ts`)
 - [x] Test ingestion manually - verify data in database
 - [x] Schedule Trigger.dev task (every 6 hours)
+- [ ] Seed OpenAI Codex tool record
+- [ ] Create Trigger.dev ingestion task (`src/trigger/ingest-codex.ts`)
+- [ ] Test ingestion manually - verify Codex data in database
+- [ ] Schedule Trigger.dev task (every 6 hours) for Codex
 
-**Success metric**: Claude Code releases appear in database after ingestion runs.
+**Success metric**: Claude Code and OpenAI Codex releases appear in database after ingestion runs.
 
 ---
 
 ## Phase 2: Core UI Pages
 
-**Goal**: Users can browse Claude Code releases and changes.
+**Goal**: Users can browse Claude Code and OpenAI Codex releases and changes.
 
 - [ ] Build `/tools/claude-code` page (tool overview + releases list)
 - [ ] Build `/tools/claude-code/releases/[version]` page (release details with changes)
+- [ ] Build `/tools/codex` page (tool overview + releases list)
+- [ ] Build `/tools/codex/releases/[version]` page (release details with changes)
 - [ ] Implement basic filtering (by change type: feature/bugfix/breaking)
 - [ ] Add platform badges/filters (Windows, macOS, VSCode, etc.)
 - [ ] Style with monochrome dark theme (matching design system)
 
-**Success metric**: Users can view Claude Code's latest releases and filter changes.
+**Success metric**: Users can view Claude Code and OpenAI Codex latest releases and filter changes.
 
 ---
 
@@ -38,11 +44,11 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 **Goal**: Discoverable landing page showing latest updates across tools.
 
 - [ ] Build `/` homepage with "What's new" feed (latest releases)
-- [ ] Add `/tools` directory page (list of tracked tools - just Claude Code for now)
+- [ ] Add `/tools` directory page (list of tracked tools - Claude Code and OpenAI Codex)
 - [ ] Implement basic search/filter on homepage (by tool, change type, date range)
 - [ ] Add "Subscribe to updates" CTA (link to existing waitlist)
 
-**Success metric**: Homepage shows recent Claude Code releases in a feed format.
+**Success metric**: Homepage shows recent Claude Code and OpenAI Codex releases in a feed format.
 
 ---
 
@@ -66,7 +72,7 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 
 **Expansion**: Add more tools and features.
 
-- [ ] Add 2nd tool (OpenAI Codex or AMP Code)
+- [ ] Add AMP Code connector
 - [ ] Implement version comparison/diff view
 - [ ] Generate RSS/Atom feeds (global + per-tool)
 - [ ] Add full-text search across changes
