@@ -1,6 +1,5 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Grid3x3, List } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 export function ViewToggle() {
 	const navigate = useNavigate()
