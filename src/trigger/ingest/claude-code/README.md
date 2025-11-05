@@ -25,7 +25,8 @@ Fetches `CHANGELOG.md` from GitHub, extracts release dates from Git history, par
 - Extract version numbers from commit patches (e.g., `+## 2.0.33`)
 - Build `Map<version, Date>` mapping versions to commit dates
 - Supports optional `GITHUB_TOKEN` env var for higher rate limits (5000/hr vs 60/hr)
-- **Graceful degradation**: If GitHub API fails, continues without dates
+- **Redis cache**: Commit detail responses are cached for 90 days to avoid repeat fetches
+- **Graceful degradation**: If GitHub API or Redis fails, continues without dates/cache
 - **Use case**: Solves the problem of changelogs without dates in headers (e.g., Claude Code)
 
 ### Phase 3: Parse
@@ -198,9 +199,13 @@ Trace release dates through Git commit history:
 - **Recommendation**: Set `GITHUB_TOKEN` environment variable
 
 ### Configuration
-Optional environment variable:
+Optional environment variables:
 ```bash
+# Increases GitHub rate limit to 5,000/hour
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+
+# Upstash Redis (used to cache immutable commit details)
+REDIS_URL=rediss://default:***@<your-upstash-host>:6379
 ```
 
 ## Error Handling
@@ -209,6 +214,15 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 - Task retries handled by Trigger.dev retry logic
 - Partial context recovery attempts on failure
 - **Phase 2.5 failures are non-blocking** (gracefully continues without dates)
+
+## Caching (Commit Details)
+
+- Backend: Upstash Redis, configured via `REDIS_URL`
+- Scope: Only caches GitHub commit details (`/commits/{sha}`) because they are immutable
+- Key: `github:commit:{owner}:{repo}:{sha}`
+- TTL: 90 days
+- Behavior: Cache HIT → sub-ms; MISS → fetch from GitHub and cache
+- Resilience: If Redis unavailable, pipeline continues without caching
 
 ## Configuration
 

@@ -43,7 +43,7 @@ importers:
         version: 8.19.4
       '@tanstack/nitro-v2-vite-plugin':
         specifier: ^1.133.19
-        version: 1.133.19(vite@7.1.12(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 1.133.19(@upstash/redis@1.35.6)(vite@7.1.12(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@tanstack/react-devtools':
         specifier: ^0.7.0
         version: 0.7.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(csstype@3.1.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
@@ -74,6 +74,9 @@ importers:
       '@trigger.dev/sdk':
         specifier: 4.0.6
         version: 4.0.6(ai@5.0.86(zod@4.1.12))(zod@4.1.12)
+      '@upstash/redis':
+        specifier: ^1.35.6
+        version: 1.35.6
       ai:
         specifier: ^5.0.86
         version: 5.0.86(zod@4.1.12)
@@ -2590,6 +2593,9 @@ packages:
 
   '@types/tinycolor2@1.4.6':
     resolution: {integrity: sha512-iEN8J0BoMnsWBqjVbWH/c0G0Hh7O21lpR2/+PrvAVgWdzL7eexIFm4JN/Wn10PTcmNdtS6U67r499mlWMXOxNw==}
+
+  '@upstash/redis@1.35.6':
+    resolution: {integrity: sha512-aSEIGJgJ7XUfTYvhQcQbq835re7e/BXjs8Janq6Pvr6LlmTZnyqwT97RziZLO/8AVUL037RLXqqiQC6kCt+5pA==}
 
   '@vercel/nft@0.30.3':
     resolution: {integrity: sha512-UEq+eF0ocEf9WQCV1gktxKhha36KDs7jln5qii6UpPf5clMqDc0p3E7d9l2Smx0i9Pm1qpq4S4lLfNl97bbv6w==}
@@ -7499,9 +7505,9 @@ snapshots:
     dependencies:
       remove-accents: 0.5.0
 
-  '@tanstack/nitro-v2-vite-plugin@1.133.19(vite@7.1.12(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@tanstack/nitro-v2-vite-plugin@1.133.19(@upstash/redis@1.35.6)(vite@7.1.12(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
-      nitropack: 2.12.9
+      nitropack: 2.12.9(@upstash/redis@1.35.6)
       pathe: 2.0.3
       vite: 7.1.12(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
@@ -8046,6 +8052,10 @@ snapshots:
   '@types/retry@0.12.2': {}
 
   '@types/tinycolor2@1.4.6': {}
+
+  '@upstash/redis@1.35.6':
+    dependencies:
+      uncrypto: 0.1.3
 
   '@vercel/nft@0.30.3(rollup@4.52.5)':
     dependencies:
@@ -9769,7 +9779,7 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  nitropack@2.12.9:
+  nitropack@2.12.9(@upstash/redis@1.35.6):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@rollup/plugin-alias': 5.1.1(rollup@4.52.5)
@@ -9836,7 +9846,7 @@ snapshots:
       unenv: 2.0.0-rc.23
       unimport: 5.5.0
       unplugin-utils: 0.3.1
-      unstorage: 1.17.1(db0@0.3.4)(ioredis@5.8.2)
+      unstorage: 1.17.1(@upstash/redis@1.35.6)(db0@0.3.4)(ioredis@5.8.2)
       untyped: 2.0.0
       unwasm: 0.3.11
       youch: 4.1.0-beta.11
@@ -10933,7 +10943,7 @@ snapshots:
       picomatch: 4.0.3
       webpack-virtual-modules: 0.6.2
 
-  unstorage@1.17.1(db0@0.3.4)(ioredis@5.8.2):
+  unstorage@1.17.1(@upstash/redis@1.35.6)(db0@0.3.4)(ioredis@5.8.2):
     dependencies:
       anymatch: 3.1.3
       chokidar: 4.0.3
@@ -10944,6 +10954,7 @@ snapshots:
       ofetch: 1.5.0
       ufo: 1.6.1
     optionalDependencies:
+      '@upstash/redis': 1.35.6
       db0: 0.3.4
       ioredis: 5.8.2
 
