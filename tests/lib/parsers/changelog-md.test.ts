@@ -167,6 +167,68 @@ No releases yet.
 		expect(releases[0].version).toBe('2.0.31')
 		expect(releases[0].changes.length).toBeGreaterThan(0)
 	})
+
+	it('should use version dates from Git history as fallback', () => {
+		const markdown = `## 2.0.31
+- Feature one
+
+## 2.0.30
+- Bug fix
+`
+
+		const versionDates = new Map<string, Date>([
+			['2.0.31', new Date('2024-01-15')],
+			['2.0.30', new Date('2024-01-10')],
+		])
+
+		const releases = parseChangelogMd(markdown, versionDates)
+
+		expect(releases[0].releaseDate).toEqual(new Date('2024-01-15'))
+		expect(releases[1].releaseDate).toEqual(new Date('2024-01-10'))
+	})
+
+	it('should prioritize header dates over version dates', () => {
+		const markdown = `## 2.0.31 - 2024-01-20
+- Feature one
+
+## 2.0.30
+- Bug fix
+`
+
+		const versionDates = new Map<string, Date>([
+			['2.0.31', new Date('2024-01-15')],
+			['2.0.30', new Date('2024-01-10')],
+		])
+
+		const releases = parseChangelogMd(markdown, versionDates)
+
+		// Header date takes precedence for 2.0.31
+		expect(releases[0].releaseDate).toEqual(new Date('2024-01-20'))
+		// Fallback to version dates for 2.0.30
+		expect(releases[1].releaseDate).toEqual(new Date('2024-01-10'))
+	})
+
+	it('should handle missing version dates gracefully', () => {
+		const markdown = `## 2.0.31
+- Feature one
+`
+
+		const versionDates = new Map<string, Date>()
+
+		const releases = parseChangelogMd(markdown, versionDates)
+
+		expect(releases[0].releaseDate).toBeUndefined()
+	})
+
+	it('should work without version dates parameter', () => {
+		const markdown = `## 2.0.31
+- Feature one
+`
+
+		const releases = parseChangelogMd(markdown)
+
+		expect(releases[0].releaseDate).toBeUndefined()
+	})
 })
 
 describe('generateVersionSort', () => {

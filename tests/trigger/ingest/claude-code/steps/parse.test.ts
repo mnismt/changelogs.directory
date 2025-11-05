@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { parseStep } from '@/trigger/ingest/claude-code/steps/parse'
 import { loadChangelogFixture } from 'tests/helpers/fixtures'
-import type { FetchResult } from '@/trigger/ingest/claude-code/types'
+import type {
+	FetchDatesResult,
+	FetchResult,
+} from '@/trigger/ingest/claude-code/types'
 
 describe('parseStep', () => {
 	it('should convert markdown to ParsedRelease array', () => {
@@ -97,6 +100,47 @@ describe('parseStep', () => {
 		const result = parseStep(fetchResult)
 
 		expect(result.releases).toHaveLength(0)
+	})
+
+	it('should pass version dates to parser', () => {
+		const markdown = `## 2.0.31
+- Feature one
+
+## 2.0.30
+- Bug fix
+`
+
+		const fetchResult: FetchResult = {
+			markdown,
+			etag: null,
+		}
+
+		const fetchDatesResult: FetchDatesResult = {
+			versionDates: new Map([
+				['2.0.31', new Date('2024-01-15')],
+				['2.0.30', new Date('2024-01-10')],
+			]),
+		}
+
+		const result = parseStep(fetchResult, fetchDatesResult)
+
+		expect(result.releases[0].releaseDate).toEqual(new Date('2024-01-15'))
+		expect(result.releases[1].releaseDate).toEqual(new Date('2024-01-10'))
+	})
+
+	it('should work without version dates', () => {
+		const markdown = `## 2.0.31
+- Feature one
+`
+
+		const fetchResult: FetchResult = {
+			markdown,
+			etag: null,
+		}
+
+		const result = parseStep(fetchResult)
+
+		expect(result.releases[0].releaseDate).toBeUndefined()
 	})
 })
 

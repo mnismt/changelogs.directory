@@ -37,8 +37,13 @@ export interface ParsedRelease {
  * Parses a CHANGELOG.md file and extracts RAW structured release data
  * Does NOT perform LLM classification - returns unclassified data
  * Use enrichReleaseWithLLM() to add intelligent classification and summaries
+ * @param markdown The changelog markdown content
+ * @param versionDates Optional map of version strings to release dates (from Git history)
  */
-export function parseChangelogMd(markdown: string): ParsedRelease[] {
+export function parseChangelogMd(
+	markdown: string,
+	versionDates?: Map<string, Date>,
+): ParsedRelease[] {
 	const releases: ParsedRelease[] = []
 
 	// Split changelog by version headers (## 2.0.31, ## 1.5.0-beta.1, etc.)
@@ -62,12 +67,20 @@ export function parseChangelogMd(markdown: string): ParsedRelease[] {
 		const endIndex = next ? next.index : markdown.length
 		const rawContent = markdown.substring(startIndex, endIndex).trim()
 
-		// Extract release date from the header line if present (e.g., "## 2.0.31 - 2024-01-15")
+		// Extract release date from multiple sources (priority order):
+		// 1. Header line (e.g., "## 2.0.31 - 2024-01-15")
+		// 2. Git commit history (versionDates map)
+		// 3. undefined (no date available)
 		const headerLine = rawContent.split('\n')[0]
 		const dateMatch = headerLine.match(
 			/\d{4}-\d{2}-\d{2}|\d{1,2}\s+\w+\s+\d{4}/,
 		)
-		const releaseDate = dateMatch ? parseDate(dateMatch[0]) : undefined
+		let releaseDate = dateMatch ? parseDate(dateMatch[0]) : undefined
+
+		// Fallback to Git commit date if no date in header
+		if (!releaseDate && versionDates) {
+			releaseDate = versionDates.get(current.version)
+		}
 
 		// Parse changes from bullet points (extraction only, no classification)
 		const changes = parseChanges(rawContent)
