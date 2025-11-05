@@ -12,9 +12,182 @@ const releaseParamsSchema = z.object({
 	version: z.string().min(1, 'Version is required'),
 })
 
+const paginatedReleasesSchema = z.object({
+	slug: z.string().min(1, 'Tool slug is required'),
+	limit: z.number().int().min(1).max(100).default(20),
+	offset: z.number().int().min(0).default(0),
+})
+
+/**
+ * Get tool metadata (without releases)
+ * Used for tool header display
+ */
+export const getToolMetadata = createServerFn({ method: 'GET' })
+	.inputValidator((data) => {
+		const result = toolSlugSchema.safeParse(data)
+		if (!result.success) {
+			const message = result.error.issues[0]?.message || 'Invalid tool slug'
+			throw new Error(message)
+		}
+		return result.data
+	})
+	.handler(async ({ data }) => {
+		const prisma = getPrisma()
+
+		try {
+			const tool = await prisma.tool.findUnique({
+				where: { slug: data.slug },
+				select: {
+					id: true,
+					name: true,
+					slug: true,
+					vendor: true,
+					description: true,
+					homepage: true,
+					repositoryUrl: true,
+					lastFetchedAt: true,
+					tags: true,
+					_count: {
+						select: { releases: true },
+					},
+				},
+			})
+
+			if (!tool) {
+				throw new Error('Tool not found')
+			}
+
+			// Get latest and first release for header stats
+			const latestRelease = await prisma.release.findFirst({
+				where: { toolId: tool.id },
+				orderBy: { releaseDate: 'desc' },
+				select: { version: true, releaseDate: true },
+			})
+
+			const firstRelease = await prisma.release.findFirst({
+				where: { toolId: tool.id },
+				orderBy: { releaseDate: 'asc' },
+				select: { version: true, releaseDate: true },
+			})
+
+			return {
+				...tool,
+				latestVersion: latestRelease?.version || null,
+				latestReleaseDate: latestRelease?.releaseDate || null,
+				firstVersion: firstRelease?.version || null,
+				firstReleaseDate: firstRelease?.releaseDate || null,
+			}
+		} catch (error: unknown) {
+			console.error('Error fetching tool metadata:', error)
+			if (error instanceof Error) {
+				if (error.message === 'Tool not found') {
+					throw error
+				}
+				console.error('Database error fetching tool metadata:', error)
+			}
+			throw new Error('Failed to fetch tool metadata')
+		}
+	})
+
+/**
+ * Get paginated releases for a tool with change-type aggregation
+ * Used for infinite scroll on tool overview page
+ */
+export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
+	.inputValidator((data) => {
+		const result = paginatedReleasesSchema.safeParse(data)
+		if (!result.success) {
+			const message =
+				result.error.issues[0]?.message || 'Invalid pagination parameters'
+			throw new Error(message)
+		}
+		return result.data
+	})
+	.handler(async ({ data }) => {
+		const prisma = getPrisma()
+
+		try {
+			// Verify tool exists
+			const tool = await prisma.tool.findUnique({
+				where: { slug: data.slug },
+				select: { id: true },
+			})
+
+			if (!tool) {
+				throw new Error('Tool not found')
+			}
+
+			// Get total count for pagination metadata
+			const totalCount = await prisma.release.count({
+				where: { toolId: tool.id },
+			})
+
+			// Fetch paginated releases
+			const releases = await prisma.release.findMany({
+				where: { toolId: tool.id },
+				orderBy: { releaseDate: 'desc' },
+				skip: data.offset,
+				take: data.limit,
+				include: {
+					_count: {
+						select: { changes: true },
+					},
+				},
+			})
+
+			// Fetch change counts grouped by type for fetched releases
+			const releaseIds = releases.map((r) => r.id)
+			const changesByTypeRaw = await prisma.change.groupBy({
+				by: ['releaseId', 'type'],
+				where: {
+					releaseId: { in: releaseIds },
+				},
+				_count: { id: true },
+			})
+
+			// Transform into a map: releaseId -> { type: count }
+			const changesByTypeMap = new Map<string, Record<string, number>>()
+			for (const item of changesByTypeRaw) {
+				if (!changesByTypeMap.has(item.releaseId)) {
+					changesByTypeMap.set(item.releaseId, {})
+				}
+				const typeCounts = changesByTypeMap.get(item.releaseId)
+				if (typeCounts) {
+					typeCounts[item.type] = item._count.id
+				}
+			}
+
+			// Attach changesByType to each release
+			const releasesWithTypes = releases.map((release) => ({
+				...release,
+				changesByType: changesByTypeMap.get(release.id) || {},
+			}))
+
+			return {
+				releases: releasesWithTypes,
+				pagination: {
+					offset: data.offset,
+					limit: data.limit,
+					totalCount,
+					hasMore: data.offset + releases.length < totalCount,
+				},
+			}
+		} catch (error: unknown) {
+			console.error('Error fetching paginated releases:', error)
+			if (error instanceof Error) {
+				if (error.message === 'Tool not found') {
+					throw error
+				}
+				console.error('Database error fetching paginated releases:', error)
+			}
+			throw new Error('Failed to fetch paginated releases')
+		}
+	})
+
 /**
  * Get tool with all releases (sorted by releaseDate)
  * Used for tool overview page
+ * @deprecated Use getToolReleasesPaginated for better performance
  */
 export const getToolWithReleases = createServerFn({ method: 'GET' })
 	.inputValidator((data) => {
@@ -214,7 +387,7 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 		try {
 			const versions = await prisma.release.findMany({
 				where: { tool: { slug: data.slug } },
-				orderBy: { versionSort: 'desc' },
+				orderBy: { releaseDate: 'desc' },
 				select: {
 					id: true,
 					version: true,

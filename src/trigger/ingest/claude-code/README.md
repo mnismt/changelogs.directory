@@ -4,7 +4,9 @@ Trigger.dev task that ingests changelog data from Claude Code's GitHub repositor
 
 ## Overview
 
-Fetches `CHANGELOG.md` from GitHub, extracts release dates from Git history, parses releases, enriches with LLM classification, and upserts to database.
+Fetches `CHANGELOG.md` from GitHub, extracts release dates from Git history, parses releases with **lightweight extraction**, enriches with **LLM-first classification**, and upserts to database.
+
+**Parser Philosophy**: Minimal structural extraction (bullets, links, ordering) with keyword fallbacks. The LLM handles detailed classification, impact assessment, and summary generation.
 
 ## Phases
 
@@ -31,9 +33,11 @@ Fetches `CHANGELOG.md` from GitHub, extracts release dates from Git history, par
 
 ### Phase 3: Parse
 - Extract structured data from markdown (synchronous)
-- Parse releases, versions, dates, changes
+- Parse releases, versions, dates, changes using **lightweight parser**
 - **Date priority**: Header dates → Git commit dates → undefined
+- **Parsing strategy**: Minimal extraction (bullets, links, ordering) with keyword-based fallbacks
 - No LLM calls (fast extraction only)
+- Defers classification/impact/summary to Phase 5 (LLM enrichment)
 
 ### Phase 4: Filter
 - Batch query existing releases from database
@@ -42,10 +46,12 @@ Fetches `CHANGELOG.md` from GitHub, extracts release dates from Git history, par
 - Prevents redundant LLM calls for unchanged releases
 
 ### Phase 5: Enrich
-- Classify changes with LLM (batched per release)
-- Generate summaries and highlights
-- Process filtered releases in parallel
+- **LLM-first approach**: Classify changes with LLM (batched per release)
+- Generate summaries, highlights, and extract key metadata
+- Determine change types (FEATURE, BUGFIX, etc.), impact levels, and flags
+- Process filtered releases in parallel for efficiency
 - Falls back to keyword classification if LLM unavailable
+- **Note**: Parser provides minimal data; LLM does the heavy lifting
 
 ### Phase 6: Upsert
 - For each release:
@@ -99,15 +105,18 @@ Fetches `CHANGELOG.md` from GitHub, extracts release dates from Git history, par
            │
            ▼
   ┌─────────────────────────────────────────────────┐
-  │  Phase 3: Parse                                  │
+  │  Phase 3: Parse (Lightweight Extraction)         │
   │ ────────────────────────────────────────────────│
   │ • Parse markdown into structured releases         │
   │ • Extract version, changes, rawContent            │
+  │ • Minimal parsing: bullets, links, ordering       │
+  │ • Keyword fallbacks for type/flags                │
   │ • Date priority:                                  │
   │   1. Header date (## 2.0.31 - 2024-01-15)        │
   │   2. Git commit date (from Phase 2.5)            │
   │   3. undefined (no date available)                │
   │ • Compute contentHash for change detection        │
+  │ • Skip code blocks to prevent false bullets       │
   └────────┬────────────────────────────────────────┘
            │
            ▼
@@ -123,9 +132,11 @@ Fetches `CHANGELOG.md` from GitHub, extracts release dates from Git history, par
   ┌─────────────────┐
   │ Phase 5: Enrich │
   │ ────────────────│
-  │ • LLM classification (parallel batched)           │
+  │ • LLM-first classification (parallel batched)     │
+  │ • Determine types, impact, flags                  │
   │ • Generate summaries and highlights               │
   │ • Fallback to keyword classification              │
+  │ • Parser provides minimal data; LLM enriches      │
   └────────┬────────┘
            │
            ▼

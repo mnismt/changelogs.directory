@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { ChangeType, ImpactLevel } from '@prisma/client'
 import {
-	assessImpact,
 	classifyChangeType,
 	detectBreaking,
 	detectDeprecation,
@@ -122,111 +121,78 @@ export function parseChangelogMd(
 
 /**
  * Parses bullet points from a version section (extraction only)
- * Uses basic keyword classification - will be enhanced by LLM later
+ * Simplified: extracts bullets and lets LLM handle classification
+ * Keeps keyword-based fallbacks for when LLM is unavailable
  */
 function parseChanges(rawContent: string): ParsedChange[] {
 	const changes: ParsedChange[] = []
-
-	// Extract lines that start with bullet points (-, *, +)
 	const lines = rawContent.split('\n')
 	let order = 0
+	let inCodeBlock = false
 
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i].trim()
+	for (const rawLine of lines) {
+		const line = rawLine.trim()
 
-		// Match bullet points
-		if (line.match(/^[-*+]\s+/)) {
-			const content = line.replace(/^[-*+]\s+/, '').trim()
-
-			// Skip if empty
-			if (!content) continue
-
-			// Extract platform prefix (e.g., "Windows:", "macOS:", "VSCode:")
-			const platform = extractPlatform(content)
-
-			// Extract component if present (e.g., "[Core]", "[API]")
-			const component = extractComponent(content)
-
-			// Clean title by removing platform and component prefixes
-			const title = content
-				.replace(/^(Windows|macOS|Linux|VSCode|IDE|CLI):\s*/i, '')
-				.replace(/^\[[^\]]+\]\s*/, '')
-				.trim()
-
-			// Extract markdown links
-			const links = extractLinks(title)
-
-			// Detect flags using keyword detection
-			const isBreaking = detectBreaking(title)
-			const isSecurity = detectSecurity(title)
-			const isDeprecation = detectDeprecation(title)
-
-			// Check for multi-line description (indented continuation lines)
-			let description: string | undefined
-			if (i + 1 < lines.length) {
-				const nextLine = lines[i + 1]
-				if (nextLine.match(/^\s{2,}/)) {
-					description = nextLine.trim()
-				}
-			}
-
-			// Use basic keyword classification (will be enhanced by LLM later)
-			const type = classifyChangeType(
-				title,
-				isBreaking,
-				isSecurity,
-				isDeprecation,
-			)
-			const impact = assessImpact(type, isBreaking)
-
-			changes.push({
-				type,
-				title,
-				description,
-				platform,
-				component,
-				isBreaking,
-				isSecurity,
-				isDeprecation,
-				impact,
-				links: links.length > 0 ? links : undefined,
-				order: order++,
-			})
+		// Track fenced code blocks to avoid false-positive bullets
+		if (line.startsWith('```')) {
+			inCodeBlock = !inCodeBlock
+			continue
 		}
+		if (inCodeBlock) continue
+
+		// Match top-level bullets (- or *)
+		if (!/^[-*]\s+/.test(line)) continue
+
+		const content = line.replace(/^[-*]\s+/, '').trim()
+		if (!content) continue
+
+		// Extract markdown links
+		const links = extractLinks(content)
+
+		// Lightweight keyword fallback; LLM will override when available
+		const isBreaking = detectBreaking(content)
+		const isSecurity = detectSecurity(content)
+		const isDeprecation = detectDeprecation(content)
+		const type = classifyChangeType(
+			content,
+			isBreaking,
+			isSecurity,
+			isDeprecation,
+		)
+
+		changes.push({
+			type,
+			title: content,
+			description: undefined,
+			platform: undefined,
+			component: undefined,
+			isBreaking,
+			isSecurity,
+			isDeprecation,
+			impact: undefined, // Set by LLM enrichment
+			links: links.length > 0 ? links : undefined,
+			order: order++,
+		})
 	}
 
 	return changes
 }
 
 /**
- * Extracts platform from change text (Windows:, macOS:, etc.)
- */
-function extractPlatform(text: string): string | undefined {
-	const match = text.match(/^(Windows|macOS|Linux|VSCode|IDE|CLI):/i)
-	return match ? match[1].toLowerCase() : undefined
-}
-
-/**
- * Extracts component from change text ([Core], [API], etc.)
- */
-function extractComponent(text: string): string | undefined {
-	const match = text.match(/^\[([^\]]+)\]/)
-	return match ? match[1] : undefined
-}
-
-/**
- * Generates a summary from the raw content (first 200 chars)
+ * Generates a concise summary from release body (first 200 chars)
  */
 function generateSummary(rawContent: string): string | undefined {
-	// Remove header line
-	const lines = rawContent.split('\n').slice(1)
+	if (!rawContent || rawContent.trim() === '') return undefined
 
-	// Join and get first 200 chars
-	const content = lines.join(' ').trim()
+	// Remove markdown headers and bullet markers
+	const cleaned = rawContent
+		.replace(/^##\s+.*/gm, '')
+		.replace(/^[-*+]\s+/gm, '')
+		.trim()
 
-	if (!content) return undefined
+	if (!cleaned) return undefined
 
-	return content.length > 200 ? `${content.substring(0, 200)}...` : content
+	return cleaned.length > 200 ? `${cleaned.substring(0, 200)}...` : cleaned
 }
 
 /**

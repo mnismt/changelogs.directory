@@ -106,9 +106,12 @@ export function ReleaseCard({
 						</span>
 					</CardTitle>
 					<div className="flex shrink-0 flex-col items-end gap-2">
-						{(changesByType?.BREAKING || changesByType?.SECURITY) && (
+						{((changesByType?.BREAKING && changesByType.BREAKING > 0) ||
+							(changesByType?.SECURITY && changesByType.SECURITY > 0) ||
+							(changesByType?.DEPRECATION &&
+								changesByType.DEPRECATION > 0)) && (
 							<div className="flex flex-wrap gap-1">
-								{changesByType?.BREAKING && (
+								{changesByType?.BREAKING && changesByType.BREAKING > 0 && (
 									<Badge
 										variant="destructive"
 										className="font-mono text-xs uppercase"
@@ -116,7 +119,7 @@ export function ReleaseCard({
 										Breaking
 									</Badge>
 								)}
-								{changesByType?.SECURITY && (
+								{changesByType?.SECURITY && changesByType.SECURITY > 0 && (
 									<Badge
 										variant="destructive"
 										className="font-mono text-xs uppercase"
@@ -124,6 +127,15 @@ export function ReleaseCard({
 										Security
 									</Badge>
 								)}
+								{changesByType?.DEPRECATION &&
+									changesByType.DEPRECATION > 0 && (
+										<Badge
+											variant="outline"
+											className="font-mono text-xs uppercase"
+										>
+											Deprecated
+										</Badge>
+									)}
 							</div>
 						)}
 						<Badge variant="outline" className="font-mono text-xs">
