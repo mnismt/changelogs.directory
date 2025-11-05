@@ -1,4 +1,6 @@
 import { Link } from '@tanstack/react-router'
+import { format } from 'date-fns'
+import { Package } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
 	Card,
@@ -29,11 +31,7 @@ export function TimelineItem({
 	isLeft = true,
 }: TimelineItemProps) {
 	const formattedDate = releaseDate
-		? new Date(releaseDate).toLocaleDateString('en-US', {
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric',
-			})
+		? format(new Date(releaseDate), 'MMM d, yyyy')
 		: 'Date unknown'
 
 	const ariaLabel = `Version ${version}${releaseDate ? ` released on ${formattedDate}` : ''}`
@@ -67,7 +65,10 @@ export function TimelineItem({
 						<CardHeader>
 							<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 								<div className="space-y-1">
-									<CardTitle className="font-mono text-xl">{version}</CardTitle>
+									<CardTitle className="flex items-center font-mono text-xl">
+										<Package className="size-5" />
+										<span className="ml-2">{version}</span>
+									</CardTitle>
 									<CardDescription className="text-muted-foreground">
 										{formattedDate}
 									</CardDescription>
@@ -142,7 +143,10 @@ export function TimelineItem({
 						<CardHeader>
 							<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 								<div className="space-y-1">
-									<CardTitle className="font-mono text-xl">{version}</CardTitle>
+									<CardTitle className="flex items-center font-mono text-xl">
+										<Package className="size-5" />
+										<span className="ml-2">{version}</span>
+									</CardTitle>
 									<CardDescription className="text-muted-foreground">
 										{formattedDate}
 									</CardDescription>
