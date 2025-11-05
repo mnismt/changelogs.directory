@@ -13,7 +13,7 @@ const releaseParamsSchema = z.object({
 })
 
 /**
- * Get tool with all releases (sorted by version)
+ * Get tool with all releases (sorted by releaseDate)
  * Used for tool overview page
  */
 export const getToolWithReleases = createServerFn({ method: 'GET' })
@@ -33,7 +33,7 @@ export const getToolWithReleases = createServerFn({ method: 'GET' })
 				where: { slug: data.slug },
 				include: {
 					releases: {
-						orderBy: { versionSort: 'desc' },
+						orderBy: { releaseDate: 'desc' },
 						include: {
 							_count: {
 								select: { changes: true },

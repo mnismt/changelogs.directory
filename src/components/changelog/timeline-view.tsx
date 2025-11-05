@@ -1,3 +1,4 @@
+import { toDate } from '@/lib/date-utils'
 import { TimelineItem } from './timeline-item'
 
 interface Release {
@@ -12,6 +13,7 @@ interface Release {
 }
 
 interface TimelineViewProps {
+	toolSlug: string
 	releases: Release[]
 }
 
@@ -21,8 +23,8 @@ function groupReleasesByYear(releases: Release[]) {
 	for (const release of releases) {
 		let year = 'Date Unknown'
 		if (release.releaseDate) {
-			const date = new Date(release.releaseDate)
-			if (!Number.isNaN(date.getTime())) {
+			const date = toDate(release.releaseDate)
+			if (date) {
 				year = date.getFullYear().toString()
 			}
 		}
@@ -36,7 +38,7 @@ function groupReleasesByYear(releases: Release[]) {
 	return groups
 }
 
-export function TimelineView({ releases }: TimelineViewProps) {
+export function TimelineView({ toolSlug, releases }: TimelineViewProps) {
 	const groupedByYear = groupReleasesByYear(releases)
 
 	// Sort years in descending order (newest first)
@@ -82,6 +84,7 @@ export function TimelineView({ releases }: TimelineViewProps) {
 								return (
 									<TimelineItem
 										key={release.id}
+										toolSlug={toolSlug}
 										version={release.version}
 										releaseDate={release.releaseDate}
 										summary={release.summary}

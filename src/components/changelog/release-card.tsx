@@ -1,6 +1,5 @@
 import type { ChangeType } from '@prisma/client'
 import { Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
 import { Package } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -15,8 +14,11 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { formatDate } from '@/lib/date-utils'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ReleaseCardProps {
+	toolSlug: string
 	version: string
 	releaseDate?: Date | null
 	summary?: string | null
@@ -49,15 +51,14 @@ const changeTypeOrder: ChangeType[] = [
 ]
 
 export function ReleaseCard({
+	toolSlug,
 	version,
 	releaseDate,
 	summary,
 	changeCount,
 	changesByType,
 }: ReleaseCardProps) {
-	const formattedDate = releaseDate
-		? format(new Date(releaseDate), 'MMM d, yyyy')
-		: 'Date unknown'
+	const formattedDate = formatDate(releaseDate)
 
 	const renderChangeTypeTooltip = () => {
 		if (!changesByType || Object.keys(changesByType).length === 0) {
@@ -100,7 +101,9 @@ export function ReleaseCard({
 				<div className="flex items-start justify-between gap-4">
 					<CardTitle className="flex items-center font-mono text-xl">
 						<Package className="size-5" />
-						<span className="ml-2">{version}</span>
+						<span className="ml-2">
+							{formatVersionForDisplay(version, toolSlug)}
+						</span>
 					</CardTitle>
 					<div className="flex shrink-0 flex-col items-end gap-2">
 						{(changesByType?.BREAKING || changesByType?.SECURITY) && (
@@ -144,8 +147,8 @@ export function ReleaseCard({
 
 	const linkElement = (
 		<Link
-			to="/tools/claude-code/releases/$version"
-			params={{ version }}
+			to="/tools/$slug/releases/$version"
+			params={{ slug: toolSlug, version }}
 			className="block h-full"
 		>
 			{cardContent}

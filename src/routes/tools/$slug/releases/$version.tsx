@@ -6,26 +6,27 @@ import { ChangeItem } from '@/components/changelog/change-item'
 import { CollapsibleSection } from '@/components/changelog/collapsible-section'
 import { ReleaseStickyHeader } from '@/components/changelog/release-sticky-header'
 import { VersionList } from '@/components/changelog/version-list'
-import { ClaudeAI } from '@/components/logo/claude'
 import { Accordion } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
+import { formatDate } from '@/lib/date-utils'
+import { getToolLogo } from '@/lib/tool-logos'
 import {
 	getAdjacentVersions,
 	getAllVersions,
 	getReleaseWithChanges,
 } from '@/server/tools'
 
-export const Route = createFileRoute('/tools/claude-code/releases/$version')({
+export const Route = createFileRoute('/tools/$slug/releases/$version')({
 	loader: async ({ params }) => {
 		const [release, adjacentVersions, allVersions] = await Promise.all([
 			getReleaseWithChanges({
-				data: { toolSlug: 'claude-code', version: params.version },
+				data: { toolSlug: params.slug, version: params.version },
 			}),
 			getAdjacentVersions({
-				data: { toolSlug: 'claude-code', version: params.version },
+				data: { toolSlug: params.slug, version: params.version },
 			}),
 			getAllVersions({
-				data: { slug: 'claude-code' },
+				data: { slug: params.slug },
 			}),
 		])
 
@@ -36,21 +37,21 @@ export const Route = createFileRoute('/tools/claude-code/releases/$version')({
 		}
 	},
 	component: ReleaseDetailPage,
-	head: ({ params }) => ({
+	head: ({ params, loaderData }) => ({
 		meta: [
 			{
-				title: `Claude Code ${params.version} Changelog - changelogs.directory`,
+				title: `${loaderData.release.tool.name} ${params.version} Changelog - changelogs.directory`,
 			},
 			{
 				name: 'description',
-				content: `View all changes, features, and bugfixes in Claude Code version ${params.version}.`,
+				content: `View all changes, features, and bugfixes in ${loaderData.release.tool.name} version ${params.version}.`,
 			},
 		],
 	}),
 })
 
 function ReleaseDetailPage() {
-	const { version } = Route.useParams()
+	const { slug, version } = Route.useParams()
 	const navigate = useNavigate()
 	const [copied, setCopied] = useState(false)
 
@@ -128,20 +129,20 @@ function ReleaseDetailPage() {
 
 			if (e.key === 'n' && adjacentVersions?.next) {
 				navigate({
-					to: '/tools/claude-code/releases/$version',
-					params: { version: adjacentVersions.next },
+					to: '/tools/$slug/releases/$version',
+					params: { slug, version: adjacentVersions.next },
 				})
 			} else if (e.key === 'p' && adjacentVersions?.prev) {
 				navigate({
-					to: '/tools/claude-code/releases/$version',
-					params: { version: adjacentVersions.prev },
+					to: '/tools/$slug/releases/$version',
+					params: { slug, version: adjacentVersions.prev },
 				})
 			}
 		}
 
 		window.addEventListener('keydown', handleKeyDown)
 		return () => window.removeEventListener('keydown', handleKeyDown)
-	}, [adjacentVersions, navigate])
+	}, [adjacentVersions, navigate, slug])
 
 	// Copy permalink
 	const copyPermalink = () => {
@@ -166,25 +167,21 @@ function ReleaseDetailPage() {
 		)
 	}
 
-	const formattedDate = release.releaseDate
-		? new Date(release.releaseDate).toLocaleDateString('en-US', {
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric',
-			})
-		: 'Date unknown'
+	const formattedDate = formatDate(release.releaseDate, 'MMMM d, yyyy')
+
+	const logo = getToolLogo(slug)
 
 	return (
 		<div className="animate-fade-in">
 			{/* Sticky Header */}
 			{adjacentVersions && allVersions && (
 				<ReleaseStickyHeader
-					toolSlug="claude-code"
+					toolSlug={slug}
 					version={version}
 					prevVersion={adjacentVersions.prev}
 					nextVersion={adjacentVersions.next}
 					allVersions={allVersions}
-					logo={<ClaudeAI />}
+					logo={logo}
 				/>
 			)}
 
@@ -193,7 +190,8 @@ function ReleaseDetailPage() {
 					{/* Back Button & Breadcrumbs */}
 					<div className="space-y-4">
 						<Link
-							to="/tools/claude-code"
+							to="/tools/$slug"
+							params={{ slug }}
 							className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
 						>
 							<ArrowLeft className="h-4 w-4" />
@@ -203,12 +201,15 @@ function ReleaseDetailPage() {
 						{/* Breadcrumbs with Logo */}
 						<nav className="flex items-center gap-3">
 							<div className="flex items-center gap-3">
-								<div className="[&>svg]:h-8 [&>svg]:w-8 [&>svg]:fill-foreground [&>svg_path]:fill-foreground">
-									<ClaudeAI />
-								</div>
+								{logo && (
+									<div className="[&>svg]:h-8 [&>svg]:w-8 [&>svg]:fill-foreground [&>svg_path]:fill-foreground">
+										{logo}
+									</div>
+								)}
 								<div className="flex items-center gap-2 text-sm">
 									<Link
-										to="/tools/claude-code"
+										to="/tools/$slug"
+										params={{ slug }}
 										className="font-mono text-foreground transition-colors hover:text-muted-foreground"
 									>
 										{release.tool.name}
@@ -330,7 +331,7 @@ function ReleaseDetailPage() {
 					{/* Version List at Bottom */}
 					{allVersions && (
 						<VersionList
-							toolSlug="claude-code"
+							toolSlug={slug}
 							currentVersion={version}
 							versions={allVersions}
 						/>

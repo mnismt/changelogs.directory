@@ -39,6 +39,46 @@ async function main() {
 
 	console.log(`✅ Seeded tool: ${claudeCode.name} (${claudeCode.slug})`)
 
+	// Seed OpenAI Codex tool
+	const codex = await prisma.tool.upsert({
+		where: { slug: "codex" },
+		update: {
+			name: "Codex",
+			vendor: "OpenAI",
+			description:
+				"OpenAI Codex CLI - AI-powered code generation and understanding tool built with Rust.",
+			homepage: "https://github.com/openai/codex",
+			repositoryUrl: "https://github.com/openai/codex",
+			sourceType: "GITHUB_RELEASES",
+			sourceUrl: "https://api.github.com/repos/openai/codex/releases",
+			sourceConfig: {
+				versionPrefix: "rust-v",
+				includePreReleases: true,
+			},
+			tags: ["ai", "cli", "code-generation", "openai", "rust"],
+			isActive: true,
+		},
+		create: {
+			slug: "codex",
+			name: "Codex",
+			vendor: "OpenAI",
+			description:
+				"OpenAI Codex CLI - AI-powered code generation and understanding tool built with Rust.",
+			homepage: "https://github.com/openai/codex",
+			repositoryUrl: "https://github.com/openai/codex",
+			sourceType: "GITHUB_RELEASES",
+			sourceUrl: "https://api.github.com/repos/openai/codex/releases",
+			sourceConfig: {
+				versionPrefix: "rust-v",
+				includePreReleases: true,
+			},
+			tags: ["ai", "cli", "code-generation", "openai", "rust"],
+			isActive: true,
+		},
+	})
+
+	console.log(`✅ Seeded tool: ${codex.name} (${codex.slug})`)
+
 	console.log("Database seed completed!")
 }
 

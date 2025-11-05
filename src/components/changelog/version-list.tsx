@@ -8,6 +8,8 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { formatDate } from '@/lib/date-utils'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface VersionListProps {
 	toolSlug: string
@@ -101,16 +103,10 @@ export function VersionList({
 			<div className="flex items-start justify-between gap-2">
 				<div className="flex-1 space-y-1">
 					<div className="font-mono text-sm font-semibold group-hover:text-foreground">
-						{version.version}
+						{formatVersionForDisplay(version.version, toolSlug)}
 					</div>
 					<div className="text-xs text-muted-foreground">
-						{version.releaseDate
-							? new Date(version.releaseDate).toLocaleDateString('en-US', {
-									year: 'numeric',
-									month: 'short',
-									day: 'numeric',
-								})
-							: 'Date unknown'}
+						{formatDate(version.releaseDate, 'MMM d, yyyy')}
 					</div>
 				</div>
 				<div className="flex shrink-0 flex-col items-end gap-1">
@@ -132,8 +128,8 @@ export function VersionList({
 			</div>
 		) : (
 			<Link
-				to="/tools/claude-code/releases/$version"
-				params={{ version: version.version }}
+				to="/tools/$slug/releases/$version"
+				params={{ slug: toolSlug, version: version.version }}
 				className="group block rounded-lg border border-border bg-card p-4 transition-all hover:border-accent"
 			>
 				{content}

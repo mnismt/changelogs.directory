@@ -5,35 +5,38 @@ import { ReleaseCard } from '@/components/changelog/release-card'
 import { TimelineView } from '@/components/changelog/timeline-view'
 import { ToolHeader } from '@/components/changelog/tool-header'
 import { ViewToggle } from '@/components/changelog/view-toggle'
-import { ClaudeAI } from '@/components/logo/claude'
+import { getToolLogo } from '@/lib/tool-logos'
 import { getToolWithReleases } from '@/server/tools'
 
-export const Route = createFileRoute('/tools/claude-code/')({
-	loader: async () => {
-		return await getToolWithReleases({ data: { slug: 'claude-code' } })
+export const Route = createFileRoute('/tools/$slug/')({
+	loader: async ({ params }) => {
+		return await getToolWithReleases({ data: { slug: params.slug } })
 	},
-	component: ClaudeCodePage,
-	head: () => ({
-		meta: [
-			{
-				title: 'Claude Code Changelog - changelogs.directory',
-			},
-			{
-				name: 'description',
-				content:
-					'Track all releases, features, improvements, and breaking changes for Claude Code CLI.',
-			},
-		],
-	}),
+	component: ToolPage,
+	head: ({ loaderData }) => {
+		const toolName = loaderData?.name || 'Tool'
+		return {
+			meta: [
+				{
+					title: `${toolName} Changelog - changelogs.directory`,
+				},
+				{
+					name: 'description',
+					content: `Track all releases, features, improvements, and breaking changes for ${toolName}.`,
+				},
+			],
+		}
+	},
 })
 
-function ClaudeCodePage() {
+function ToolPage() {
 	const search = Route.useSearch() as {
 		type?: string | string[]
 		view?: 'grid' | 'timeline'
 	}
 
 	const tool = Route.useLoaderData()
+	const slug = Route.useParams().slug
 
 	// Normalize selected types to array
 	const selectedTypes = search.type
@@ -68,11 +71,14 @@ function ClaudeCodePage() {
 		)
 	}
 
+	const logo = getToolLogo(slug)
+
 	return (
 		<div className="container mx-auto max-w-7xl px-4 pt-20 pb-12">
 			<div className="space-y-8">
 				{/* Tool Header */}
 				<ToolHeader
+					slug={slug}
 					name={tool.name}
 					vendor={tool.vendor}
 					description={tool.description}
@@ -87,7 +93,7 @@ function ClaudeCodePage() {
 						tool.releases[tool.releases.length - 1]?.releaseDate
 					}
 					tags={tool.tags}
-					logo={<ClaudeAI />}
+					logo={logo}
 				/>
 
 				{/* Filter Bar and View Toggle */}
@@ -112,6 +118,7 @@ function ClaudeCodePage() {
 						{filteredReleases.map((release) => (
 							<ReleaseCard
 								key={release.id}
+								toolSlug={slug}
 								version={release.version}
 								releaseDate={release.releaseDate}
 								summary={release.summary}
@@ -121,7 +128,7 @@ function ClaudeCodePage() {
 						))}
 					</div>
 				) : (
-					<TimelineView releases={filteredReleases} />
+					<TimelineView toolSlug={slug} releases={filteredReleases} />
 				)}
 			</div>
 		</div>
