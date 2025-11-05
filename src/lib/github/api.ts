@@ -1,4 +1,5 @@
 import { logger } from '@trigger.dev/sdk'
+import { getCachedCommitDetail } from './cache'
 
 /**
  * GitHub API response types
@@ -104,6 +105,7 @@ export async function fetchCommitHistory(
 
 /**
  * Fetch detailed commit information including patches
+ * Uses Redis cache to avoid redundant GitHub API calls
  * @param repoUrl GitHub repository URL
  * @param sha Commit SHA
  * @param token Optional GitHub token for higher rate limits
@@ -119,26 +121,30 @@ export async function fetchCommitDetail(
 		throw new Error(`Invalid GitHub URL: ${repoUrl}`)
 	}
 
-	const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/commits/${sha}`
+	// Wrap fetch logic in cache layer
+	return getCachedCommitDetail(repo.owner, repo.name, sha, async () => {
+		// Original fetch logic (only runs on cache miss)
+		const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/commits/${sha}`
 
-	const headers: Record<string, string> = {
-		'User-Agent': 'Changelogs.directory Bot',
-		Accept: 'application/vnd.github.v3+json',
-	}
+		const headers: Record<string, string> = {
+			'User-Agent': 'Changelogs.directory Bot',
+			Accept: 'application/vnd.github.v3+json',
+		}
 
-	if (token) {
-		headers.Authorization = `Bearer ${token}`
-	}
+		if (token) {
+			headers.Authorization = `Bearer ${token}`
+		}
 
-	const response = await fetch(url, { headers })
+		const response = await fetch(url, { headers })
 
-	if (!response.ok) {
-		throw new Error(
-			`GitHub API error: ${response.status} ${response.statusText}`,
-		)
-	}
+		if (!response.ok) {
+			throw new Error(
+				`GitHub API error: ${response.status} ${response.statusText}`,
+			)
+		}
 
-	return (await response.json()) as GitHubCommitDetail
+		return (await response.json()) as GitHubCommitDetail
+	})
 }
 
 /**
