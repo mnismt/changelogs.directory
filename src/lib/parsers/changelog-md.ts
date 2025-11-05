@@ -27,7 +27,6 @@ export interface ParsedRelease {
 	releaseDate?: Date
 	title?: string
 	summary?: string
-	tags: string[]
 	rawContent: string
 	contentHash: string
 	changes: ParsedChange[]
@@ -85,9 +84,6 @@ export function parseChangelogMd(
 		// Parse changes from bullet points (extraction only, no classification)
 		const changes = parseChanges(rawContent)
 
-		// Detect release-level tags (breaking, security, etc.)
-		const tags = detectReleaseTags(rawContent, changes)
-
 		// Generate version sort key
 		const versionSort = generateVersionSort(current.version)
 
@@ -103,7 +99,6 @@ export function parseChangelogMd(
 			releaseDate,
 			title: undefined, // Could extract from header if format includes title
 			summary,
-			tags,
 			rawContent,
 			contentHash,
 			changes,
@@ -346,30 +341,6 @@ function assessImpact(type: ChangeType, isBreaking: boolean): ImpactLevel {
 	if (type === 'BUGFIX') return 'PATCH'
 	if (type === 'SECURITY') return 'PATCH'
 	return 'PATCH' // Default
-}
-
-/**
- * Detects release-level tags (breaking, security, deprecation)
- */
-function detectReleaseTags(
-	rawContent: string,
-	changes: ParsedChange[],
-): string[] {
-	const tags: Set<string> = new Set()
-
-	// Check if any change has breaking/security/deprecation flags
-	for (const change of changes) {
-		if (change.isBreaking) tags.add('breaking')
-		if (change.isSecurity) tags.add('security')
-		if (change.isDeprecation) tags.add('deprecation')
-	}
-
-	// Check raw content for release-level indicators
-	const lowerContent = rawContent.toLowerCase()
-	if (lowerContent.includes('breaking changes')) tags.add('breaking')
-	if (lowerContent.includes('security update')) tags.add('security')
-
-	return Array.from(tags)
 }
 
 /**

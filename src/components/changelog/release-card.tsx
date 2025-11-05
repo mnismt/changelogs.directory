@@ -7,21 +7,22 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import { ChangeCount } from './change-count'
 
 interface ReleaseCardProps {
 	version: string
 	releaseDate?: Date | null
 	summary?: string | null
-	tags: string[]
 	changeCount: number
+	changesByType?: Record<string, number>
 }
 
 export function ReleaseCard({
 	version,
 	releaseDate,
 	summary,
-	tags,
 	changeCount,
+	changesByType,
 }: ReleaseCardProps) {
 	const formattedDate = releaseDate
 		? new Date(releaseDate).toLocaleDateString('en-US', {
@@ -37,31 +38,37 @@ export function ReleaseCard({
 			params={{ version }}
 			className="block h-full"
 		>
-			<Card className="h-full border-border bg-card transition-colors hover:border-accent">
+			<Card className="group h-full border-border bg-card transition-colors hover:border-accent">
 				<CardHeader>
 					<div className="flex items-start justify-between gap-4">
 						<CardTitle className="font-mono text-xl">{version}</CardTitle>
-						{tags.length > 0 && (
+						{(changesByType?.BREAKING || changesByType?.SECURITY) && (
 							<div className="flex flex-wrap gap-1">
-								{tags.map((tag) => (
+								{changesByType?.BREAKING && (
 									<Badge
-										key={tag}
-										variant={
-											tag === 'breaking' || tag === 'security'
-												? 'destructive'
-												: 'outline'
-										}
+										variant="destructive"
 										className="font-mono text-xs uppercase"
 									>
-										{tag}
+										Breaking
 									</Badge>
-								))}
+								)}
+								{changesByType?.SECURITY && (
+									<Badge
+										variant="destructive"
+										className="font-mono text-xs uppercase"
+									>
+										Security
+									</Badge>
+								)}
 							</div>
 						)}
 					</div>
 					<CardDescription className="text-muted-foreground">
-						{formattedDate} • {changeCount}{' '}
-						{changeCount === 1 ? 'change' : 'changes'}
+						{formattedDate} •{' '}
+						<ChangeCount
+							changeCount={changeCount}
+							changesByType={changesByType}
+						/>
 					</CardDescription>
 				</CardHeader>
 				{summary && (

@@ -7,13 +7,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import { ChangeCount } from './change-count'
 
 interface TimelineItemProps {
 	version: string
 	releaseDate?: Date | null
 	summary?: string | null
-	tags: string[]
 	changeCount: number
+	changesByType?: Record<string, number>
 	isLast?: boolean
 	isLeft?: boolean
 }
@@ -22,8 +23,8 @@ export function TimelineItem({
 	version,
 	releaseDate,
 	summary,
-	tags,
 	changeCount,
+	changesByType,
 	isLast = false,
 	isLeft = true,
 }: TimelineItemProps) {
@@ -37,11 +38,10 @@ export function TimelineItem({
 
 	const ariaLabel = `Version ${version}${releaseDate ? ` released on ${formattedDate}` : ''}`
 
-	// Determine dot style based on tags
-	const hasBreakingOrSecurity = tags.some(
-		(tag) => tag === 'breaking' || tag === 'security',
-	)
-	const hasDeprecation = tags.some((tag) => tag === 'deprecation')
+	// Determine dot style based on changesByType
+	const hasBreakingOrSecurity =
+		changesByType?.BREAKING || changesByType?.SECURITY
+	const hasDeprecation = changesByType?.DEPRECATION
 
 	const dotColor = hasBreakingOrSecurity
 		? 'bg-red-500'
@@ -63,7 +63,7 @@ export function TimelineItem({
 					className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 					aria-label={ariaLabel}
 				>
-					<Card className="border-border bg-card transition-colors hover:border-accent">
+					<Card className="group border-border bg-card transition-colors hover:border-accent">
 						<CardHeader>
 							<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 								<div className="space-y-1">
@@ -72,21 +72,24 @@ export function TimelineItem({
 										{formattedDate}
 									</CardDescription>
 								</div>
-								{tags.length > 0 && (
+								{(changesByType?.BREAKING || changesByType?.SECURITY) && (
 									<div className="flex flex-wrap gap-1">
-										{tags.map((tag) => (
+										{changesByType?.BREAKING && (
 											<Badge
-												key={tag}
-												variant={
-													tag === 'breaking' || tag === 'security'
-														? 'destructive'
-														: 'outline'
-												}
+												variant="destructive"
 												className="font-mono text-xs uppercase"
 											>
-												{tag}
+												Breaking
 											</Badge>
-										))}
+										)}
+										{changesByType?.SECURITY && (
+											<Badge
+												variant="destructive"
+												className="font-mono text-xs uppercase"
+											>
+												Security
+											</Badge>
+										)}
 									</div>
 								)}
 							</div>
@@ -96,8 +99,11 @@ export function TimelineItem({
 								<p className="line-clamp-2 text-sm text-muted-foreground">
 									{summary}
 								</p>
-								<p className="mt-2 text-xs text-muted-foreground">
-									{changeCount} {changeCount === 1 ? 'change' : 'changes'}
+								<p className="mt-2 text-xs">
+									<ChangeCount
+										changeCount={changeCount}
+										changesByType={changesByType}
+									/>
 								</p>
 							</CardContent>
 						)}
@@ -132,7 +138,7 @@ export function TimelineItem({
 					className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 					aria-label={ariaLabel}
 				>
-					<Card className="border-border bg-card transition-colors hover:border-accent">
+					<Card className="group border-border bg-card transition-colors hover:border-accent">
 						<CardHeader>
 							<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 								<div className="space-y-1">
@@ -141,21 +147,24 @@ export function TimelineItem({
 										{formattedDate}
 									</CardDescription>
 								</div>
-								{tags.length > 0 && (
+								{(changesByType?.BREAKING || changesByType?.SECURITY) && (
 									<div className="flex flex-wrap gap-1">
-										{tags.map((tag) => (
+										{changesByType?.BREAKING && (
 											<Badge
-												key={tag}
-												variant={
-													tag === 'breaking' || tag === 'security'
-														? 'destructive'
-														: 'outline'
-												}
+												variant="destructive"
 												className="font-mono text-xs uppercase"
 											>
-												{tag}
+												Breaking
 											</Badge>
-										))}
+										)}
+										{changesByType?.SECURITY && (
+											<Badge
+												variant="destructive"
+												className="font-mono text-xs uppercase"
+											>
+												Security
+											</Badge>
+										)}
 									</div>
 								)}
 							</div>
@@ -165,8 +174,11 @@ export function TimelineItem({
 								<p className="line-clamp-2 text-sm text-muted-foreground">
 									{summary}
 								</p>
-								<p className="mt-2 text-xs text-muted-foreground">
-									{changeCount} {changeCount === 1 ? 'change' : 'changes'}
+								<p className="mt-2 text-xs">
+									<ChangeCount
+										changeCount={changeCount}
+										changesByType={changesByType}
+									/>
 								</p>
 							</CardContent>
 						)}

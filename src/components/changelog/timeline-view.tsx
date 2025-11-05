@@ -5,10 +5,10 @@ interface Release {
 	version: string
 	releaseDate: Date | null
 	summary: string | null
-	tags: string[]
 	_count: {
 		changes: number
 	}
+	changesByType?: Record<string, number>
 }
 
 interface TimelineViewProps {
@@ -85,8 +85,8 @@ export function TimelineView({ releases }: TimelineViewProps) {
 										version={release.version}
 										releaseDate={release.releaseDate}
 										summary={release.summary}
-										tags={release.tags}
 										changeCount={release._count.changes}
+										changesByType={release.changesByType}
 										isLast={isLastOverall}
 										isLeft={isLeft}
 									/>

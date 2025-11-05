@@ -47,7 +47,38 @@ export const getToolWithReleases = createServerFn({ method: 'GET' })
 				throw new Error('Tool not found')
 			}
 
-			return tool
+			// Fetch change counts grouped by type for all releases
+			const releaseIds = tool.releases.map((r) => r.id)
+			const changesByTypeRaw = await prisma.change.groupBy({
+				by: ['releaseId', 'type'],
+				where: {
+					releaseId: { in: releaseIds },
+				},
+				_count: { id: true },
+			})
+
+			// Transform into a map: releaseId -> { type: count }
+			const changesByTypeMap = new Map<string, Record<string, number>>()
+			for (const item of changesByTypeRaw) {
+				if (!changesByTypeMap.has(item.releaseId)) {
+					changesByTypeMap.set(item.releaseId, {})
+				}
+				const typeCounts = changesByTypeMap.get(item.releaseId)
+				if (typeCounts) {
+					typeCounts[item.type] = item._count.id
+				}
+			}
+
+			// Attach changesByType to each release
+			const releasesWithTypes = tool.releases.map((release) => ({
+				...release,
+				changesByType: changesByTypeMap.get(release.id) || {},
+			}))
+
+			return {
+				...tool,
+				releases: releasesWithTypes,
+			}
 		} catch (error: unknown) {
 			console.error('Error fetching tool:', error)
 			if (error instanceof Error) {

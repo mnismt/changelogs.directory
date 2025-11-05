@@ -140,9 +140,6 @@ model Release {
   title   String? // Optional release title
   summary String? @db.Text // Auto-generated summary (first N chars)
 
-  // Classification tags
-  tags String[] // ["breaking", "security", "deprecation"]
-
   // Relations
   changes Change[]
 
@@ -153,7 +150,6 @@ model Release {
   @@unique([toolId, version])
   @@index([toolId, releaseDate(sort: Desc)])
   @@index([publishedAt(sort: Desc)])
-  @@index([tags])
   @@map("release")
 }
 

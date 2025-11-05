@@ -8,7 +8,6 @@ import { ReleaseStickyHeader } from '@/components/changelog/release-sticky-heade
 import { VersionList } from '@/components/changelog/version-list'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Accordion } from '@/components/ui/accordion'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
 	getAdjacentVersions,
@@ -227,44 +226,25 @@ function ReleaseDetailPage() {
 					<div className="space-y-4 border-b border-border pb-8">
 						<div className="flex items-start justify-between gap-4">
 							<h1 className="font-mono text-4xl font-bold">{version}</h1>
-							<div className="flex items-center gap-2">
-								{release.tags.length > 0 && (
-									<div className="flex flex-wrap gap-2">
-										{release.tags.map((tag) => (
-											<Badge
-												key={tag}
-												variant={
-													tag === 'breaking' || tag === 'security'
-														? 'destructive'
-														: 'outline'
-												}
-												className="font-mono text-xs uppercase"
-											>
-												{tag}
-											</Badge>
-										))}
-									</div>
-								)}
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={copyPermalink}
-									className="gap-1 font-mono text-xs transition-all"
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={copyPermalink}
+								className="gap-1 font-mono text-xs transition-all"
+							>
+								<Copy
+									className={`h-3 w-3 transition-all duration-300 ${
+										copied ? 'scale-110 text-green-500' : ''
+									}`}
+								/>
+								<span
+									className={`transition-all duration-300 ${
+										copied ? 'text-green-500' : ''
+									}`}
 								>
-									<Copy
-										className={`h-3 w-3 transition-all duration-300 ${
-											copied ? 'scale-110 text-green-500' : ''
-										}`}
-									/>
-									<span
-										className={`transition-all duration-300 ${
-											copied ? 'text-green-500' : ''
-										}`}
-									>
-										{copied ? 'Copied!' : 'Copy link'}
-									</span>
-								</Button>
-							</div>
+									{copied ? 'Copied!' : 'Copy link'}
+								</span>
+							</Button>
 						</div>
 
 						<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
