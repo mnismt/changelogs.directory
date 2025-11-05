@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { logger, schedules, task } from '@trigger.dev/sdk'
 import { enrichStep } from './steps/enrich'
 import { fetchStep } from './steps/fetch'
+import { fetchDatesStep } from './steps/fetch-dates'
 import { filterStep } from './steps/filter'
 import { finalizeStep, handleFailure } from './steps/finalize'
 import { parseStep } from './steps/parse'
@@ -45,11 +46,16 @@ export const ingestClaudeCode = task({
 			const fetchResult = await fetchStep(ctx)
 
 			// ============================================================================
+			// Phase 2.5: Fetch Release Dates from Git History
+			// ============================================================================
+			const fetchDatesResult = await fetchDatesStep(ctx)
+
+			// ============================================================================
 			// Phase 3: Parse
 			// ============================================================================
-			const parseResult = parseStep(fetchResult)
+			const parseResult = parseStep(fetchResult, fetchDatesResult)
 
-			parseResult.releases = parseResult.releases.slice(0, 7)
+			parseResult.releases = parseResult.releases.slice(0, 10)
 
 			// ============================================================================
 			// Phase 4: Filter unchanged releases

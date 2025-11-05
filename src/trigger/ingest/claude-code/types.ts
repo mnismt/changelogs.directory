@@ -21,6 +21,13 @@ export interface FetchResult {
 }
 
 /**
+ * Result from fetch-dates step
+ */
+export interface FetchDatesResult {
+	versionDates: Map<string, Date>
+}
+
+/**
  * Result from parse step
  */
 export interface ParseResult {
