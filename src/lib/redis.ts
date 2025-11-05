@@ -2,21 +2,24 @@ import { Redis } from '@upstash/redis'
 
 /**
  * Singleton Redis client for caching
- * Uses REDIS_URL environment variable (Upstash)
  */
 let redis: Redis | null = null
 
 /**
  * Get or create Redis client
- * Returns null if REDIS_URL is not configured (graceful degradation)
+ * Requires UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables
  */
 export function getRedisClient(): Redis | null {
-	if (!process.env.REDIS_URL) {
+	// Upstash Redis.fromEnv() looks for UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
+	if (
+		!process.env.UPSTASH_REDIS_REST_URL ||
+		!process.env.UPSTASH_REDIS_REST_TOKEN
+	) {
 		return null // Graceful degradation if Redis not configured
 	}
 
 	if (!redis) {
-		redis = Redis.fromEnv() // Uses REDIS_URL automatically
+		redis = Redis.fromEnv() // Uses UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
 	}
 
 	return redis

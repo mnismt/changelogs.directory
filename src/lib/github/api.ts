@@ -57,10 +57,11 @@ export function parseGitHubRepoUrl(url: string): RepoInfo | null {
 
 /**
  * Fetch commit history for a specific file from GitHub API
+ * Handles pagination to fetch all commits (not just first 100)
  * @param repoUrl GitHub repository URL
  * @param filePath Path to the file within the repository
  * @param token Optional GitHub token for higher rate limits
- * @returns Array of commits that modified the file
+ * @returns Array of ALL commits that modified the file
  */
 export async function fetchCommitHistory(
 	repoUrl: string,
@@ -72,10 +73,6 @@ export async function fetchCommitHistory(
 		throw new Error(`Invalid GitHub URL: ${repoUrl}`)
 	}
 
-	const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/commits?path=${filePath}&per_page=100`
-
-	logger.info('Fetching commit history from GitHub', { url, repo, filePath })
-
 	const headers: Record<string, string> = {
 		'User-Agent': 'Changelogs.directory Bot',
 		Accept: 'application/vnd.github.v3+json',
@@ -85,22 +82,57 @@ export async function fetchCommitHistory(
 		headers.Authorization = `Bearer ${token}`
 	}
 
-	const response = await fetch(url, { headers })
+	let allCommits: GitHubCommit[] = []
+	let page = 1
+	const perPage = 100 // Max per page
 
-	if (!response.ok) {
-		throw new Error(
-			`GitHub API error: ${response.status} ${response.statusText}`,
-		)
-	}
-
-	const commits = (await response.json()) as GitHubCommit[]
-
-	logger.info('Fetched commit history', {
-		count: commits.length,
-		rateLimit: response.headers.get('x-ratelimit-remaining'),
+	logger.info('Fetching commit history from GitHub (with pagination)', {
+		repo,
+		filePath,
 	})
 
-	return commits
+	// Paginate through all commits
+	while (true) {
+		const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/commits?path=${filePath}&per_page=${perPage}&page=${page}`
+
+		const response = await fetch(url, { headers })
+
+		if (!response.ok) {
+			throw new Error(
+				`GitHub API error: ${response.status} ${response.statusText}`,
+			)
+		}
+
+		const commits = (await response.json()) as GitHubCommit[]
+
+		if (commits.length === 0) {
+			// No more commits
+			break
+		}
+
+		allCommits = [...allCommits, ...commits]
+
+		logger.info('Fetched commit page', {
+			page,
+			commitsInPage: commits.length,
+			totalCommits: allCommits.length,
+			rateLimit: response.headers.get('x-ratelimit-remaining'),
+		})
+
+		// If we got less than perPage commits, we've reached the end
+		if (commits.length < perPage) {
+			break
+		}
+
+		page++
+	}
+
+	logger.info('Fetched all commit history', {
+		totalCommits: allCommits.length,
+		totalPages: page,
+	})
+
+	return allCommits
 }
 
 /**
@@ -191,43 +223,54 @@ export async function buildVersionDateMapping(
 			totalCommits: commits.length,
 		})
 
+		// Fetch all commit details in parallel (with cache, this is fast)
+		const commitDetails = await Promise.allSettled(
+			commits.map((commit) => fetchCommitDetail(repoUrl, commit.sha, token)),
+		)
+
 		// Process commits in chronological order (oldest first)
 		// This ensures we capture the first occurrence of each version
-		for (const commit of commits.reverse()) {
-			try {
-				// Fetch detailed commit with patch
-				const detail = await fetchCommitDetail(repoUrl, commit.sha, token)
+		for (let i = commitDetails.length - 1; i >= 0; i--) {
+			const result = commitDetails[i]
+			const commit = commits[i]
 
-				// Find the changelog file in the commit
-				const changelogFile = detail.files?.find((f) =>
-					f.filename.includes(filePath),
-				)
-
-				if (!changelogFile?.patch) continue
-
-				// Extract version numbers from the patch
-				const versions = extractVersionsFromPatch(changelogFile.patch)
-
-				// Map each version to this commit's date
-				const commitDate = new Date(detail.commit.author.date)
-				for (const version of versions) {
-					// Only set the date if we haven't seen this version before
-					// (keeps the earliest/first occurrence)
-					if (!versionDates.has(version)) {
-						versionDates.set(version, commitDate)
-						logger.info('Mapped version to date', {
-							version,
-							date: commitDate.toISOString(),
-							commit: commit.sha.substring(0, 7),
-						})
-					}
-				}
-			} catch (error) {
+			if (result.status === 'rejected') {
 				// Log but don't fail the entire mapping if one commit fails
 				logger.warn('Failed to process commit', {
 					sha: commit.sha,
-					error: error instanceof Error ? error.message : String(error),
+					error:
+						result.reason instanceof Error
+							? result.reason.message
+							: String(result.reason),
 				})
+				continue
+			}
+
+			const detail = result.value
+
+			// Find the changelog file in the commit
+			const changelogFile = detail.files?.find((f) =>
+				f.filename.includes(filePath),
+			)
+
+			if (!changelogFile?.patch) continue
+
+			// Extract version numbers from the patch
+			const versions = extractVersionsFromPatch(changelogFile.patch)
+
+			// Map each version to this commit's date
+			const commitDate = new Date(detail.commit.author.date)
+			for (const version of versions) {
+				// Only set the date if we haven't seen this version before
+				// (keeps the earliest/first occurrence)
+				if (!versionDates.has(version)) {
+					versionDates.set(version, commitDate)
+					logger.info('Mapped version to date', {
+						version,
+						date: commitDate.toISOString(),
+						commit: commit.sha.substring(0, 7),
+					})
+				}
 			}
 		}
 

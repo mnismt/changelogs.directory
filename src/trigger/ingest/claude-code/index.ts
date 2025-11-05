@@ -55,8 +55,6 @@ export const ingestClaudeCode = task({
 			// ============================================================================
 			const parseResult = parseStep(fetchResult, fetchDatesResult)
 
-			parseResult.releases = parseResult.releases.slice(0, 10)
-
 			// ============================================================================
 			// Phase 4: Filter unchanged releases
 			// ============================================================================

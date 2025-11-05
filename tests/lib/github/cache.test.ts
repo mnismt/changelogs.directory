@@ -60,7 +60,7 @@ describe('getCachedCommitDetail', () => {
 	it('should return cached data on cache hit', async () => {
 		const mockRedis = {
 			get: vi.fn().mockResolvedValue(mockCommitDetail),
-			setex: vi.fn(),
+			set: vi.fn(),
 		}
 		vi.mocked(redisModule.getRedisClient).mockReturnValue(mockRedis as any)
 
@@ -76,13 +76,13 @@ describe('getCachedCommitDetail', () => {
 			'github:commit:anthropics:claude-code:abc123',
 		)
 		expect(mockFetchFn).not.toHaveBeenCalled()
-		expect(mockRedis.setex).not.toHaveBeenCalled()
+		expect(mockRedis.set).not.toHaveBeenCalled()
 	})
 
 	it('should fetch and cache on cache miss', async () => {
 		const mockRedis = {
 			get: vi.fn().mockResolvedValue(null), // Cache miss
-			setex: vi.fn().mockResolvedValue('OK'),
+			set: vi.fn().mockResolvedValue('OK'),
 		}
 		vi.mocked(redisModule.getRedisClient).mockReturnValue(mockRedis as any)
 
@@ -98,10 +98,10 @@ describe('getCachedCommitDetail', () => {
 			'github:commit:anthropics:claude-code:abc123',
 		)
 		expect(mockFetchFn).toHaveBeenCalledOnce()
-		expect(mockRedis.setex).toHaveBeenCalledWith(
+		expect(mockRedis.set).toHaveBeenCalledWith(
 			'github:commit:anthropics:claude-code:abc123',
-			60 * 60 * 24 * 90, // 90 days TTL
 			JSON.stringify(mockCommitDetail),
+			{ ex: 60 * 60 * 24 * 90 }, // 90 days TTL
 		)
 	})
 
@@ -122,7 +122,7 @@ describe('getCachedCommitDetail', () => {
 	it('should continue on Redis get error', async () => {
 		const mockRedis = {
 			get: vi.fn().mockRejectedValue(new Error('Redis connection failed')),
-			setex: vi.fn().mockResolvedValue('OK'),
+			set: vi.fn().mockResolvedValue('OK'),
 		}
 		vi.mocked(redisModule.getRedisClient).mockReturnValue(mockRedis as any)
 
@@ -135,13 +135,13 @@ describe('getCachedCommitDetail', () => {
 
 		expect(result).toEqual(mockCommitDetail)
 		expect(mockFetchFn).toHaveBeenCalledOnce()
-		expect(mockRedis.setex).toHaveBeenCalled()
+		expect(mockRedis.set).toHaveBeenCalled()
 	})
 
-	it('should continue on Redis setex error (non-blocking)', async () => {
+	it('should continue on Redis set error (non-blocking)', async () => {
 		const mockRedis = {
 			get: vi.fn().mockResolvedValue(null),
-			setex: vi.fn().mockRejectedValue(new Error('Redis write failed')),
+			set: vi.fn().mockRejectedValue(new Error('Redis write failed')),
 		}
 		vi.mocked(redisModule.getRedisClient).mockReturnValue(mockRedis as any)
 
@@ -160,7 +160,7 @@ describe('getCachedCommitDetail', () => {
 	it('should propagate fetch function errors', async () => {
 		const mockRedis = {
 			get: vi.fn().mockResolvedValue(null),
-			setex: vi.fn(),
+			set: vi.fn(),
 		}
 		vi.mocked(redisModule.getRedisClient).mockReturnValue(mockRedis as any)
 
