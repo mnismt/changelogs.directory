@@ -6,7 +6,7 @@ Minimal docs for the GitHub integration used by ingestion steps.
 
 - `api.ts`
   - `parseGitHubRepoUrl(url)` – extract `{ owner, name }`
-  - `fetchCommitHistory(repoUrl, filePath, token?)` – list commits that touched a path
+  - `fetchCommitHistory(repoUrl, filePath, token?)` – list ALL commits that touched a path (paginated)
   - `fetchCommitDetail(repoUrl, sha, token?)` – commit detail with files/patches (cached)
   - `buildVersionDateMapping(repoUrl, filePath, token?)` – map `version -> Date` via patches
 - `cache.ts`
@@ -44,7 +44,7 @@ Minimal docs for the GitHub integration used by ingestion steps.
 
 ## Caching Details
 
-- Backend: Upstash Redis via `REDIS_URL`
+- Backend: Upstash Redis via `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
 - Key: `github:commit:{owner}:{repo}:{sha}`
 - TTL: 90 days (commits are immutable)
 - Resilience: If Redis fails, fall back to GitHub API (non-blocking)
@@ -56,5 +56,6 @@ Minimal docs for the GitHub integration used by ingestion steps.
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 # Upstash Redis (required for caching; otherwise gracefully disabled)
-REDIS_URL=rediss://default:***@<your-upstash-host>:6379
+UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_token_here
 ```

@@ -205,7 +205,8 @@ Optional environment variables:
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 # Upstash Redis (used to cache immutable commit details)
-REDIS_URL=rediss://default:***@<your-upstash-host>:6379
+UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_token_here
 ```
 
 ## Error Handling
@@ -217,7 +218,7 @@ REDIS_URL=rediss://default:***@<your-upstash-host>:6379
 
 ## Caching (Commit Details)
 
-- Backend: Upstash Redis, configured via `REDIS_URL`
+- Backend: Upstash Redis, configured via `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
 - Scope: Only caches GitHub commit details (`/commits/{sha}`) because they are immutable
 - Key: `github:commit:{owner}:{repo}:{sha}`
 - TTL: 90 days

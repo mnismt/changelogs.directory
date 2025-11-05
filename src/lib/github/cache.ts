@@ -35,6 +35,10 @@ export async function getCachedCommitDetail(
 	const redis = getRedisClient()
 	const cacheKey = getCacheKey(owner, repo, sha)
 
+	if (!redis) {
+		logger.log('Redis is not available, using GitHub API', { cacheKey })
+	}
+
 	// Try Redis first
 	if (redis) {
 		try {
@@ -59,13 +63,13 @@ export async function getCachedCommitDetail(
 	// Store in Redis for next time
 	if (redis) {
 		try {
-			await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(data))
+			await redis.set(cacheKey, JSON.stringify(data), { ex: CACHE_TTL })
 			logger.info('Cached commit detail', {
 				sha: sha.substring(0, 7),
 				ttl: CACHE_TTL,
 			})
 		} catch (error) {
-			logger.warn('Redis setex failed, continuing', {
+			logger.warn('Redis set failed, continuing', {
 				error: error instanceof Error ? error.message : String(error),
 				cacheKey,
 			})
