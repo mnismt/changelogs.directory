@@ -14,10 +14,10 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 - [x] Create Trigger.dev ingestion task (`src/trigger/ingest-claude-code.ts`)
 - [x] Test ingestion manually - verify data in database
 - [x] Schedule Trigger.dev task (every 6 hours)
-- [ ] Seed OpenAI Codex tool record
-- [ ] Create Trigger.dev ingestion task (`src/trigger/ingest-codex.ts`)
-- [ ] Test ingestion manually - verify Codex data in database
-- [ ] Schedule Trigger.dev task (every 6 hours) for Codex
+- [x] Seed OpenAI Codex tool record
+- [x] Create Trigger.dev ingestion task (`src/trigger/ingest-codex.ts`)
+- [x] Test ingestion manually - verify Codex data in database
+- [x] Schedule Trigger.dev task (every 6 hours) for Codex
 
 **Success metric**: Claude Code and OpenAI Codex releases appear in database after ingestion runs.
 
@@ -25,12 +25,11 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 
 ## Phase 2: Core UI Pages
 
-**Goal**: Users can browse Claude Code and OpenAI Codex releases and changes.
+**Goal**: Users can browse Claude Code and OpenAI Codex releases and changes within the shared `tools` route.
 
-- [ ] Build `/tools/claude-code` page (tool overview + releases list)
-- [ ] Build `/tools/claude-code/releases/[version]` page (release details with changes)
-- [ ] Build `/tools/codex` page (tool overview + releases list)
-- [ ] Build `/tools/codex/releases/[version]` page (release details with changes)
+- [ ] Build `/tools` hub (list Claude Code & Codex entries)
+- [x] Build `/tools/$slug` overview page (tool details + releases list)
+- [x] Build `/tools/$slug/releases/$version` page (release details with changes)
 - [ ] Implement basic filtering (by change type: feature/bugfix/breaking)
 - [ ] Add platform badges/filters (Windows, macOS, VSCode, etc.)
 - [ ] Style with monochrome dark theme (matching design system)
