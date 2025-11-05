@@ -53,31 +53,8 @@ describe('parseChangelogMd', () => {
 		expect(releases[0].changes[2].title).toBe('Third change')
 	})
 
-	it('should extract platform prefixes', () => {
-		const markdown = `## 2.0.31
-- Windows: native installation uses shift+tab
-- macOS: improved performance
-- VSCode: Added new feature
-`
-
-		const releases = parseChangelogMd(markdown)
-
-		expect(releases[0].changes[0].platform).toBe('windows')
-		expect(releases[0].changes[1].platform).toBe('macos')
-		expect(releases[0].changes[2].platform).toBe('vscode')
-	})
-
-	it('should extract component prefixes', () => {
-		const markdown = `## 2.0.31
-- [Core] Added new feature
-- [API] Improved endpoint
-`
-
-		const releases = parseChangelogMd(markdown)
-
-		expect(releases[0].changes[0].component).toBe('Core')
-		expect(releases[0].changes[1].component).toBe('API')
-	})
+	// Platform and component extraction removed - now handled by LLM enrichment
+	// These fields are intentionally left undefined in the parser
 
 	it('should detect breaking flags', () => {
 		const markdown = `## 2.0.31
