@@ -16,6 +16,8 @@ const paginatedReleasesSchema = z.object({
 	slug: z.string().min(1, 'Tool slug is required'),
 	limit: z.number().int().min(1).max(100).default(20),
 	offset: z.number().int().min(0).default(0),
+	dateFrom: z.date().optional(),
+	dateTo: z.date().optional(),
 })
 
 /**
@@ -117,14 +119,28 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 				throw new Error('Tool not found')
 			}
 
+			// Build date filter
+			const dateFilter = {
+				...(data.dateFrom && { gte: data.dateFrom }),
+				...(data.dateTo && { lte: data.dateTo }),
+			}
+
+			// Build where clause
+			const whereClause = {
+				toolId: tool.id,
+				...(Object.keys(dateFilter).length > 0 && {
+					releaseDate: dateFilter,
+				}),
+			}
+
 			// Get total count for pagination metadata
 			const totalCount = await prisma.release.count({
-				where: { toolId: tool.id },
+				where: whereClause,
 			})
 
 			// Fetch paginated releases
 			const releases = await prisma.release.findMany({
-				where: { toolId: tool.id },
+				where: whereClause,
 				orderBy: { releaseDate: 'desc' },
 				skip: data.offset,
 				take: data.limit,
