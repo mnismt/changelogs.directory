@@ -11,11 +11,21 @@ import { getToolMetadata, getToolReleasesPaginated } from '@/server/tools'
 const INITIAL_PAGE_SIZE = 20
 
 export const Route = createFileRoute('/tools/$slug/')({
-	loader: async ({ params }) => {
+	loader: async ({ params, search }) => {
+		// Parse date filters from search params
+		const dateFrom = search.dateFrom ? new Date(search.dateFrom) : undefined
+		const dateTo = search.dateTo ? new Date(search.dateTo) : undefined
+
 		const [toolMetadata, firstPage] = await Promise.all([
 			getToolMetadata({ data: { slug: params.slug } }),
 			getToolReleasesPaginated({
-				data: { slug: params.slug, limit: INITIAL_PAGE_SIZE, offset: 0 },
+				data: {
+					slug: params.slug,
+					limit: INITIAL_PAGE_SIZE,
+					offset: 0,
+					dateFrom,
+					dateTo,
+				},
 			}),
 		])
 
@@ -46,6 +56,8 @@ function ToolPage() {
 	const search = Route.useSearch() as {
 		type?: string | string[]
 		view?: 'grid' | 'timeline'
+		dateFrom?: string
+		dateTo?: string
 	}
 
 	const loaderData = Route.useLoaderData()
@@ -62,18 +74,30 @@ function ToolPage() {
 		setReleases(loaderData.initialReleases)
 		setPagination(loaderData.initialPagination)
 		setIsLoadingMore(false)
-	}, [search.type, loaderData.initialReleases, loaderData.initialPagination])
+	}, [
+		search.type,
+		search.dateFrom,
+		search.dateTo,
+		loaderData.initialReleases,
+		loaderData.initialPagination,
+	])
 
 	const loadMoreReleases = useCallback(async () => {
 		if (isLoadingMore || !pagination.hasMore) return
 
 		setIsLoadingMore(true)
 		try {
+			// Parse date filters
+			const dateFrom = search.dateFrom ? new Date(search.dateFrom) : undefined
+			const dateTo = search.dateTo ? new Date(search.dateTo) : undefined
+
 			const nextPage = await getToolReleasesPaginated({
 				data: {
 					slug,
 					limit: INITIAL_PAGE_SIZE,
 					offset: releases.length,
+					dateFrom,
+					dateTo,
 				},
 			})
 
@@ -84,7 +108,14 @@ function ToolPage() {
 		} finally {
 			setIsLoadingMore(false)
 		}
-	}, [slug, isLoadingMore, pagination.hasMore, releases.length])
+	}, [
+		slug,
+		isLoadingMore,
+		pagination.hasMore,
+		releases.length,
+		search.dateFrom,
+		search.dateTo,
+	])
 
 	// Intersection observer for infinite scroll
 	useEffect(() => {
