@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getCacheKey, getCachedCommitDetail } from '@/lib/github/cache'
+import { getCommitCacheKey, getCachedCommitDetail } from '@/lib/github/cache'
 import * as redisModule from '@/lib/redis'
 import type { GitHubCommitDetail } from '@/lib/github/api'
 
@@ -11,26 +11,27 @@ vi.mock('@/lib/redis', () => ({
 // Mock trigger.dev logger
 vi.mock('@trigger.dev/sdk', () => ({
 	logger: {
+		log: vi.fn(),
 		info: vi.fn(),
 		warn: vi.fn(),
 	},
 }))
 
-describe('getCacheKey', () => {
+describe('getCommitCacheKey', () => {
 	it('should generate correct cache key format', () => {
-		const key = getCacheKey('anthropics', 'claude-code', 'abc123')
+		const key = getCommitCacheKey('anthropics', 'claude-code', 'abc123')
 		expect(key).toBe('github:commit:anthropics:claude-code:abc123')
 	})
 
 	it('should generate unique keys for different repos', () => {
-		const key1 = getCacheKey('anthropics', 'claude-code', 'abc123')
-		const key2 = getCacheKey('openai', 'gpt-4', 'abc123')
+		const key1 = getCommitCacheKey('anthropics', 'claude-code', 'abc123')
+		const key2 = getCommitCacheKey('openai', 'gpt-4', 'abc123')
 		expect(key1).not.toBe(key2)
 	})
 
 	it('should generate unique keys for different commits', () => {
-		const key1 = getCacheKey('anthropics', 'claude-code', 'abc123')
-		const key2 = getCacheKey('anthropics', 'claude-code', 'def456')
+		const key1 = getCommitCacheKey('anthropics', 'claude-code', 'abc123')
+		const key2 = getCommitCacheKey('anthropics', 'claude-code', 'def456')
 		expect(key1).not.toBe(key2)
 	})
 })

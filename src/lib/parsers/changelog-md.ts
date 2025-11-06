@@ -9,6 +9,9 @@ import {
 	generateVersionSort,
 } from './changelog-md-utils'
 
+// Re-export utilities for tests
+export { generateVersionSort }
+
 /**
  * Parsed representation of a single change entry within a release
  */
