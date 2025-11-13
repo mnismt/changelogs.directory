@@ -1,10 +1,15 @@
 import type { ChangeType } from '@prisma/client'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Calendar, X } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
 
 const FILTER_OPTIONS: Array<{ value: ChangeType; label: string }> = [
@@ -18,89 +23,28 @@ const FILTER_OPTIONS: Array<{ value: ChangeType; label: string }> = [
 	{ value: 'DOCUMENTATION', label: 'Docs' },
 ]
 
-interface DatePreset {
-	label: string
-	value: string
-	getDates: () => { from: Date; to: Date }
-}
-
-const DATE_PRESETS: DatePreset[] = [
-	{
-		label: '7d',
-		value: '7d',
-		getDates: () => {
-			const to = new Date()
-			const from = new Date()
-			from.setDate(from.getDate() - 7)
-			return { from, to }
-		},
-	},
-	{
-		label: '30d',
-		value: '30d',
-		getDates: () => {
-			const to = new Date()
-			const from = new Date()
-			from.setDate(from.getDate() - 30)
-			return { from, to }
-		},
-	},
-	{
-		label: '3mo',
-		value: '3mo',
-		getDates: () => {
-			const to = new Date()
-			const from = new Date()
-			from.setMonth(from.getMonth() - 3)
-			return { from, to }
-		},
-	},
-	{
-		label: '6mo',
-		value: '6mo',
-		getDates: () => {
-			const to = new Date()
-			const from = new Date()
-			from.setMonth(from.getMonth() - 6)
-			return { from, to }
-		},
-	},
-	{
-		label: '1y',
-		value: '1y',
-		getDates: () => {
-			const to = new Date()
-			const from = new Date()
-			from.setFullYear(from.getFullYear() - 1)
-			return { from, to }
-		},
-	},
-	{
-		label: 'All time',
-		value: 'all',
-		getDates: () => {
-			// Return far past and future dates to effectively show all
-			const from = new Date('2000-01-01')
-			const to = new Date()
-			to.setFullYear(to.getFullYear() + 1)
-			return { from, to }
-		},
-	},
-]
+const DATE_PRESETS = [
+	{ value: '7d', label: '7d' },
+	{ value: '30d', label: '30d' },
+	{ value: '3mo', label: '3mo' },
+	{ value: '6mo', label: '6mo' },
+	{ value: '1y', label: '1y' },
+	{ value: 'all', label: 'All time' },
+] as const
 
 export function FilterBar() {
-	const dateFromId = useId()
-	const dateToId = useId()
 	const navigate = useNavigate()
 	const search = useSearch({ strict: false }) as {
 		type?: string | string[]
 		platform?: string | string[]
-		dateFrom?: string
-		dateTo?: string
 		datePreset?: string
+		startDate?: string
+		endDate?: string
 	}
 
-	const [showCustomRange, setShowCustomRange] = useState(false)
+	const [showCustomPicker, setShowCustomPicker] = useState(
+		Boolean(search.startDate || search.endDate),
+	)
 
 	// Normalize to arrays
 	const selectedTypes = search.type
@@ -109,80 +53,69 @@ export function FilterBar() {
 			: [search.type]
 		: []
 
-	// Determine active date preset
-	const activeDatePreset = search.datePreset || 'all'
+	// Calculate date filter count (preset OR custom range counts as 1)
+	const dateFilterCount =
+		search.datePreset && search.datePreset !== 'all'
+			? 1
+			: search.startDate || search.endDate
+				? 1
+				: 0
 
-	const hasActiveFilters =
-		selectedTypes.length > 0 ||
-		(activeDatePreset !== 'all' && activeDatePreset !== undefined)
-
-	const activeFilterCount =
-		selectedTypes.length + (activeDatePreset !== 'all' ? 1 : 0)
+	const hasActiveFilters = selectedTypes.length > 0 || dateFilterCount > 0
+	const activeFilterCount = selectedTypes.length + dateFilterCount
 
 	const toggleType = (type: string) => {
 		const newTypes = selectedTypes.includes(type)
 			? selectedTypes.filter((t) => t !== type)
 			: [...selectedTypes, type]
 
-		updateFilters({ types: newTypes })
+		const searchObj: Record<string, string | string[]> = { ...search }
+
+		if (newTypes.length > 0) {
+			searchObj.type = newTypes.length === 1 ? newTypes[0] : newTypes
+		} else {
+			delete searchObj.type
+		}
+
+		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
+		navigate({ search: searchObj } as any)
 	}
 
 	const setDatePreset = (preset: string) => {
-		if (preset === 'custom') {
-			setShowCustomRange(true)
-			return
+		const searchObj: Record<string, string | string[]> = { ...search }
+
+		if (preset === 'all') {
+			delete searchObj.datePreset
+			delete searchObj.startDate
+			delete searchObj.endDate
+		} else {
+			searchObj.datePreset = preset
+			delete searchObj.startDate
+			delete searchObj.endDate
 		}
 
-		const presetConfig = DATE_PRESETS.find((p) => p.value === preset)
-		if (!presetConfig) return
+		setShowCustomPicker(false)
 
-		const { from, to } = presetConfig.getDates()
-
-		updateFilters({
-			dateFrom: preset === 'all' ? undefined : from.toISOString(),
-			dateTo: preset === 'all' ? undefined : to.toISOString(),
-			datePreset: preset,
-		})
-		setShowCustomRange(false)
+		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
+		navigate({ search: searchObj } as any)
 	}
 
-	const applyCustomDateRange = (from: string, to: string) => {
-		updateFilters({
-			dateFrom: from ? new Date(from).toISOString() : undefined,
-			dateTo: to ? new Date(to).toISOString() : undefined,
-			datePreset: 'custom',
-		})
-	}
+	const setCustomDateRange = (startDate: string, endDate: string) => {
+		const searchObj: Record<string, string | string[]> = { ...search }
 
-	const updateFilters = (updates: {
-		types?: string[]
-		dateFrom?: string
-		dateTo?: string
-		datePreset?: string
-	}) => {
-		const searchObj: Record<string, string | string[]> = {}
-
-		const types = updates.types !== undefined ? updates.types : selectedTypes
-
-		if (types.length > 0) {
-			searchObj.type = types.length === 1 ? types[0] : types
+		if (startDate) {
+			searchObj.startDate = startDate
+		} else {
+			delete searchObj.startDate
 		}
 
-		if (updates.dateFrom !== undefined) {
-			searchObj.dateFrom = updates.dateFrom
-		} else if (search.dateFrom) {
-			searchObj.dateFrom = search.dateFrom
+		if (endDate) {
+			searchObj.endDate = endDate
+		} else {
+			delete searchObj.endDate
 		}
 
-		if (updates.dateTo !== undefined) {
-			searchObj.dateTo = updates.dateTo
-		} else if (search.dateTo) {
-			searchObj.dateTo = search.dateTo
-		}
-
-		if (updates.datePreset !== undefined && updates.datePreset !== 'all') {
-			searchObj.datePreset = updates.datePreset
-		}
+		delete searchObj.datePreset
 
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
 		navigate({ search: searchObj } as any)
@@ -191,7 +124,7 @@ export function FilterBar() {
 	const clearFilters = () => {
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
 		navigate({ search: {} } as any)
-		setShowCustomRange(false)
+		setShowCustomPicker(false)
 	}
 
 	return (
@@ -233,7 +166,12 @@ export function FilterBar() {
 				</h3>
 				<ButtonGroup>
 					{DATE_PRESETS.map((preset) => {
-						const isActive = activeDatePreset === preset.value
+						const isActive =
+							search.datePreset === preset.value ||
+							(preset.value === 'all' &&
+								!search.datePreset &&
+								!search.startDate &&
+								!search.endDate)
 						return (
 							<button
 								key={preset.value}
@@ -253,74 +191,53 @@ export function FilterBar() {
 							</button>
 						)
 					})}
-					<button
-						type="button"
-						onClick={() => setShowCustomRange(!showCustomRange)}
+					<Collapsible
+						open={showCustomPicker}
+						onOpenChange={setShowCustomPicker}
 					>
-						<Badge
-							variant={activeDatePreset === 'custom' ? 'default' : 'outline'}
-							className={`cursor-pointer font-mono text-xs uppercase transition-colors ${
-								activeDatePreset === 'custom'
-									? 'bg-foreground text-background hover:bg-foreground/90'
-									: 'border-border bg-secondary hover:border-accent'
-							}`}
-						>
-							<Calendar className="mr-1 h-3 w-3" />
-							Custom
-						</Badge>
-					</button>
+						<CollapsibleTrigger asChild>
+							<button type="button">
+								<Badge
+									variant={
+										showCustomPicker || search.startDate || search.endDate
+											? 'default'
+											: 'outline'
+									}
+									className={`cursor-pointer font-mono text-xs uppercase transition-colors ${
+										showCustomPicker || search.startDate || search.endDate
+											? 'bg-foreground text-background hover:bg-foreground/90'
+											: 'border-border bg-secondary hover:border-accent'
+									}`}
+								>
+									<Calendar className="mr-1 h-3 w-3" />
+									Custom
+								</Badge>
+							</button>
+						</CollapsibleTrigger>
+						<CollapsibleContent className="mt-3 space-y-2">
+							<div className="flex flex-col gap-2 sm:flex-row">
+								<Input
+									type="date"
+									placeholder="Start date"
+									value={search.startDate || ''}
+									onChange={(e) =>
+										setCustomDateRange(e.target.value, search.endDate || '')
+									}
+									className="font-mono text-xs"
+								/>
+								<Input
+									type="date"
+									placeholder="End date"
+									value={search.endDate || ''}
+									onChange={(e) =>
+										setCustomDateRange(search.startDate || '', e.target.value)
+									}
+									className="font-mono text-xs"
+								/>
+							</div>
+						</CollapsibleContent>
+					</Collapsible>
 				</ButtonGroup>
-
-				{/* Custom Date Range Inputs */}
-				{showCustomRange && (
-					<div className="flex flex-wrap items-center gap-3 rounded-md border border-border bg-card/50 p-4">
-						<div className="flex items-center gap-2">
-							<label
-								htmlFor={dateFromId}
-								className="font-mono text-xs text-muted-foreground"
-							>
-								From:
-							</label>
-							<Input
-								id={dateFromId}
-								type="date"
-								defaultValue={
-									search.dateFrom
-										? new Date(search.dateFrom).toISOString().split('T')[0]
-										: ''
-								}
-								className="h-8 w-40 border-border bg-secondary font-mono text-xs"
-								onChange={(e) => {
-									const to = search.dateTo || new Date().toISOString()
-									applyCustomDateRange(e.target.value, to)
-								}}
-							/>
-						</div>
-						<div className="flex items-center gap-2">
-							<label
-								htmlFor={dateToId}
-								className="font-mono text-xs text-muted-foreground"
-							>
-								To:
-							</label>
-							<Input
-								id={dateToId}
-								type="date"
-								defaultValue={
-									search.dateTo
-										? new Date(search.dateTo).toISOString().split('T')[0]
-										: new Date().toISOString().split('T')[0]
-								}
-								className="h-8 w-40 border-border bg-secondary font-mono text-xs"
-								onChange={(e) => {
-									const from =
-										search.dateFrom || new Date('2000-01-01').toISOString()
-									applyCustomDateRange(from, e.target.value)
-								}}
-							/>
-						</div>
-					</div>
-				)}
 			</div>
 
 			{/* Active Filters Summary & Clear */}
