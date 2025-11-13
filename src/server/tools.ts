@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
+import { subDays, subMonths, subYears } from 'date-fns'
 import { z } from 'zod'
 import { getPrisma } from './db'
 
@@ -16,9 +17,32 @@ const paginatedReleasesSchema = z.object({
 	slug: z.string().min(1, 'Tool slug is required'),
 	limit: z.number().int().min(1).max(100).default(20),
 	offset: z.number().int().min(0).default(0),
-	dateFrom: z.date().optional(),
-	dateTo: z.date().optional(),
+	datePreset: z.enum(['7d', '30d', '3mo', '6mo', '1y', 'all']).optional(),
+	startDate: z.string().optional(),
+	endDate: z.string().optional(),
 })
+
+const getDateRange = (preset?: string) => {
+	if (!preset || preset === 'all') {
+		return {}
+	}
+
+	const now = new Date()
+	switch (preset) {
+		case '7d':
+			return { startDate: subDays(now, 7) }
+		case '30d':
+			return { startDate: subDays(now, 30) }
+		case '3mo':
+			return { startDate: subMonths(now, 3) }
+		case '6mo':
+			return { startDate: subMonths(now, 6) }
+		case '1y':
+			return { startDate: subYears(now, 1) }
+		default:
+			return {}
+	}
+}
 
 /**
  * Get tool metadata (without releases)
@@ -119,18 +143,35 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 				throw new Error('Tool not found')
 			}
 
-			// Build date filter
-			const dateFilter = {
-				...(data.dateFrom && { gte: data.dateFrom }),
-				...(data.dateTo && { lte: data.dateTo }),
+			// Build date range filter
+			const dateFilter: { gte?: Date; lte?: Date } = {}
+
+			if (data.datePreset) {
+				const presetRange = getDateRange(data.datePreset)
+				if (presetRange.startDate) {
+					dateFilter.gte = presetRange.startDate
+				}
+			} else if (data.startDate || data.endDate) {
+				if (data.startDate) {
+					dateFilter.gte = new Date(data.startDate)
+				}
+				if (data.endDate) {
+					const endDate = new Date(data.endDate)
+					endDate.setHours(23, 59, 59, 999)
+					dateFilter.lte = endDate
+				}
 			}
 
 			// Build where clause
-			const whereClause = {
+			const whereClause: {
+				toolId: string
+				releaseDate?: { gte?: Date; lte?: Date }
+			} = {
 				toolId: tool.id,
-				...(Object.keys(dateFilter).length > 0 && {
-					releaseDate: dateFilter,
-				}),
+			}
+
+			if (dateFilter.gte || dateFilter.lte) {
+				whereClause.releaseDate = dateFilter
 			}
 
 			// Get total count for pagination metadata

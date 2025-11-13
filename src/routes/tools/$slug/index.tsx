@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { z } from 'zod'
 import { FilterBar } from '@/components/changelog/filter-bar'
 import { ReleaseCard } from '@/components/changelog/release-card'
 import { TimelineView } from '@/components/changelog/timeline-view'
@@ -10,12 +11,22 @@ import { getToolMetadata, getToolReleasesPaginated } from '@/server/tools'
 
 const INITIAL_PAGE_SIZE = 20
 
-export const Route = createFileRoute('/tools/$slug/')({
-	loader: async ({ params, search }) => {
-		// Parse date filters from search params
-		const dateFrom = search.dateFrom ? new Date(search.dateFrom) : undefined
-		const dateTo = search.dateTo ? new Date(search.dateTo) : undefined
+const searchSchema = z.object({
+	type: z.union([z.string(), z.array(z.string())]).optional(),
+	view: z.enum(['grid', 'timeline']).optional(),
+	datePreset: z.enum(['7d', '30d', '3mo', '6mo', '1y', 'all']).optional(),
+	startDate: z.string().optional(),
+	endDate: z.string().optional(),
+})
 
+export const Route = createFileRoute('/tools/$slug/')({
+	validateSearch: searchSchema,
+	loaderDeps: ({ search }) => ({
+		datePreset: search.datePreset,
+		startDate: search.startDate,
+		endDate: search.endDate,
+	}),
+	loader: async ({ params, deps }) => {
 		const [toolMetadata, firstPage] = await Promise.all([
 			getToolMetadata({ data: { slug: params.slug } }),
 			getToolReleasesPaginated({
@@ -23,8 +34,9 @@ export const Route = createFileRoute('/tools/$slug/')({
 					slug: params.slug,
 					limit: INITIAL_PAGE_SIZE,
 					offset: 0,
-					dateFrom,
-					dateTo,
+					datePreset: deps.datePreset,
+					startDate: deps.startDate,
+					endDate: deps.endDate,
 				},
 			}),
 		])
@@ -53,12 +65,7 @@ export const Route = createFileRoute('/tools/$slug/')({
 })
 
 function ToolPage() {
-	const search = Route.useSearch() as {
-		type?: string | string[]
-		view?: 'grid' | 'timeline'
-		dateFrom?: string
-		dateTo?: string
-	}
+	const search = Route.useSearch()
 
 	const loaderData = Route.useLoaderData()
 	const slug = Route.useParams().slug
@@ -76,8 +83,9 @@ function ToolPage() {
 		setIsLoadingMore(false)
 	}, [
 		search.type,
-		search.dateFrom,
-		search.dateTo,
+		search.datePreset,
+		search.startDate,
+		search.endDate,
 		loaderData.initialReleases,
 		loaderData.initialPagination,
 	])
@@ -87,17 +95,14 @@ function ToolPage() {
 
 		setIsLoadingMore(true)
 		try {
-			// Parse date filters
-			const dateFrom = search.dateFrom ? new Date(search.dateFrom) : undefined
-			const dateTo = search.dateTo ? new Date(search.dateTo) : undefined
-
 			const nextPage = await getToolReleasesPaginated({
 				data: {
 					slug,
 					limit: INITIAL_PAGE_SIZE,
 					offset: releases.length,
-					dateFrom,
-					dateTo,
+					datePreset: search.datePreset,
+					startDate: search.startDate,
+					endDate: search.endDate,
 				},
 			})
 
@@ -113,8 +118,9 @@ function ToolPage() {
 		isLoadingMore,
 		pagination.hasMore,
 		releases.length,
-		search.dateFrom,
-		search.dateTo,
+		search.datePreset,
+		search.startDate,
+		search.endDate,
 	])
 
 	// Intersection observer for infinite scroll
