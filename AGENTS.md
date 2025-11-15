@@ -315,15 +315,31 @@ This project follows a **monochrome dark aesthetic** inspired by developer tools
 - Duration: 15-30s depending on content length
 - Add pause on hover: `hover:animation-play-state-paused`
 
-#### Hover Transitions
+#### Hover Transitions & Micro-interactions
+**Philosophy:** Smooth, bold, aesthetic - NO cringe effects (scale, zoom, brightness bumps).
+
+**Preferred Patterns:**
 ```tsx
-className="transition-colors hover:text-foreground"
-className="transition-all hover:border-accent"
+// Slow, deliberate transforms with soul (500-700ms ease-out)
+className="transition-transform duration-700 ease-out hover:rotate-12"
+
+// Subtle border/background shifts
+className="transition-all duration-500 ease-out hover:border-foreground/20 hover:bg-card/80"
+
+// Cohesive opacity/color fades (300ms)
+className="transition-colors duration-300 group-hover:text-muted-foreground/80"
+className="transition-colors duration-300 group-hover:border-foreground/10"
 ```
-- Duration: 150-200ms (default is fine)
-- Use `transition-colors` for text/border color changes
-- Use `transition-all` when multiple properties change
-- Avoid transitions on `transform` unless necessary
+
+**Rules:**
+- ✅ Use `ease-out` for smooth deceleration (natural feel)
+- ✅ Longer durations (500-700ms) for transforms like rotation
+- ✅ Shorter durations (300ms) for color/opacity changes
+- ✅ Group related elements with `group` and `group-hover:` for cohesive movement
+- ✅ Subtle rotations (12°), opacity shifts, border brightening
+- ❌ NO scale animations (`hover:scale-[1.02]`) - feels gimmicky
+- ❌ NO brightness/saturation bumps - keep monochrome pure
+- ❌ NO jarring `ease-in` or instant transitions
 
 #### Loading States
 - Skeleton screens matching bg colors

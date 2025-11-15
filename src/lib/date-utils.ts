@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns'
+import { format, formatDistanceToNow, parseISO } from 'date-fns'
 
 /**
  * Safely formats a date, handling both Date objects and date strings.
@@ -76,4 +76,20 @@ export function toDate(date: Date | string | null | undefined): Date | null {
 	}
 
 	return null
+}
+
+/**
+ * Formats a date as relative time (e.g., "5 days ago")
+ * @param date - Date object or date string
+ * @returns Relative time string
+ */
+export function formatRelativeDate(
+	date: Date | string | null | undefined,
+): string {
+	if (!date) return 'Date unknown'
+
+	const dateObj = toDate(date)
+	if (!dateObj) return 'Date unknown'
+
+	return formatDistanceToNow(dateObj, { addSuffix: true })
 }
