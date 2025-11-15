@@ -19,7 +19,7 @@ export function Header() {
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<Link
-								to="/"
+								to="/tools"
 								className="text-muted-foreground transition-colors hover:text-foreground"
 							>
 								Tools

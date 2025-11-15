@@ -411,3 +411,65 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 			throw new Error('Failed to fetch versions')
 		}
 	})
+
+/**
+ * Get all active tools with their latest release info
+ * Used for tools directory page
+ */
+export const getAllTools = createServerFn({ method: 'GET' }).handler(
+	async () => {
+		const prisma = getPrisma()
+
+		try {
+			// Fetch all active tools
+			const tools = await prisma.tool.findMany({
+				where: { isActive: true },
+				orderBy: { name: 'asc' },
+				select: {
+					id: true,
+					slug: true,
+					name: true,
+					vendor: true,
+					description: true,
+					homepage: true,
+					repositoryUrl: true,
+					tags: true,
+					lastFetchedAt: true,
+					_count: {
+						select: { releases: true },
+					},
+				},
+			})
+
+			// Get latest release for each tool
+			const toolsWithLatest = await Promise.all(
+				tools.map(async (tool) => {
+					const latestRelease = await prisma.release.findFirst({
+						where: { toolId: tool.id },
+						orderBy: { releaseDate: 'desc' },
+						select: { version: true, releaseDate: true },
+					})
+					return {
+						...tool,
+						latestVersion: latestRelease?.version || null,
+						latestReleaseDate: latestRelease?.releaseDate || null,
+					}
+				}),
+			)
+
+			// Calculate stats
+			const totalReleases = await prisma.release.count()
+
+			return {
+				tools: toolsWithLatest,
+				stats: {
+					totalTools: toolsWithLatest.length,
+					totalReleases,
+				},
+			}
+		} catch (error: unknown) {
+			console.error('Error fetching all tools:', error)
+			throw new Error('Failed to fetch tools')
+		}
+	},
+)
