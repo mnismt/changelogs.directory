@@ -297,7 +297,8 @@ This project follows a **monochrome dark aesthetic** inspired by developer tools
 
 #### Icons & Logos
 - Use Lucide React for UI icons
-- Icon size: `h-4 w-4` (small), `h-6 w-6` (medium), `h-8 w-8` (large)
+- Icon size: `size-4` (small), `size-6` (medium), `size-8` (large)
+- When width and height are equal, prefer `size-*` over separate `w-* h-*` classes (e.g. use `size-4` instead of `w-4 h-4`)
 - For SVG logos, force monochrome with: `[&>svg]:fill-foreground [&>svg_path]:fill-foreground`
 - Never use colored logos - convert to white/monochrome
 
