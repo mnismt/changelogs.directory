@@ -222,7 +222,7 @@ function HomePage() {
 					<div className="mx-auto max-w-4xl">
 						{/* Page title */}
 						<div
-							className={`mb-12 text-center transition-all duration-700 ${
+							className={`mb-8 text-center transition-all duration-700 ${
 								isMounted
 									? 'translate-y-0 opacity-100'
 									: 'translate-y-4 opacity-0'
@@ -234,6 +234,17 @@ function HomePage() {
 							<p className="text-lg text-muted-foreground sm:text-xl">
 								Latest releases and updates across developer tools
 							</p>
+						</div>
+
+						{/* Logo Showcase */}
+						<div
+							className={`mb-12 transition-all duration-700 delay-100 ${
+								isMounted
+									? 'translate-y-0 opacity-100'
+									: 'translate-y-4 opacity-0'
+							}`}
+						>
+							<LogoShowcase />
 						</div>
 
 						{/* Hero release card */}
@@ -332,15 +343,6 @@ function HomePage() {
 						</div>
 					</div>
 				</section>
-
-				{/* Logo Showcase */}
-				<div
-					className={`transition-all duration-700 delay-700 ${
-						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-					}`}
-				>
-					<LogoShowcase />
-				</div>
 			</main>
 		</div>
 	)
