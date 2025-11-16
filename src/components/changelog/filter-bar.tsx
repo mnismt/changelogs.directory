@@ -36,7 +36,6 @@ export function FilterBar() {
 	const navigate = useNavigate()
 	const search = useSearch({ strict: false }) as {
 		type?: string | string[]
-		platform?: string | string[]
 		datePreset?: string
 		startDate?: string
 		endDate?: string

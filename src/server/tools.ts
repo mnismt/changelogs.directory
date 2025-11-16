@@ -22,6 +22,26 @@ const paginatedReleasesSchema = z.object({
 	endDate: z.string().optional(),
 })
 
+const latestReleasesSchema = z.object({
+	limit: z.number().int().min(1).max(100).default(12),
+	offset: z.number().int().min(0).default(0),
+	changeTypes: z
+		.array(
+			z.enum([
+				'FEATURE',
+				'BUGFIX',
+				'IMPROVEMENT',
+				'BREAKING',
+				'SECURITY',
+				'DEPRECATION',
+				'PERFORMANCE',
+				'DOCUMENTATION',
+				'OTHER',
+			]),
+		)
+		.optional(),
+})
+
 const getDateRange = (preset?: string) => {
 	if (!preset || preset === 'all') {
 		return {}
@@ -409,6 +429,177 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 		} catch (error: unknown) {
 			console.error('Error fetching versions:', error)
 			throw new Error('Failed to fetch versions')
+		}
+	})
+
+/**
+ * Get latest releases across all tools
+ * Used for homepage feed
+ */
+export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
+	.inputValidator((data) => {
+		const result = latestReleasesSchema.safeParse(data)
+		if (!result.success) {
+			const message =
+				result.error.issues[0]?.message || 'Invalid pagination parameters'
+			throw new Error(message)
+		}
+		return result.data
+	})
+	.handler(async ({ data }) => {
+		const prisma = getPrisma()
+
+		try {
+			// Build where clause for change type filtering
+			let whereClause = {}
+
+			if (data.changeTypes && data.changeTypes.length > 0) {
+				// If filtering by change types, we need to find releases that have changes of those types
+				whereClause = {
+					changes: {
+						some: {
+							type: { in: data.changeTypes },
+						},
+					},
+				}
+			}
+
+			// Get total count for pagination metadata
+			const totalCount = await prisma.release.count({
+				where: whereClause,
+			})
+
+			// Fetch paginated releases across all tools
+			const releases = await prisma.release.findMany({
+				where: whereClause,
+				orderBy: { releaseDate: 'desc' },
+				skip: data.offset,
+				take: data.limit,
+				include: {
+					tool: {
+						select: {
+							slug: true,
+							name: true,
+							vendor: true,
+							tags: true,
+						},
+					},
+					_count: {
+						select: { changes: true },
+					},
+				},
+			})
+
+			// Fetch change counts grouped by type for fetched releases
+			const releaseIds = releases.map((r) => r.id)
+
+			// If no releases, return empty data
+			if (releaseIds.length === 0) {
+				return {
+					releases: [],
+					pagination: {
+						offset: data.offset,
+						limit: data.limit,
+						totalCount: 0,
+						hasMore: false,
+					},
+				}
+			}
+
+			const changesByTypeRaw = await prisma.change.groupBy({
+				by: ['releaseId', 'type'],
+				where: {
+					releaseId: { in: releaseIds },
+				},
+				_count: { id: true },
+			})
+
+			// Transform into a map: releaseId -> { type: count }
+			const changesByTypeMap = new Map<string, Record<string, number>>()
+			for (const item of changesByTypeRaw) {
+				if (!changesByTypeMap.has(item.releaseId)) {
+					changesByTypeMap.set(item.releaseId, {})
+				}
+				const typeCounts = changesByTypeMap.get(item.releaseId)
+				if (typeCounts) {
+					typeCounts[item.type] = item._count.id
+				}
+			}
+
+			// Check for breaking/security/deprecation flags using separate queries
+			const [breakingChanges, securityChanges, deprecationChanges] =
+				await Promise.all([
+					prisma.change.groupBy({
+						by: ['releaseId'],
+						where: {
+							releaseId: { in: releaseIds },
+							isBreaking: true,
+						},
+						_count: { id: true },
+					}),
+					prisma.change.groupBy({
+						by: ['releaseId'],
+						where: {
+							releaseId: { in: releaseIds },
+							isSecurity: true,
+						},
+						_count: { id: true },
+					}),
+					prisma.change.groupBy({
+						by: ['releaseId'],
+						where: {
+							releaseId: { in: releaseIds },
+							isDeprecation: true,
+						},
+						_count: { id: true },
+					}),
+				])
+
+			// Transform into sets for fast lookup
+			const breakingSet = new Set(breakingChanges.map((c) => c.releaseId))
+			const securitySet = new Set(securityChanges.map((c) => c.releaseId))
+			const deprecationSet = new Set(deprecationChanges.map((c) => c.releaseId))
+
+			// Create flagged changes map
+			const flaggedChangesMap = new Map<
+				string,
+				{
+					hasBreaking: boolean
+					hasSecurity: boolean
+					hasDeprecation: boolean
+				}
+			>()
+
+			for (const releaseId of releaseIds) {
+				flaggedChangesMap.set(releaseId, {
+					hasBreaking: breakingSet.has(releaseId),
+					hasSecurity: securitySet.has(releaseId),
+					hasDeprecation: deprecationSet.has(releaseId),
+				})
+			}
+
+			// Attach changesByType and flags to each release
+			const releasesWithMetadata = releases.map((release) => ({
+				...release,
+				changesByType: changesByTypeMap.get(release.id) || {},
+				hasBreaking: flaggedChangesMap.get(release.id)?.hasBreaking || false,
+				hasSecurity: flaggedChangesMap.get(release.id)?.hasSecurity || false,
+				hasDeprecation:
+					flaggedChangesMap.get(release.id)?.hasDeprecation || false,
+			}))
+
+			return {
+				releases: releasesWithMetadata,
+				pagination: {
+					offset: data.offset,
+					limit: data.limit,
+					totalCount,
+					hasMore: data.offset + releases.length < totalCount,
+				},
+			}
+		} catch (error: unknown) {
+			console.error('Error fetching latest releases across tools:', error)
+			throw new Error('Failed to fetch latest releases')
 		}
 	})
 

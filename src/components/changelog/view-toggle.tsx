@@ -6,7 +6,6 @@ export function ViewToggle() {
 	const search = useSearch({ strict: false }) as {
 		view?: 'grid' | 'timeline'
 		type?: string | string[]
-		platform?: string | string[]
 	}
 
 	const currentView = search.view || 'timeline'

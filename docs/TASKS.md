@@ -27,12 +27,12 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 
 **Goal**: Users can browse Claude Code and OpenAI Codex releases and changes within the shared `tools` route.
 
-- [ ] Build `/tools` hub (list Claude Code & Codex entries)
+- [x] Build `/tools` hub (list Claude Code & Codex entries)
 - [x] Build `/tools/$slug` overview page (tool details + releases list)
 - [x] Build `/tools/$slug/releases/$version` page (release details with changes)
-- [ ] Implement basic filtering (by change type: feature/bugfix/breaking)
-- [ ] Add platform badges/filters (Windows, macOS, VSCode, etc.)
-- [ ] Style with monochrome dark theme (matching design system)
+- [x] Implement basic filtering (by change type: feature/bugfix/breaking)
+- [x] Add platform badges (Windows, macOS, VSCode, etc.) – filters deferred post-MVP
+- [x] Style with monochrome dark theme (matching design system)
 
 **Success metric**: Users can view Claude Code and OpenAI Codex latest releases and filter changes.
 
@@ -43,11 +43,22 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 **Goal**: Discoverable landing page showing latest updates across tools.
 
 - [ ] Build `/` homepage with "What's new" feed (latest releases)
-- [ ] Add `/tools` directory page (list of tracked tools - Claude Code and OpenAI Codex)
-- [ ] Implement basic search/filter on homepage (by tool, change type, date range)
 - [ ] Add "Subscribe to updates" CTA (link to existing waitlist)
 
 **Success metric**: Homepage shows recent Claude Code and OpenAI Codex releases in a feed format.
+
+---
+
+## Phase 3.5: SEO & Dynamic OG Images
+
+**Goal**: Make shared URLs (especially release pages) highly shareable with rich previews.
+
+- [ ] Implement SEO metadata for core routes (`/`, `/tools`, `/tools/$slug`, `/tools/$slug/releases/$version`)
+- [ ] Build dynamic OG image endpoint that renders per-release cards (tool name, version, date, change count)
+- [ ] Wire OG image URLs into route `head` configs so each release/share uses the correct OG image
+- [ ] Add sitemap.xml and basic indexable structure for tools and releases
+
+**Success metric**: Copying any core URL (especially a specific release) yields accurate title/description and an OG image that reflects that release’s key stats.
 
 ---
 
@@ -55,7 +66,6 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 
 **Goal**: Production-ready deployment with monitoring.
 
-- [ ] SEO optimization (meta tags, OpenGraph, sitemap.xml)
 - [ ] Add loading states and error boundaries
 - [ ] Create basic admin dashboard (`/admin` - show FetchLog status)
 - [ ] Set up error monitoring (Sentry or similar)
