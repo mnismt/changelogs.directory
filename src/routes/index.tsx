@@ -6,6 +6,7 @@ import { FeedFilters } from '@/components/home/feed-filters'
 import { FeedReleaseCard } from '@/components/home/feed-release-card'
 import { HeroRelease } from '@/components/home/hero-release'
 import { LogoShowcase } from '@/components/shared/logo-showcase'
+import { useDebounce } from '@/hooks/use-debounce'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { getToolLogo } from '@/lib/tool-logos'
 import { getLatestReleasesAcrossTools } from '@/server/tools'
@@ -119,6 +120,8 @@ function HomePage() {
 	// State
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 	const [searchQuery, setSearchQuery] = useState('')
+	const debouncedSearchQuery = useDebounce(searchQuery, 300)
+	const isSearching = searchQuery !== debouncedSearchQuery
 	const [releases, setReleases] = useState(initialData.releases)
 	const [pagination, setPagination] = useState(initialData.pagination)
 	const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -218,9 +221,9 @@ function HomePage() {
 
 	// Apply client-side search filter to feed releases
 	const feedReleases = releases.slice(1).filter((release) => {
-		if (!searchQuery) return true
+		if (!debouncedSearchQuery) return true
 
-		const query = searchQuery.toLowerCase()
+		const query = debouncedSearchQuery.toLowerCase()
 		const matchesToolName = release.tool.name.toLowerCase().includes(query)
 		const matchesVendor = release.tool.vendor?.toLowerCase().includes(query)
 		const matchesVersion = release.version.toLowerCase().includes(query)
@@ -411,15 +414,18 @@ function HomePage() {
 										<span>Filter by type</span>
 									</div>
 
-									<div className="flex-1 sm:max-w-xs">
+									<div className="relative flex-1 sm:max-w-xs">
 										<input
 											type="search"
 											placeholder="Search tools, versions, summaries..."
 											value={searchQuery}
 											onChange={(e) => setSearchQuery(e.target.value)}
 											aria-label="Search releases by tool name, version, or summary"
-											className="w-full rounded border border-border bg-secondary px-3 py-1.5 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none focus:ring-1 focus:ring-foreground/20 focus-visible:border-foreground/40 focus-visible:ring-2"
+											className="w-full rounded border border-border bg-secondary px-3 py-1.5 pr-8 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none focus:ring-1 focus:ring-foreground/20 focus-visible:border-foreground/40 focus-visible:ring-2"
 										/>
+										{isSearching && (
+											<Loader2 className="absolute right-2 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground/50" />
+										)}
 									</div>
 								</div>
 							</div>
@@ -464,7 +470,11 @@ function HomePage() {
 							{/* Feed Grid */}
 							<div className="p-6">
 								{feedReleases.length > 0 ? (
-									<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+									<div
+										className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-300 ease-out ${
+											isSearching ? 'opacity-60' : 'opacity-100'
+										}`}
+									>
 										{feedReleases.map((release, index) => (
 											<FeedReleaseCardWithReveal
 												key={release.id}
@@ -475,11 +485,16 @@ function HomePage() {
 												hoveredTool={hoveredTool}
 												setHoveredCardId={setHoveredCardId}
 												setHoveredTool={setHoveredTool}
+												isSearching={isSearching}
 											/>
 										))}
 									</div>
 								) : (
-									<div className="py-12 text-center">
+									<div
+										className={`py-12 text-center transition-opacity duration-300 ease-out ${
+											isSearching ? 'opacity-60' : 'opacity-100'
+										}`}
+									>
 										<p className="text-muted-foreground">
 											No releases found matching your filters.
 										</p>
@@ -513,6 +528,7 @@ function FeedReleaseCardWithReveal({
 	hoveredTool,
 	setHoveredCardId,
 	setHoveredTool,
+	isSearching,
 }: {
 	release: ReleaseData
 	index: number
@@ -521,6 +537,7 @@ function FeedReleaseCardWithReveal({
 	hoveredTool: string | null
 	setHoveredCardId: (cardId: string | null) => void
 	setHoveredTool: (toolSlug: string | null) => void
+	isSearching: boolean
 }) {
 	const { ref, isVisible } = useScrollReveal({ threshold: 0.1 })
 
@@ -537,13 +554,13 @@ function FeedReleaseCardWithReveal({
 	return (
 		<div
 			ref={ref}
-			className={`transition-all duration-600 ease-out ${
-				isMounted && isVisible
-					? 'translate-y-0 opacity-100'
-					: 'translate-y-4 opacity-0'
+			className={`transition-all ease-out ${
+				isMounted && (isVisible || isSearching)
+					? 'translate-y-0 opacity-100 duration-400'
+					: 'translate-y-4 opacity-0 duration-600'
 			}`}
 			style={{
-				transitionDelay: `${initialDelay}ms`,
+				transitionDelay: isSearching ? '0ms' : `${initialDelay}ms`,
 			}}
 		>
 			<FeedReleaseCard

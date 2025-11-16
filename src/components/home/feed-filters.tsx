@@ -53,7 +53,7 @@ export function FeedFilters({
 					type="button"
 					onClick={() => handleToggle(value)}
 					className={cn(
-						'rounded border px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-all duration-300 ease-out',
+						'rounded cursor-pointer border px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-all duration-300 ease-out',
 						isActive(value)
 							? 'border-foreground/30 bg-accent text-foreground'
 							: 'border-border bg-card text-muted-foreground hover:border-foreground/20 hover:bg-accent/50 hover:text-foreground',
