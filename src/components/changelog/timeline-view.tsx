@@ -1,10 +1,11 @@
+import { useMemo } from 'react'
 import { toDate } from '@/lib/date-utils'
 import { TimelineItem } from './timeline-item'
 
-interface Release {
+export interface TimelineRelease {
 	id: string
 	version: string
-	releaseDate: Date | null
+	releaseDate: Date | string | null
 	summary: string | null
 	_count: {
 		changes: number
@@ -14,11 +15,11 @@ interface Release {
 
 interface TimelineViewProps {
 	toolSlug: string
-	releases: Release[]
+	releases: TimelineRelease[]
 }
 
-function groupReleasesByYear(releases: Release[]) {
-	const groups: Record<string, Release[]> = {}
+function groupReleasesByYear(releases: TimelineRelease[]) {
+	const groups: Record<string, TimelineRelease[]> = {}
 
 	for (const release of releases) {
 		let year = 'Date Unknown'
@@ -39,7 +40,7 @@ function groupReleasesByYear(releases: Release[]) {
 }
 
 export function TimelineView({ toolSlug, releases }: TimelineViewProps) {
-	const groupedByYear = groupReleasesByYear(releases)
+	const groupedByYear = useMemo(() => groupReleasesByYear(releases), [releases])
 
 	// Sort years in descending order (newest first)
 	// Put "Date Unknown" at the end
@@ -92,6 +93,7 @@ export function TimelineView({ toolSlug, releases }: TimelineViewProps) {
 										changesByType={release.changesByType}
 										isLast={isLastOverall}
 										isLeft={isLeft}
+										sequenceIndex={globalIndex}
 									/>
 								)
 							})}

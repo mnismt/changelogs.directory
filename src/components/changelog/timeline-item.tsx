@@ -8,6 +8,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { formatDate } from '@/lib/date-utils'
 import { formatVersionForDisplay } from '@/lib/version-formatter'
 import { ChangeCount } from './change-count'
@@ -15,12 +16,13 @@ import { ChangeCount } from './change-count'
 interface TimelineItemProps {
 	toolSlug: string
 	version: string
-	releaseDate?: Date | null
+	releaseDate?: Date | string | null
 	summary?: string | null
 	changeCount: number
 	changesByType?: Record<string, number>
 	isLast?: boolean
 	isLeft?: boolean
+	sequenceIndex?: number
 }
 
 export function TimelineItem({
@@ -32,8 +34,14 @@ export function TimelineItem({
 	changesByType,
 	isLast = false,
 	isLeft = true,
+	sequenceIndex = 0,
 }: TimelineItemProps) {
 	const formattedDate = formatDate(releaseDate)
+	const { ref, isVisible } = useScrollReveal({
+		threshold: 0.2,
+		rootMargin: '-50px',
+	})
+	const staggerDelay = `${Math.min(sequenceIndex, 12) * 35}ms`
 
 	const ariaLabel = `Version ${version}${releaseDate ? ` released on ${formattedDate}` : ''}`
 
@@ -50,9 +58,11 @@ export function TimelineItem({
 
 	return (
 		<div
-			className={`relative grid gap-6 pb-8 ${
-				isLeft ? 'grid-cols-[1fr_auto_1fr]' : 'grid-cols-[1fr_auto_1fr]'
-			}`}
+			ref={ref}
+			className={`relative grid gap-6 pb-8 transition-all duration-600 ease-out ${
+				isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+			} ${isLeft ? 'grid-cols-[1fr_auto_1fr]' : 'grid-cols-[1fr_auto_1fr]'}`}
+			style={{ transitionDelay: staggerDelay }}
 		>
 			{/* Left content (or empty space) */}
 			{isLeft ? (
