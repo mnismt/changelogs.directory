@@ -64,7 +64,7 @@ export function FeedReleaseCard({
 			onMouseLeave={onHoverEnd}
 		>
 			{/* macOS-like window controls */}
-			<div className="flex items-center gap-2 border-b border-border/40 bg-secondary/50 px-4 py-2">
+			<div className="flex items-center gap-2 border-b border-border/40 bg-secondary/50 px-4">
 				<div className="flex items-center gap-1.5">
 					<span
 						className={cn(
