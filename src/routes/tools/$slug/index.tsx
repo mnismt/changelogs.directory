@@ -3,9 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { FilterBar } from '@/components/changelog/filter-bar'
 import { ReleaseCard } from '@/components/changelog/release-card'
-import { TimelineView } from '@/components/changelog/timeline-view'
+import {
+	type TimelineRelease,
+	TimelineView,
+} from '@/components/changelog/timeline-view'
 import { ToolHeader } from '@/components/changelog/tool-header'
 import { ViewToggle } from '@/components/changelog/view-toggle'
+import { useScrollReveal } from '@/hooks/use-scroll-reveal'
+import { toDate } from '@/lib/date-utils'
 import { getToolLogo } from '@/lib/tool-logos'
 import { getToolMetadata, getToolReleasesPaginated } from '@/server/tools'
 
@@ -74,7 +79,12 @@ function ToolPage() {
 	const [releases, setReleases] = useState(loaderData.initialReleases)
 	const [pagination, setPagination] = useState(loaderData.initialPagination)
 	const [isLoadingMore, setIsLoadingMore] = useState(false)
+	const [isMounted, setIsMounted] = useState(false)
 	const loadMoreRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		setIsMounted(true)
+	}, [])
 
 	// Reset releases when filters change
 	useEffect(() => {
@@ -188,76 +198,140 @@ function ToolPage() {
 		<div className="container mx-auto max-w-7xl px-4 pt-20 pb-12">
 			<div className="space-y-8">
 				{/* Tool Header */}
-				<ToolHeader
-					slug={slug}
-					name={tool.name}
-					vendor={tool.vendor}
-					description={tool.description}
-					homepage={tool.homepage}
-					repositoryUrl={tool.repositoryUrl}
-					releaseCount={tool._count.releases}
-					lastFetchedAt={tool.lastFetchedAt}
-					latestVersion={tool.latestVersion || undefined}
-					latestReleaseDate={tool.latestReleaseDate || undefined}
-					firstVersion={tool.firstVersion || undefined}
-					firstReleaseDate={tool.firstReleaseDate || undefined}
-					tags={tool.tags}
-					logo={logo}
-				/>
+				<div
+					className={`transition-all duration-700 ease-out ${
+						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+					}`}
+				>
+					<ToolHeader
+						slug={slug}
+						name={tool.name}
+						vendor={tool.vendor}
+						description={tool.description}
+						homepage={tool.homepage}
+						repositoryUrl={tool.repositoryUrl}
+						releaseCount={tool._count.releases}
+						lastFetchedAt={tool.lastFetchedAt}
+						latestVersion={tool.latestVersion || undefined}
+						latestReleaseDate={tool.latestReleaseDate || undefined}
+						firstVersion={tool.firstVersion || undefined}
+						firstReleaseDate={tool.firstReleaseDate || undefined}
+						tags={tool.tags}
+						logo={logo}
+					/>
+				</div>
 
 				{/* Filter Bar and View Toggle */}
-				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-					<div className="flex-1">
-						<FilterBar />
+				<div
+					className={`transition-all duration-700 ease-out ${
+						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+					}`}
+					style={{ transitionDelay: '120ms' }}
+				>
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+						<div className="flex-1">
+							<FilterBar />
+						</div>
+						<ViewToggle />
 					</div>
-					<ViewToggle />
 				</div>
 
 				{/* Releases - Grid or Timeline */}
-				{filteredReleases.length === 0 ? (
-					<div className="rounded-lg border border-border bg-card p-8 text-center">
-						<p className="text-muted-foreground">
-							{selectedTypes.length > 0
-								? 'No releases match the selected filters.'
-								: 'No releases found.'}
-						</p>
-					</div>
-				) : (
-					<>
-						{search.view === 'grid' ? (
-							<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-								{filteredReleases.map((release) => (
-									<ReleaseCard
-										key={release.id}
-										toolSlug={slug}
-										version={release.version}
-										releaseDate={release.releaseDate}
-										summary={release.summary}
-										changeCount={release._count.changes}
-										changesByType={release.changesByType}
-									/>
-								))}
-							</div>
-						) : (
-							<TimelineView toolSlug={slug} releases={filteredReleases} />
-						)}
+				<div
+					className={`transition-all duration-700 ease-out ${
+						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+					}`}
+					style={{ transitionDelay: '220ms' }}
+				>
+					{filteredReleases.length === 0 ? (
+						<div className="rounded-lg border border-border bg-card p-8 text-center">
+							<p className="text-muted-foreground">
+								{selectedTypes.length > 0
+									? 'No releases match the selected filters.'
+									: 'No releases found.'}
+							</p>
+						</div>
+					) : (
+						<>
+							{search.view === 'grid' ? (
+								<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+									{filteredReleases.map((release, index) => (
+										<ReleaseCardWithReveal
+											key={release.id}
+											release={release}
+											index={index}
+											toolSlug={slug}
+										/>
+									))}
+								</div>
+							) : (
+								<div
+									className={`transition-all duration-600 ease-out ${
+										isMounted
+											? 'translate-y-0 opacity-100'
+											: 'translate-y-4 opacity-0'
+									}`}
+									style={{ transitionDelay: '260ms' }}
+								>
+									<TimelineView toolSlug={slug} releases={filteredReleases} />
+								</div>
+							)}
 
-						{/* Infinite scroll trigger */}
-						{pagination.hasMore && (
-							<div
-								ref={loadMoreRef}
-								className="flex min-h-[100px] items-center justify-center py-8"
-							>
-								{isLoadingMore && (
-									<div className="text-muted-foreground font-mono text-sm">
-										Loading more releases...
-									</div>
-								)}
-							</div>
-						)}
-					</>
-				)}
+							{/* Infinite scroll trigger */}
+							{pagination.hasMore && (
+								<div
+									ref={loadMoreRef}
+									className="flex min-h-[100px] items-center justify-center py-8"
+								>
+									{isLoadingMore && (
+										<div className="text-muted-foreground font-mono text-sm">
+											Loading more releases...
+										</div>
+									)}
+								</div>
+							)}
+						</>
+					)}
+				</div>
 			</div>
+		</div>
+	)
+}
+
+interface ReleaseCardWithRevealProps {
+	release: TimelineRelease
+	index: number
+	toolSlug: string
+}
+
+function ReleaseCardWithReveal({
+	release,
+	index,
+	toolSlug,
+}: ReleaseCardWithRevealProps) {
+	const { ref, isVisible } = useScrollReveal({
+		threshold: 0.2,
+		rootMargin: '-60px',
+	})
+	const delay = 150 + Math.min(index, 10) * 40
+	const releaseDate = toDate(release.releaseDate)
+
+	return (
+		<div
+			ref={ref}
+			className={`transition-all duration-500 ease-out ${
+				isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+			}`}
+			style={{ transitionDelay: `${delay}ms` }}
+		>
+			<ReleaseCard
+				toolSlug={toolSlug}
+				version={release.version}
+				releaseDate={releaseDate}
+				summary={release.summary}
+				changeCount={release._count.changes}
+				changesByType={release.changesByType}
+			/>
 		</div>
 	)
 }

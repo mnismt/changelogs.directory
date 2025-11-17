@@ -1,4 +1,7 @@
 import { Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { SubscribeDialog } from '@/components/shared/subscribe-dialog'
+import { Button } from '@/components/ui/button'
 import {
 	Tooltip,
 	TooltipContent,
@@ -6,6 +9,8 @@ import {
 } from '@/components/ui/tooltip'
 
 export function Header() {
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
+
 	return (
 		<header className="fixed left-0 right-0 top-0 z-50 border-b border-border/50 bg-background/60 backdrop-blur-md">
 			<div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -25,7 +30,7 @@ export function Header() {
 								Tools
 							</Link>
 						</TooltipTrigger>
-						<TooltipContent className="max-w-xs border-border bg-card text-foreground p-2 ">
+						<TooltipContent className="max-w-xs border-border bg-card p-2 text-foreground">
 							<p className="font-mono text-xs">
 								Browse changelogs for popular developer tools and stay updated
 								with new releases
@@ -42,7 +47,7 @@ export function Header() {
 								Compare
 							</Link>
 						</TooltipTrigger>
-						<TooltipContent className="max-w-xs border-border bg-card text-foreground p-2">
+						<TooltipContent className="max-w-xs border-border bg-card p-2 text-foreground">
 							<p className="font-mono text-xs">
 								Compare features and updates across different tools side by side
 							</p>
@@ -58,15 +63,28 @@ export function Header() {
 								Docs
 							</Link>
 						</TooltipTrigger>
-						<TooltipContent className="max-w-xs border-border bg-card text-foreground p-2">
+						<TooltipContent className="max-w-xs border-border bg-card p-2 text-foreground">
 							<p className="font-mono text-xs">
 								Learn how to use changelogs.directory and integrate with your
 								workflow
 							</p>
 						</TooltipContent>
 					</Tooltip>
+
+					<Button
+						variant="outline"
+						size="sm"
+						className="border-border bg-card font-mono text-xs uppercase tracking-wide text-foreground hover:bg-card/80"
+						onClick={() => setIsDialogOpen(true)}
+					>
+						Subscribe
+					</Button>
 				</nav>
 			</div>
+			<SubscribeDialog
+				open={isDialogOpen}
+				onClose={() => setIsDialogOpen(false)}
+			/>
 		</header>
 	)
 }
