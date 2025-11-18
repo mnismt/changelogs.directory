@@ -54,7 +54,7 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 **Goal**: Production-ready deployment with monitoring.
 
 - [ ] Add loading states and error boundaries
-- [ ] Create basic admin dashboard (`/admin` - show FetchLog status)
+- [ ] Add a footer
 - [ ] Set up error monitoring (Sentry or similar)
 - [ ] Deploy to production (Vercel or Cloudflare)
 - [ ] Test ingestion in production environment

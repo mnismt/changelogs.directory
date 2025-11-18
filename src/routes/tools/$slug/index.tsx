@@ -8,8 +8,11 @@ import {
 	TimelineView,
 } from '@/components/changelog/timeline-view'
 import { ToolHeader } from '@/components/changelog/tool-header'
+import { ToolPageSkeleton } from '@/components/changelog/tool-skeleton'
 import { ViewToggle } from '@/components/changelog/view-toggle'
+import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
+import { captureException } from '@/integrations/sentry'
 import { toDate } from '@/lib/date-utils'
 import { getToolLogo } from '@/lib/tool-logos'
 import { getToolMetadata, getToolReleasesPaginated } from '@/server/tools'
@@ -52,6 +55,8 @@ export const Route = createFileRoute('/tools/$slug/')({
 			initialPagination: firstPage.pagination,
 		}
 	},
+	pendingComponent: ToolPageSkeleton,
+	errorComponent: ToolPageError,
 	component: ToolPage,
 	head: ({ loaderData }) => {
 		const toolName = loaderData?.tool?.name || 'Tool'
@@ -79,6 +84,7 @@ function ToolPage() {
 	const [releases, setReleases] = useState(loaderData.initialReleases)
 	const [pagination, setPagination] = useState(loaderData.initialPagination)
 	const [isLoadingMore, setIsLoadingMore] = useState(false)
+	const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
 	const [isMounted, setIsMounted] = useState(false)
 	const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -91,6 +97,7 @@ function ToolPage() {
 		setReleases(loaderData.initialReleases)
 		setPagination(loaderData.initialPagination)
 		setIsLoadingMore(false)
+		setLoadMoreError(null)
 	}, [
 		search.type,
 		search.datePreset,
@@ -105,6 +112,7 @@ function ToolPage() {
 
 		setIsLoadingMore(true)
 		try {
+			setLoadMoreError(null)
 			const nextPage = await getToolReleasesPaginated({
 				data: {
 					slug,
@@ -120,6 +128,8 @@ function ToolPage() {
 			setPagination(nextPage.pagination)
 		} catch (error) {
 			console.error('Failed to load more releases:', error)
+			captureException(error)
+			setLoadMoreError('Unable to load more releases.')
 		} finally {
 			setIsLoadingMore(false)
 		}
@@ -281,19 +291,84 @@ function ToolPage() {
 							{pagination.hasMore && (
 								<div
 									ref={loadMoreRef}
-									className="flex min-h-[100px] items-center justify-center py-8"
+									className="flex min-h-[100px] flex-col items-center justify-center gap-4 py-8"
 								>
-									{isLoadingMore && (
-										<div className="text-muted-foreground font-mono text-sm">
-											Loading more releases...
+									{isLoadingMore ? (
+										<div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+											{TOOL_FEED_SKELETON_KEYS.map((key) => (
+												<ReleaseCardSkeletonPlaceholder key={key} />
+											))}
 										</div>
-									)}
+									) : null}
+									{loadMoreError ? (
+										<div className="text-center text-sm text-muted-foreground">
+											<p>{loadMoreError}</p>
+											<button
+												type="button"
+												onClick={() => {
+													void loadMoreReleases()
+												}}
+												className="mt-1 font-mono text-xs uppercase tracking-wide text-foreground transition-colors hover:text-muted-foreground"
+											>
+												Try again
+											</button>
+										</div>
+									) : null}
 								</div>
 							)}
 						</>
 					)}
 				</div>
 			</div>
+		</div>
+	)
+}
+
+function ReleaseCardSkeletonPlaceholder() {
+	return (
+		<div className="space-y-3 rounded border border-border/60 bg-card/60 p-5">
+			<div className="animate-pulse space-y-2">
+				<div className="h-3 w-16 rounded bg-secondary/60" />
+				<div className="h-5 w-32 rounded bg-secondary/60" />
+				<div className="h-3 w-full rounded bg-secondary/60" />
+				<div className="h-3 w-3/4 rounded bg-secondary/60" />
+			</div>
+		</div>
+	)
+}
+
+const TOOL_FEED_SKELETON_KEYS = [
+	'tool-feed-1',
+	'tool-feed-2',
+	'tool-feed-3',
+] as const
+
+function ToolPageError({
+	error,
+	reset,
+}: {
+	error: unknown
+	reset: () => void
+}) {
+	useEffect(() => {
+		captureException(error)
+	}, [error])
+
+	const detail =
+		error instanceof Error
+			? error.message
+			: typeof error === 'string'
+				? error
+				: null
+
+	return (
+		<div className="px-4 py-24">
+			<ErrorBoundaryCard
+				title="Failed to load tool"
+				message="We couldn't load this tool's changelog."
+				detail={detail ?? undefined}
+				onRetry={reset}
+			/>
 		</div>
 	)
 }

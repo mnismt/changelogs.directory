@@ -4,10 +4,13 @@ import { ArrowLeft, ChevronRight, Copy, ExternalLink } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ChangeItem } from '@/components/changelog/change-item'
 import { CollapsibleSection } from '@/components/changelog/collapsible-section'
+import { ReleaseDetailSkeleton } from '@/components/changelog/release-detail-skeleton'
 import { ReleaseStickyHeader } from '@/components/changelog/release-sticky-header'
 import { VersionList } from '@/components/changelog/version-list'
+import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { Accordion } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
+import { captureException } from '@/integrations/sentry'
 import { formatDate } from '@/lib/date-utils'
 import { getToolLogo } from '@/lib/tool-logos'
 import {
@@ -36,6 +39,8 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 			allVersions,
 		}
 	},
+	pendingComponent: ReleaseDetailSkeleton,
+	errorComponent: ReleaseDetailError,
 	component: ReleaseDetailPage,
 	head: ({ params, loaderData }) => ({
 		meta: [
@@ -338,6 +343,36 @@ function ReleaseDetailPage() {
 					)}
 				</div>
 			</div>
+		</div>
+	)
+}
+
+function ReleaseDetailError({
+	error,
+	reset,
+}: {
+	error: unknown
+	reset: () => void
+}) {
+	useEffect(() => {
+		captureException(error)
+	}, [error])
+
+	const detail =
+		error instanceof Error
+			? error.message
+			: typeof error === 'string'
+				? error
+				: null
+
+	return (
+		<div className="px-4 py-24">
+			<ErrorBoundaryCard
+				title="Failed to load release"
+				message="We couldn't load this release's details."
+				detail={detail ?? undefined}
+				onRetry={reset}
+			/>
 		</div>
 	)
 }

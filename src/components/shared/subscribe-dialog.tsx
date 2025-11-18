@@ -11,25 +11,49 @@ interface SubscribeDialogProps {
 
 export function SubscribeDialog({ open, onClose }: SubscribeDialogProps) {
 	const [isMounted, setIsMounted] = useState(false)
+	const [isVisible, setIsVisible] = useState(open)
+	const [phase, setPhase] = useState<'enter' | 'exit' | null>(null)
 
 	useEffect(() => {
 		setIsMounted(true)
 	}, [])
 
 	useEffect(() => {
-		if (!open) return
-
 		function handleKeydown(event: KeyboardEvent) {
 			if (event.key === 'Escape') {
 				onClose()
 			}
 		}
 
-		window.addEventListener('keydown', handleKeydown)
-		return () => window.removeEventListener('keydown', handleKeydown)
+		if (open) {
+			window.addEventListener('keydown', handleKeydown)
+			return () => window.removeEventListener('keydown', handleKeydown)
+		}
 	}, [open, onClose])
 
-	if (!isMounted || !open) {
+	useEffect(() => {
+		let raf: number | null = null
+		let timeout: number | null = null
+
+		if (open) {
+			setIsVisible(true)
+			setPhase('enter')
+			raf = window.requestAnimationFrame(() => setPhase(null))
+		} else {
+			setPhase('exit')
+			timeout = window.setTimeout(() => {
+				setIsVisible(false)
+				setPhase(null)
+			}, 300)
+		}
+
+		return () => {
+			if (raf) window.cancelAnimationFrame(raf)
+			if (timeout) window.clearTimeout(timeout)
+		}
+	}, [open])
+
+	if (!isMounted || !isVisible) {
 		return null
 	}
 
@@ -41,11 +65,19 @@ export function SubscribeDialog({ open, onClose }: SubscribeDialogProps) {
 		>
 			<button
 				type="button"
-				className="absolute inset-0 bg-background/80 backdrop-blur"
+				className={`absolute inset-0 bg-background/80 backdrop-blur transition-opacity duration-300 ${
+					phase === 'enter' || phase === 'exit' ? 'opacity-0' : 'opacity-100'
+				}`}
 				onClick={onClose}
 				aria-label="Close subscribe dialog"
 			/>
-			<div className="relative z-10 w-full max-w-2xl animate-in fade-in duration-300">
+			<div
+				className={`relative z-10 w-full max-w-2xl transition-all duration-300 ${
+					phase === 'enter' || phase === 'exit'
+						? 'translate-y-2 opacity-0'
+						: 'translate-y-0 opacity-100'
+				}`}
+			>
 				<div className="absolute -right-3 -top-3">
 					<Button
 						type="button"

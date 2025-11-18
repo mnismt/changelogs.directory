@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
+import { CompareDialog } from '@/components/shared/compare-dialog'
 import { SubscribeDialog } from '@/components/shared/subscribe-dialog'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,6 +11,7 @@ import {
 
 export function Header() {
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
+	const [isCompareDialogOpen, setIsCompareDialogOpen] = useState(false)
 
 	return (
 		<header className="fixed left-0 right-0 top-0 z-50 border-b border-border/50 bg-background/60 backdrop-blur-md">
@@ -25,7 +27,7 @@ export function Header() {
 						<TooltipTrigger asChild>
 							<Link
 								to="/tools"
-								className="text-muted-foreground transition-colors hover:text-foreground"
+								className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
 							>
 								Tools
 							</Link>
@@ -40,33 +42,17 @@ export function Header() {
 
 					<Tooltip>
 						<TooltipTrigger asChild>
-							<Link
-								to="/"
-								className="text-muted-foreground transition-colors hover:text-foreground"
+							<button
+								type="button"
+								className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+								onClick={() => setIsCompareDialogOpen(true)}
 							>
 								Compare
-							</Link>
+							</button>
 						</TooltipTrigger>
 						<TooltipContent className="max-w-xs border-border bg-card p-2 text-foreground">
 							<p className="font-mono text-xs">
 								Compare features and updates across different tools side by side
-							</p>
-						</TooltipContent>
-					</Tooltip>
-
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Link
-								to="/"
-								className="text-muted-foreground transition-colors hover:text-foreground"
-							>
-								Docs
-							</Link>
-						</TooltipTrigger>
-						<TooltipContent className="max-w-xs border-border bg-card p-2 text-foreground">
-							<p className="font-mono text-xs">
-								Learn how to use changelogs.directory and integrate with your
-								workflow
 							</p>
 						</TooltipContent>
 					</Tooltip>
@@ -84,6 +70,10 @@ export function Header() {
 			<SubscribeDialog
 				open={isDialogOpen}
 				onClose={() => setIsDialogOpen(false)}
+			/>
+			<CompareDialog
+				open={isCompareDialogOpen}
+				onClose={() => setIsCompareDialogOpen(false)}
 			/>
 		</header>
 	)
