@@ -7,10 +7,13 @@ import {
 	Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { AppErrorBoundary } from '@/components/shared/app-error-boundary'
+import { Footer } from '@/components/shared/footer'
 import { Header } from '@/components/shared/header'
 import { NotFound } from '@/components/shared/not-found'
 import { PostHogPageView } from '@/integrations/posthog/page-view'
 import { PostHogProvider } from '@/integrations/posthog/provider'
+import { SentryProvider } from '@/integrations/sentry/provider'
 import TanStackQueryDevtools from '@/integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
@@ -65,10 +68,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootComponent() {
 	return (
-		<PostHogProvider>
-			<PostHogPageView />
-			<Outlet />
-		</PostHogProvider>
+		<SentryProvider>
+			<PostHogProvider>
+				<PostHogPageView />
+				<AppErrorBoundary>
+					<Outlet />
+				</AppErrorBoundary>
+			</PostHogProvider>
+		</SentryProvider>
 	)
 }
 
@@ -79,8 +86,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
-				<Header />
-				{children}
+				<div className="flex min-h-screen flex-col">
+					<Header />
+					<main className="flex-1">{children}</main>
+					<Footer />
+				</div>
 				<TanStackDevtools
 					config={{
 						position: 'bottom-right',

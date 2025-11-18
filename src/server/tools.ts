@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { subDays, subMonths, subYears } from 'date-fns'
 import { z } from 'zod'
+import { captureServerException } from '@/integrations/sentry/server'
 import { getPrisma } from './db'
 
 // Input schemas
@@ -131,6 +132,7 @@ export const getToolMetadata = createServerFn({ method: 'GET' })
 				}
 				console.error('Database error fetching tool metadata:', error)
 			}
+			captureServerException(error)
 			throw new Error('Failed to fetch tool metadata')
 		}
 	})
@@ -257,6 +259,7 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 				}
 				console.error('Database error fetching paginated releases:', error)
 			}
+			captureServerException(error)
 			throw new Error('Failed to fetch paginated releases')
 		}
 	})
@@ -303,6 +306,7 @@ export const getReleaseWithChanges = createServerFn({ method: 'GET' })
 				}
 				console.error('Database error fetching release:', error)
 			}
+			captureServerException(error)
 			throw new Error('Failed to fetch release data')
 		}
 	})
@@ -362,6 +366,7 @@ export const getAdjacentVersions = createServerFn({ method: 'GET' })
 			}
 		} catch (error: unknown) {
 			console.error('Error fetching adjacent versions:', error)
+			captureServerException(error)
 			return { prev: null, next: null }
 		}
 	})
@@ -428,6 +433,7 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 			return versionsWithTypes
 		} catch (error: unknown) {
 			console.error('Error fetching versions:', error)
+			captureServerException(error)
 			throw new Error('Failed to fetch versions')
 		}
 	})
@@ -599,6 +605,7 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 			}
 		} catch (error: unknown) {
 			console.error('Error fetching latest releases across tools:', error)
+			captureServerException(error)
 			throw new Error('Failed to fetch latest releases')
 		}
 	})
@@ -660,6 +667,7 @@ export const getAllTools = createServerFn({ method: 'GET' }).handler(
 			}
 		} catch (error: unknown) {
 			console.error('Error fetching all tools:', error)
+			captureServerException(error)
 			throw new Error('Failed to fetch tools')
 		}
 	},

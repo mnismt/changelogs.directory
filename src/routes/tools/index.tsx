@@ -1,5 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { ToolCard } from '@/components/changelog/tool-card'
+import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
+import { captureException } from '@/integrations/sentry'
 import { getToolLogo } from '@/lib/tool-logos'
 import { getAllTools } from '@/server/tools'
 
@@ -7,6 +10,8 @@ export const Route = createFileRoute('/tools/')({
 	loader: async () => {
 		return await getAllTools()
 	},
+	pendingComponent: ToolsDirectorySkeleton,
+	errorComponent: ToolsDirectoryError,
 	component: ToolsDirectoryPage,
 	head: () => ({
 		meta: [
@@ -96,6 +101,66 @@ function ToolsDirectoryPage() {
 					</p>
 				</div>
 			)}
+		</div>
+	)
+}
+
+function ToolsDirectorySkeleton() {
+	return (
+		<div className="container mx-auto max-w-7xl px-4 pb-12 pt-20 md:pt-32">
+			<div className="mb-12 space-y-4 text-center">
+				<div className="mx-auto h-10 w-64 animate-pulse rounded bg-secondary/60" />
+				<div className="mx-auto h-4 w-80 animate-pulse rounded bg-secondary/60" />
+				<div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-8 border-t border-border pt-6">
+					<div className="h-12 w-12 animate-pulse rounded bg-secondary/60" />
+					<div className="h-12 w-12 animate-pulse rounded bg-secondary/60" />
+				</div>
+			</div>
+			<div className="grid gap-8 sm:grid-cols-2">
+				{TOOLS_DIRECTORY_SKELETON_KEYS.map((key) => (
+					<div
+						key={key}
+						className="h-48 animate-pulse rounded border border-border/60 bg-card/60"
+					/>
+				))}
+			</div>
+		</div>
+	)
+}
+
+const TOOLS_DIRECTORY_SKELETON_KEYS = [
+	'tools-skeleton-1',
+	'tools-skeleton-2',
+	'tools-skeleton-3',
+	'tools-skeleton-4',
+] as const
+
+function ToolsDirectoryError({
+	error,
+	reset,
+}: {
+	error: unknown
+	reset: () => void
+}) {
+	useEffect(() => {
+		captureException(error)
+	}, [error])
+
+	const detail =
+		error instanceof Error
+			? error.message
+			: typeof error === 'string'
+				? error
+				: null
+
+	return (
+		<div className="px-4 py-24">
+			<ErrorBoundaryCard
+				title="Failed to load tools"
+				message="We couldn't load the developer tools directory."
+				detail={detail ?? undefined}
+				onRetry={reset}
+			/>
 		</div>
 	)
 }

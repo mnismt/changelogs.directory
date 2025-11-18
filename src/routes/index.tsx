@@ -1,13 +1,16 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { Loader2 } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { FeedFilters } from '@/components/home/feed-filters'
 import { FeedReleaseCard } from '@/components/home/feed-release-card'
 import { HeroRelease } from '@/components/home/hero-release'
+import { HomePageSkeleton } from '@/components/home/home-skeleton'
+import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { LogoShowcase } from '@/components/shared/logo-showcase'
 import { useDebounce } from '@/hooks/use-debounce'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
+import { captureException } from '@/integrations/sentry'
 import { getToolLogo } from '@/lib/tool-logos'
 import { getLatestReleasesAcrossTools } from '@/server/tools'
 
@@ -42,6 +45,9 @@ type ReleaseData = {
 
 const trackedToolSlugs = ['claude-code', 'codex'] as const
 type TrackedToolSlug = (typeof trackedToolSlugs)[number]
+
+const MAX_FEED_RELEASES = 9
+const INITIAL_RELEASE_LIMIT = MAX_FEED_RELEASES + 1
 
 export const Route = createFileRoute('/')({
 	head: () => ({
@@ -106,10 +112,12 @@ export const Route = createFileRoute('/')({
 	}),
 	loader: async () => {
 		const data = await getLatestReleasesAcrossTools({
-			data: { limit: 12, offset: 0 },
+			data: { limit: INITIAL_RELEASE_LIMIT, offset: 0 },
 		})
 		return data
 	},
+	pendingComponent: HomePageSkeleton,
+	errorComponent: HomePageError,
 	component: HomePage,
 })
 
@@ -124,14 +132,9 @@ function HomePage() {
 	const isSearching = searchQuery !== debouncedSearchQuery
 	const [releases, setReleases] = useState(initialData.releases)
 	const [pagination, setPagination] = useState(initialData.pagination)
-	const [isLoadingMore, setIsLoadingMore] = useState(false)
 	const [isMounted, setIsMounted] = useState(false)
 	const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
 	const [hoveredTool, setHoveredTool] = useState<string | null>(null)
-
-	// Refs for infinite scroll
-	const sentinelRef = useRef<HTMLDivElement>(null)
-	const observerRef = useRef<IntersectionObserver | null>(null)
 
 	// Mount animation trigger
 	useEffect(() => {
@@ -144,7 +147,7 @@ function HomePage() {
 			try {
 				const data = await fetchReleases({
 					data: {
-						limit: 12,
+						limit: INITIAL_RELEASE_LIMIT,
 						offset: 0,
 						changeTypes:
 							selectedTypes.length > 0
@@ -156,65 +159,12 @@ function HomePage() {
 				setPagination(data.pagination)
 			} catch (error) {
 				console.error('Error fetching releases:', error)
+				captureException(error)
 			}
 		}
 
 		refetch()
 	}, [selectedTypes, fetchReleases])
-
-	// Infinite scroll handler
-	const loadMore = useCallback(async () => {
-		if (isLoadingMore || !pagination.hasMore) return
-
-		setIsLoadingMore(true)
-		try {
-			const data = await fetchReleases({
-				data: {
-					limit: 12,
-					offset: pagination.offset + pagination.limit,
-					changeTypes:
-						selectedTypes.length > 0
-							? (selectedTypes as ChangeType[])
-							: undefined,
-				},
-			})
-
-			setReleases((prev) => [...prev, ...data.releases])
-			setPagination(data.pagination)
-		} catch (error) {
-			console.error('Error loading more releases:', error)
-		} finally {
-			setIsLoadingMore(false)
-		}
-	}, [
-		isLoadingMore,
-		pagination.hasMore,
-		pagination.offset,
-		pagination.limit,
-		selectedTypes,
-		fetchReleases,
-	])
-
-	// Set up intersection observer for infinite scroll
-	useEffect(() => {
-		const sentinel = sentinelRef.current
-		if (!sentinel) return
-
-		observerRef.current = new IntersectionObserver(
-			(entries) => {
-				if (entries[0]?.isIntersecting) {
-					loadMore()
-				}
-			},
-			{ rootMargin: '200px' },
-		)
-
-		observerRef.current.observe(sentinel)
-
-		return () => {
-			observerRef.current?.disconnect()
-		}
-	}, [loadMore])
 
 	// Extract hero release (first one)
 	const heroRelease = releases[0]
@@ -231,6 +181,7 @@ function HomePage() {
 
 		return matchesToolName || matchesVendor || matchesVersion || matchesSummary
 	})
+	const limitedFeedReleases = feedReleases.slice(0, MAX_FEED_RELEASES)
 
 	// Calculate stats
 	const totalTools = new Set(releases.map((r) => r.tool.slug)).size
@@ -248,7 +199,7 @@ function HomePage() {
 		)
 
 	return (
-		<div className="flex min-h-screen flex-col">
+		<div className="flex flex-col">
 			<main className="flex-1">
 				{/* Hero Section */}
 				<section className="border-b border-border px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
@@ -327,7 +278,10 @@ function HomePage() {
 													Status
 												</span>
 												<div className="flex items-center gap-1.5">
-													<div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+													<span className="relative flex h-3 w-3 items-center justify-center">
+														<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-40" />
+														<span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+													</span>
 													<span className="font-mono text-xs font-medium text-foreground">
 														Operational
 													</span>
@@ -469,13 +423,13 @@ function HomePage() {
 
 							{/* Feed Grid */}
 							<div className="p-6">
-								{feedReleases.length > 0 ? (
+								{limitedFeedReleases.length > 0 ? (
 									<div
 										className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-300 ease-out ${
 											isSearching ? 'opacity-60' : 'opacity-100'
 										}`}
 									>
-										{feedReleases.map((release, index) => (
+										{limitedFeedReleases.map((release, index) => (
 											<FeedReleaseCardWithReveal
 												key={release.id}
 												release={release}
@@ -503,14 +457,17 @@ function HomePage() {
 							</div>
 						</div>
 
-						{/* Infinite scroll sentinel */}
-						<div ref={sentinelRef} className="mt-12 flex justify-center">
-							{isLoadingMore && (
-								<div className="flex items-center gap-2 text-sm text-muted-foreground">
-									<Loader2 className="h-4 w-4 animate-spin" />
-									Loading more releases...
-								</div>
-							)}
+						{/* View all link */}
+						<div className="mt-12 flex flex-col items-center gap-2 text-center">
+							<p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+								Need deeper history?
+							</p>
+							<Link
+								to="/tools"
+								className="font-mono text-sm uppercase tracking-wide text-foreground transition-colors hover:text-muted-foreground"
+							>
+								All tools →
+							</Link>
 						</div>
 					</div>
 				</section>
@@ -586,6 +543,36 @@ function FeedReleaseCardWithReveal({
 					setHoveredCardId(null)
 					setHoveredTool(null)
 				}}
+			/>
+		</div>
+	)
+}
+
+function HomePageError({
+	error,
+	reset,
+}: {
+	error: unknown
+	reset: () => void
+}) {
+	useEffect(() => {
+		captureException(error)
+	}, [error])
+
+	const detail =
+		error instanceof Error
+			? error.message
+			: typeof error === 'string'
+				? error
+				: null
+
+	return (
+		<div className="px-4 py-24">
+			<ErrorBoundaryCard
+				title="Failed to load releases"
+				message="We couldn't load the latest releases feed."
+				detail={detail ?? undefined}
+				onRetry={reset}
 			/>
 		</div>
 	)
