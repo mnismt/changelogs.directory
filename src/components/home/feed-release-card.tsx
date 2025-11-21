@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Package } from 'lucide-react'
+import { ArrowRight, Package } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { formatDate, formatRelativeDate } from '@/lib/date-utils'
@@ -224,16 +224,14 @@ export function FeedReleaseCard({
 				</Link>
 
 				{/* Secondary link to tool page */}
-				<div className="mt-3 pt-3 border-t border-border/50">
+				<div className="mt-3 border-t border-border/50 pt-3">
 					<Link
 						to="/tools/$slug"
 						params={{ slug: toolSlug }}
-						className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors duration-300 hover:text-foreground"
+						className="group/release inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground transition-colors duration-700 ease-out hover:text-foreground group-hover:text-foreground/50"
 					>
 						View all {toolName} releases
-						<span className="transition-transform duration-300 group-hover:translate-x-0.5">
-							→
-						</span>
+						<ArrowRight className="size-4 transition-transform duration-700 ease-out group-hover:translate-x-1 group-hover/release:rotate-180" />
 					</Link>
 				</div>
 			</div>
