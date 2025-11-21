@@ -211,10 +211,10 @@ export function HeroRelease({
 				<Link
 					to="/tools/$slug/releases/$version"
 					params={{ slug: toolSlug, version }}
-					className="group inline-flex items-center gap-2 font-mono text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground"
+					className="group/release inline-flex items-center gap-2 font-mono text-sm text-muted-foreground transition-colors duration-700 ease-out hover:text-foreground group-hover:text-foreground/50"
 				>
 					View release details
-					<ArrowRight className="h-4 w-4 transition-transform duration-300 ease-out group-hover:translate-x-1" />
+					<ArrowRight className="size-4 transition-transform duration-700 ease-out group-hover:translate-x-1 group-hover/release:rotate-180" />
 				</Link>
 			</div>
 		</Card>

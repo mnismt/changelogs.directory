@@ -72,7 +72,7 @@ export function TimelineItem({
 					className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 					aria-label={ariaLabel}
 				>
-					<Card className="group border-border bg-card transition-colors hover:border-accent">
+					<Card className="group border-border bg-card transition-all duration-700 ease-out hover:border-foreground/20 hover:bg-card/80">
 						<CardHeader>
 							<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 								<div className="space-y-1">
@@ -113,7 +113,7 @@ export function TimelineItem({
 								<p className="line-clamp-2 text-sm text-muted-foreground">
 									{summary}
 								</p>
-								<p className="mt-2 text-xs">
+								<p className="mt-2 text-xs opacity-70 transition-opacity duration-700 ease-out group-hover:opacity-100">
 									<ChangeCount
 										changeCount={changeCount}
 										changesByType={changesByType}
@@ -152,7 +152,7 @@ export function TimelineItem({
 					className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 					aria-label={ariaLabel}
 				>
-					<Card className="group border-border bg-card transition-colors hover:border-accent">
+					<Card className="group border-border bg-card transition-all duration-700 ease-out hover:border-foreground/20 hover:bg-card/80">
 						<CardHeader>
 							<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 								<div className="space-y-1">
@@ -193,7 +193,7 @@ export function TimelineItem({
 								<p className="line-clamp-2 text-sm text-muted-foreground">
 									{summary}
 								</p>
-								<p className="mt-2 text-xs">
+								<p className="mt-2 text-xs opacity-70 transition-opacity duration-700 ease-out group-hover:opacity-100">
 									<ChangeCount
 										changeCount={changeCount}
 										changesByType={changesByType}

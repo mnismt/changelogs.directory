@@ -106,18 +106,22 @@ export function CompareDialog({ open, onClose }: CompareDialogProps) {
 						</h2>
 						<p className="font-mono text-sm text-muted-foreground">
 							We're cooking a split-screen diff viewer that lets you pit editor
-							releases against one another, feature by feature. Think
-							side-by-side commits with a UI worthy of your caffeine habit.
+							releases against one another, feature by feature, including price
+							tiers. Think side-by-side commits with pricing badges that match
+							your caffeine habit.
 						</p>
 						<div className="flex flex-wrap items-center gap-3 text-xs font-mono uppercase text-muted-foreground/80">
-							<span className="rounded border border-border px-3 py-1">
-								grid overlays
-							</span>
-							<span className="rounded border border-border px-3 py-1">
+							<span className="flex items-center gap-2 rounded border border-border/80 bg-secondary/70 px-3 py-1 text-foreground">
+								<span aria-hidden="true" className="text-muted-foreground/70">
+									{'<>'}
+								</span>
 								diff summaries
 							</span>
-							<span className="rounded border border-border px-3 py-1">
-								keybinding heatmaps
+							<span className="flex items-center gap-2 rounded border border-border/80 bg-accent/60 px-3 py-1 text-foreground">
+								<span aria-hidden="true" className="text-foreground">
+									$
+								</span>
+								price compare
 							</span>
 						</div>
 						<p className="font-mono text-xs text-muted-foreground">
