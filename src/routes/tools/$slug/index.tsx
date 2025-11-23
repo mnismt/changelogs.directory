@@ -1,15 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
-import { FilterBar } from '@/components/changelog/filter-bar'
-import { ReleaseCard } from '@/components/changelog/release-card'
+import { ReleaseCard } from '@/components/changelog/release/release-card'
 import {
 	type TimelineRelease,
 	TimelineView,
-} from '@/components/changelog/timeline-view'
-import { ToolHeader } from '@/components/changelog/tool-header'
-import { ToolPageSkeleton } from '@/components/changelog/tool-skeleton'
-import { ViewToggle } from '@/components/changelog/view-toggle'
+} from '@/components/changelog/timeline/timeline-view'
+import { FilterBar } from '@/components/changelog/tool/filter-bar'
+import { ToolHeader } from '@/components/changelog/tool/tool-header'
+import { ToolPageSkeleton } from '@/components/changelog/tool/tool-skeleton'
+import { ViewToggle } from '@/components/changelog/tool/view-toggle'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { captureException } from '@/integrations/sentry'

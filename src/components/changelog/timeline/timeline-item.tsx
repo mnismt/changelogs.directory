@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router'
+import { ChangeCount } from '@/components/changelog/release/change-count'
+import { ReleaseCardBase } from '@/components/changelog/release/release-card'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { formatDate } from '@/lib/date-utils'
-import { ChangeCount } from './change-count'
-import { ReleaseCardBase } from './release-card'
 
 interface TimelineItemProps {
 	toolSlug: string
@@ -59,7 +59,6 @@ export function TimelineItem({
 			version={version}
 			releaseDate={releaseDate}
 			summary={summary}
-			changeCount={changeCount}
 			changesByType={changesByType}
 			summaryLineClamp={2}
 			bodyFooter={cardFooter}

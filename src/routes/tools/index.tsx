@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { ToolCard } from '@/components/changelog/tool-card'
+import { ToolCard } from '@/components/changelog/tool/tool-card'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { captureException } from '@/integrations/sentry'
 import { getToolLogo } from '@/lib/tool-logos'
