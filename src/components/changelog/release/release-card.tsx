@@ -15,7 +15,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { formatDate } from '@/lib/date-utils'
+import { formatDate, formatRelativeDate } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
 import { formatVersionForDisplay } from '@/lib/version-formatter'
 
@@ -24,7 +24,6 @@ interface ReleaseCardBaseProps {
 	version: string
 	releaseDate?: Date | string | null
 	summary?: string | null
-	changeCount: number
 	changesByType?: Record<string, number>
 	rightAccessory?: ReactNode
 	bodyFooter?: ReactNode
@@ -36,7 +35,9 @@ interface ReleaseCardProps
 	extends Omit<
 		ReleaseCardBaseProps,
 		'rightAccessory' | 'bodyFooter' | 'summaryLineClamp' | 'className'
-	> {}
+	> {
+	changeCount: number
+}
 
 const changeTypeLabels: Record<ChangeType, string> = {
 	BREAKING: '⚠️ Breaking',
@@ -67,7 +68,6 @@ export function ReleaseCardBase({
 	version,
 	releaseDate,
 	summary,
-	changeCount,
 	changesByType,
 	rightAccessory,
 	bodyFooter,
@@ -75,6 +75,7 @@ export function ReleaseCardBase({
 	className,
 }: ReleaseCardBaseProps) {
 	const formattedDate = formatDate(releaseDate)
+	const relativeDate = formatRelativeDate(releaseDate)
 	const hasBreaking = Boolean(
 		changesByType?.BREAKING && changesByType.BREAKING > 0,
 	)
@@ -96,7 +97,7 @@ export function ReleaseCardBase({
 			)}
 		>
 			<CardHeader>
-				<div className="flex items-start justify-between gap-4">
+				<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 					<CardTitle className="flex items-center font-mono text-xl">
 						<Package className="size-5" />
 						<span className="ml-2">
@@ -137,11 +138,16 @@ export function ReleaseCardBase({
 						</div>
 					)}
 				</div>
-				{formattedDate && (
-					<CardDescription className="text-muted-foreground">
-						{formattedDate}
-					</CardDescription>
-				)}
+				<CardDescription className="text-muted-foreground">
+					<span className="relative inline-flex h-4 min-w-[100px] overflow-hidden text-xs">
+						<span className="absolute inset-0 whitespace-nowrap transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0">
+							{relativeDate}
+						</span>
+						<span className="absolute inset-0 -translate-y-full whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+							{formattedDate}
+						</span>
+					</span>
+				</CardDescription>
 			</CardHeader>
 			{summary && (
 				<CardContent>
@@ -204,7 +210,6 @@ export function ReleaseCard({
 			version={version}
 			releaseDate={releaseDate}
 			summary={summary}
-			changeCount={changeCount}
 			changesByType={changesByType}
 			rightAccessory={
 				<Badge variant="outline" className="font-mono text-xs">
