@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import { createServerFn } from '@tanstack/react-start'
 import { subDays, subMonths, subYears } from 'date-fns'
 import { z } from 'zod'
@@ -41,6 +42,7 @@ const latestReleasesSchema = z.object({
 			]),
 		)
 		.optional(),
+	toolSlugs: z.array(z.string().min(1)).optional(),
 })
 
 const getDateRange = (preset?: string) => {
@@ -457,16 +459,20 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 
 		try {
 			// Build where clause for change type filtering
-			let whereClause = {}
+			const whereClause: Prisma.ReleaseWhereInput = {}
 
 			if (data.changeTypes && data.changeTypes.length > 0) {
 				// If filtering by change types, we need to find releases that have changes of those types
-				whereClause = {
-					changes: {
-						some: {
-							type: { in: data.changeTypes },
-						},
+				whereClause.changes = {
+					some: {
+						type: { in: data.changeTypes },
 					},
+				}
+			}
+
+			if (data.toolSlugs && data.toolSlugs.length > 0) {
+				whereClause.tool = {
+					slug: { in: data.toolSlugs },
 				}
 			}
 
