@@ -45,6 +45,11 @@ type ReleaseData = {
 
 const trackedToolSlugs = ['claude-code', 'codex'] as const
 type TrackedToolSlug = (typeof trackedToolSlugs)[number]
+type ToolFilterOption = {
+	slug: TrackedToolSlug
+	name: string
+	logo: ReactNode
+}
 
 const MAX_FEED_RELEASES = 9
 const INITIAL_RELEASE_LIMIT = MAX_FEED_RELEASES + 1
@@ -127,6 +132,7 @@ function HomePage() {
 
 	// State
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
+	const [selectedTools, setSelectedTools] = useState<string[]>([])
 	const [searchQuery, setSearchQuery] = useState('')
 	const debouncedSearchQuery = useDebounce(searchQuery, 300)
 	const isSearching = searchQuery !== debouncedSearchQuery
@@ -153,6 +159,7 @@ function HomePage() {
 							selectedTypes.length > 0
 								? (selectedTypes as ChangeType[])
 								: undefined,
+						toolSlugs: selectedTools.length > 0 ? selectedTools : undefined,
 					},
 				})
 				setReleases(data.releases)
@@ -164,7 +171,7 @@ function HomePage() {
 		}
 
 		refetch()
-	}, [selectedTypes, fetchReleases])
+	}, [selectedTypes, selectedTools, fetchReleases])
 
 	// Extract hero release (first one)
 	const heroRelease = releases[0]
@@ -183,6 +190,20 @@ function HomePage() {
 	})
 	const limitedFeedReleases = feedReleases.slice(0, MAX_FEED_RELEASES)
 
+	const handleToolToggle = (slug: string) => {
+		setSelectedTools((prev) =>
+			prev.includes(slug)
+				? prev.filter((toolSlug) => toolSlug !== slug)
+				: [...prev, slug],
+		)
+	}
+
+	// Build tool metadata map from current releases
+	const toolMetadataMap = releases.reduce(
+		(map, release) => map.set(release.tool.slug, release.tool),
+		new Map<string, ReleaseData['tool']>(),
+	)
+
 	// Calculate stats
 	const totalTools = new Set(releases.map((r) => r.tool.slug)).size
 	const totalReleases = pagination.totalCount
@@ -197,6 +218,23 @@ function HomePage() {
 			): entry is { slug: TrackedToolSlug; logo: NonNullable<ReactNode> } =>
 				Boolean(entry.logo),
 		)
+
+	const toolFilterOptions: ToolFilterOption[] = trackedToolSlugs.flatMap(
+		(slug) => {
+			const toolMeta = toolMetadataMap.get(slug)
+			const logo = getToolLogo(slug)
+			if (!logo) {
+				return []
+			}
+			return [
+				{
+					slug,
+					name: toolMeta?.name ?? slug,
+					logo,
+				},
+			]
+		},
+	)
 
 	return (
 		<div className="flex flex-col">
@@ -393,10 +431,44 @@ function HomePage() {
 								}`}
 							>
 								<div className="p-4">
-									<FeedFilters
-										selectedTypes={selectedTypes}
-										onTypeChange={setSelectedTypes}
-									/>
+									<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+										<FeedFilters
+											selectedTypes={selectedTypes}
+											onTypeChange={setSelectedTypes}
+										/>
+
+										{toolFilterOptions.length > 0 && (
+											<div className="flex flex-wrap items-center gap-3 lg:justify-end">
+												<div className="flex flex-wrap gap-2">
+													{toolFilterOptions.map(({ slug, name, logo }) => {
+														const isSelected = selectedTools.includes(slug)
+														return (
+															<button
+																key={slug}
+																type="button"
+																onClick={() => handleToolToggle(slug)}
+																aria-pressed={isSelected}
+																aria-label={`Filter by ${name}`}
+																onMouseEnter={() => setHoveredTool(slug)}
+																onMouseLeave={() => setHoveredTool(null)}
+																onFocus={() => setHoveredTool(slug)}
+																onBlur={() => setHoveredTool(null)}
+																className={`group flex flex-col items-center gap-1 rounded border bg-secondary px-3 py-2 text-center transition-all duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 hover:border-foreground/40 hover:bg-card/80 ${
+																	isSelected
+																		? 'border-foreground/60 text-foreground'
+																		: 'border-border/60 text-muted-foreground'
+																}`}
+															>
+																<span className="flex size-8 items-center justify-center text-current transition-transform duration-700 ease-out group-hover:rotate-30 [&>svg]:size-5">
+																	{logo}
+																</span>
+															</button>
+														)
+													})}
+												</div>
+											</div>
+										)}
+									</div>
 								</div>
 							</div>
 
