@@ -1,10 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { ToolCard } from '@/components/changelog/tool/tool-card'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { motion } from 'motion/react'
+import { useEffect, useState } from 'react'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
+import { Card, Carousel } from '@/components/ui/apple-cards-carousel'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { captureException } from '@/integrations/sentry'
-import { getToolLogo } from '@/lib/tool-logos'
 import { getAllTools } from '@/server/tools'
 
 export const Route = createFileRoute('/tools/')({
@@ -30,11 +30,59 @@ export const Route = createFileRoute('/tools/')({
 
 function ToolsDirectoryPage() {
 	const { tools, stats } = Route.useLoaderData()
+	const navigate = useNavigate()
+	const [isExiting, setIsExiting] = useState(false)
+	const [targetHref, setTargetHref] = useState<string | null>(null)
+
+	// Handle navigation after exit animation
+	useEffect(() => {
+		if (isExiting && targetHref) {
+			const timer = setTimeout(() => {
+				navigate({ to: targetHref })
+			}, 700) // Wait for animations to complete
+			return () => clearTimeout(timer)
+		}
+	}, [isExiting, targetHref, navigate])
+
+	const handleCardNavigate = (href: string) => {
+		setTargetHref(href)
+		setIsExiting(true)
+	}
+
+	// Create carousel cards for each tool
+	const toolCards = tools.map((tool, index) => {
+		return (
+			<Card
+				key={tool.id}
+				index={index}
+				layout
+				card={{
+					src: `/images/tools/${tool.slug}.png`,
+					title: tool.name,
+					category: tool.vendor,
+					href: `/tools/${tool.slug}`,
+				}}
+				onNavigate={() => handleCardNavigate(`/tools/${tool.slug}`)}
+			/>
+		)
+	})
 
 	return (
 		<div className="container mx-auto max-w-7xl px-4 pb-12 pt-20 md:pt-32">
 			{/* Hero Section with fade-in animation */}
-			<div className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+			<motion.div
+				className="mb-12"
+				initial={{ opacity: 0, y: 16 }}
+				animate={{
+					opacity: isExiting ? 0 : 1,
+					y: isExiting ? -8 : 0,
+				}}
+				transition={{
+					duration: isExiting ? 0.3 : 0.7,
+					ease: 'easeOut',
+					delay: isExiting ? 0.15 : 0,
+				}}
+			>
 				<div className="space-y-4 text-center">
 					<h1 className="font-mono text-4xl font-bold sm:text-5xl">
 						Developer Tools Directory
@@ -78,37 +126,12 @@ function ToolsDirectoryPage() {
 						</div>
 					</div>
 				</div>
-			</div>
+			</motion.div>
 
-			{/* Tools Grid with staggered animation */}
-			<div className="grid gap-8 sm:grid-cols-2">
-				{tools.map((tool, index) => (
-					<div
-						key={tool.id}
-						className="animate-in fade-in slide-in-from-bottom-4"
-						style={{
-							animationDelay: `${(index + 1) * 100}ms`,
-							animationDuration: '700ms',
-							animationFillMode: 'both',
-						}}
-					>
-						<ToolCard
-							slug={tool.slug}
-							name={tool.name}
-							vendor={tool.vendor}
-							description={tool.description}
-							tags={tool.tags}
-							releaseCount={tool._count.releases}
-							latestVersion={tool.latestVersion}
-							latestReleaseDate={tool.latestReleaseDate}
-							logo={getToolLogo(tool.slug)}
-						/>
-					</div>
-				))}
-			</div>
-
-			{/* Empty State (shouldn't happen, but good UX) */}
-			{tools.length === 0 && (
+			{/* Tools Carousel */}
+			{tools.length > 0 ? (
+				<Carousel items={toolCards} initialScroll={0} />
+			) : (
 				<div className="py-20 text-center">
 					<p className="text-muted-foreground">
 						No tools found. Check back soon!
