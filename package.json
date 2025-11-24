@@ -34,6 +34,7 @@
     "@sentry/browser": "^10.25.0",
     "@sentry/node": "^10.25.0",
     "@sentry/react": "^10.25.0",
+    "@tabler/icons-react": "^3.35.0",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/nitro-v2-vite-plugin": "^1.133.19",

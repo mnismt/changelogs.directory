@@ -139,11 +139,11 @@ export function ReleaseCardBase({
 					)}
 				</div>
 				<CardDescription className="text-muted-foreground">
-					<span className="relative inline-flex h-4 min-w-[100px] overflow-hidden text-xs">
-						<span className="absolute inset-0 whitespace-nowrap transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0">
+					<span className="relative inline-flex h-5 min-w-[100px] items-center overflow-hidden text-xs leading-5">
+						<span className="absolute inset-0 flex items-center whitespace-nowrap transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0">
 							{relativeDate}
 						</span>
-						<span className="absolute inset-0 -translate-y-full whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+						<span className="absolute inset-0 flex -translate-y-full items-center whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
 							{formattedDate}
 						</span>
 					</span>
