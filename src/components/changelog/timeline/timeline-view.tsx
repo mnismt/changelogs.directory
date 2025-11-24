@@ -6,6 +6,7 @@ export interface TimelineRelease {
 	id: string
 	version: string
 	releaseDate: Date | string | null
+	headline: string | null
 	summary: string | null
 	_count: {
 		changes: number
@@ -88,7 +89,7 @@ export function TimelineView({ toolSlug, releases }: TimelineViewProps) {
 										toolSlug={toolSlug}
 										version={release.version}
 										releaseDate={release.releaseDate}
-										summary={release.summary}
+										headline={release.headline}
 										changeCount={release._count.changes}
 										changesByType={release.changesByType}
 										isLast={isLastOverall}

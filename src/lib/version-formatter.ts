@@ -3,7 +3,8 @@
  *
  * Examples:
  * - Codex: "codex-rs-abc123...999-1-rust-v0.0.25" → "v0.0.25"
- * - Claude: "2.0.31" → "2.0.31" (no change)
+ * - Claude: "2.0.31" → "v2.0.31" (no change)
+ * - Cursor: "cursor-2-1" → "v2.1"
  */
 export function formatVersionForDisplay(
 	version: string,
@@ -12,7 +13,8 @@ export function formatVersionForDisplay(
 	// Tool-specific formatting rules
 	const formatters: Record<string, (v: string) => string> = {
 		codex: formatCodexVersion,
-		// Add more tools as needed
+		cursor: formatCursorVersion,
+		'claude-code': formatClaudeCodeVersion,
 	}
 
 	const formatter = formatters[toolSlug]
@@ -38,6 +40,19 @@ function formatCodexVersion(version: string): string {
 
 	// Last resort: return as-is
 	return version
+}
+
+function formatClaudeCodeVersion(version: string): string {
+	return `v${version}`
+}
+
+/**
+ * Cursor versions: "cursor-2-1" → "v2.1"
+ * Convert hyphens to dots after removing the "cursor-" prefix
+ */
+function formatCursorVersion(version: string): string {
+	const versionPart = version.replace(/^cursor-/, '')
+	return `v${versionPart.replace(/-/g, '.')}`
 }
 
 /**

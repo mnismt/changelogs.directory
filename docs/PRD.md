@@ -19,14 +19,14 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 
 ## Scope
 
-- MVP tracks CLI developer tools via their respective GitHub repositories (CHANGELOG files, releases, and commit history), rendered in a public directory with search, filters, and basic version diffing.
+- MVP tracks CLI developer tools via their respective GitHub repositories (CHANGELOG files, releases, and commit history), plus selected HTML changelog pages, rendered in a public directory with search, filters, and basic version diffing.
 - No auth in MVP; read-only UI with fast SSR pages and server functions using TanStack Start for data loading and cache revalidation.
-- Initial focus on popular CLI AI coding tools: Claude Code, OpenAI Codex, and AMP Code.
+- Initial focus on popular CLI AI coding tools: Claude Code, OpenAI Codex, Cursor, and AMP Code.
 
 ## Canonical sources
 
-- CLI tools: GitHub repository changelog files, releases, and commits referencing updates.
-- Flexible connector system supporting various source formats (CHANGELOG.md, GitHub Releases, etc.).
+- CLI tools: GitHub repository changelog files, releases, commits referencing updates, and official product changelog pages.
+- Flexible connector system supporting various source formats (CHANGELOG.md, GitHub Releases, HTML changelog pages, etc.).
 
 ## Architecture
 
@@ -38,7 +38,7 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 
 ## Ingestion pipeline
 
-- Flexible connector system supporting multiple source formats (CHANGELOG.md, GitHub Releases, etc.), each with fetch, map, validate, and idempotent upsert steps keyed by tool+version.
+- Flexible connector system supporting multiple source formats (CHANGELOG.md, GitHub Releases, HTML pages, etc.), each with fetch, map, validate, and idempotent upsert steps keyed by tool+version.
 - Schedule: **periodic polling via Trigger.dev scheduled tasks** (every 6 hours); store raw payloads and normalized records to enable re-mapping without refetching.
 - Change classification: map upstream entries to feature, improvement, bugfix, breaking, and security for consistent UI filters.
 - Job tracking: FetchLog model records every ingestion run with status, duration, metrics, and errors for observability.

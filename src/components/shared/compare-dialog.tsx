@@ -1,7 +1,9 @@
 import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { SubscribeDialog } from '@/components/shared/subscribe-dialog'
 import { Button } from '@/components/ui/button'
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient'
 
 interface CompareDialogProps {
 	open: boolean
@@ -12,6 +14,7 @@ export function CompareDialog({ open, onClose }: CompareDialogProps) {
 	const [isMounted, setIsMounted] = useState(false)
 	const [isVisible, setIsVisible] = useState(open)
 	const [phase, setPhase] = useState<'enter' | 'exit' | null>(null)
+	const [subscribeOpen, setSubscribeOpen] = useState(false)
 
 	useEffect(() => {
 		setIsMounted(true)
@@ -52,86 +55,110 @@ export function CompareDialog({ open, onClose }: CompareDialogProps) {
 		}
 	}, [open])
 
-	if (!isMounted || !isVisible) {
+	if (!isMounted) {
 		return null
 	}
 
-	return createPortal(
-		<div
-			className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10"
-			role="dialog"
-			aria-modal="true"
-		>
-			<button
-				type="button"
-				className={`absolute inset-0 bg-background/80 backdrop-blur transition-opacity duration-300 ${
-					phase === 'enter' || phase === 'exit' ? 'opacity-0' : 'opacity-100'
-				}`}
-				onClick={onClose}
-				aria-label="Close compare dialog"
-			/>
-			<div
-				className={`relative z-10 w-full max-w-xl transition-all duration-300 ${
-					phase === 'enter' || phase === 'exit'
-						? 'translate-y-2 opacity-0'
-						: 'translate-y-0 opacity-100'
-				}`}
-			>
-				<div className="relative overflow-hidden rounded border border-border bg-card px-6 py-8">
-					<div className="absolute -top-8 right-4 font-mono text-[120px] text-muted-foreground/5">
-						{`//`}
-					</div>
-					<div className="absolute -bottom-10 left-6 font-mono text-[160px] text-muted-foreground/5">
-						vs
-					</div>
-					<div className="absolute -right-3 -top-3">
-						<Button
+	return (
+		<>
+			{isVisible &&
+				createPortal(
+					<div
+						className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10"
+						role="dialog"
+						aria-modal="true"
+					>
+						<button
 							type="button"
-							variant="ghost"
-							size="icon"
-							className="rounded-full border border-border bg-card font-mono text-xs uppercase transition-colors hover:text-foreground"
+							className={`absolute inset-0 bg-background/80 backdrop-blur transition-opacity duration-300 ${
+								phase === 'enter' || phase === 'exit'
+									? 'opacity-0'
+									: 'opacity-100'
+							}`}
 							onClick={onClose}
-							aria-label="Close dialog"
+							aria-label="Close compare dialog"
+						/>
+						<div
+							className={`relative z-10 w-full max-w-xl transition-all duration-300 ${
+								phase === 'enter' || phase === 'exit'
+									? 'translate-y-2 opacity-0'
+									: 'translate-y-0 opacity-100'
+							}`}
 						>
-							<X className="size-4" />
-						</Button>
-					</div>
+							<div className="relative overflow-hidden rounded border border-border bg-card px-6 py-8">
+								<div className="absolute -top-8 right-4 font-mono text-[120px] text-muted-foreground/5">
+									{`//`}
+								</div>
+								<div className="absolute -bottom-10 left-6 font-mono text-[160px] text-muted-foreground/5">
+									vs
+								</div>
+								<div className="absolute -right-3 -top-3">
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										className="rounded-full border border-border bg-card font-mono text-xs uppercase transition-colors hover:text-foreground"
+										onClick={onClose}
+										aria-label="Close dialog"
+									>
+										<X className="size-4" />
+									</Button>
+								</div>
 
-					<div className="space-y-4">
-						<p className="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">
-							coming soon
-						</p>
-						<h2 className="font-mono text-3xl text-foreground">
-							Compare mode is still in the lab.
-						</h2>
-						<p className="font-mono text-sm text-muted-foreground">
-							We're cooking a split-screen diff viewer that lets you pit editor
-							releases against one another, feature by feature, including price
-							tiers. Think side-by-side commits with pricing badges that match
-							your caffeine habit.
-						</p>
-						<div className="flex flex-wrap items-center gap-3 text-xs font-mono uppercase text-muted-foreground/80">
-							<span className="flex items-center gap-2 rounded border border-border/80 bg-secondary/70 px-3 py-1 text-foreground">
-								<span aria-hidden="true" className="text-muted-foreground/70">
-									{'<>'}
-								</span>
-								diff summaries
-							</span>
-							<span className="flex items-center gap-2 rounded border border-border/80 bg-accent/60 px-3 py-1 text-foreground">
-								<span aria-hidden="true" className="text-foreground">
-									$
-								</span>
-								price compare
-							</span>
+								<div className="space-y-4">
+									<p className="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">
+										coming soon
+									</p>
+									<h2 className="font-mono text-3xl text-foreground">
+										Compare mode is still in the lab.
+									</h2>
+									<p className="font-mono text-sm text-muted-foreground">
+										We're cooking a split-screen diff viewer that lets you pit
+										editor releases against one another, feature by feature,
+										including price tiers. Think side-by-side commits with
+										pricing badges that match your caffeine habit.
+									</p>
+									<div className="flex flex-wrap items-center gap-3 font-mono text-xs uppercase text-muted-foreground/80">
+										<span className="flex items-center gap-2 rounded border border-border/80 bg-secondary/70 px-3 py-1 text-foreground">
+											<span
+												aria-hidden="true"
+												className="text-muted-foreground/70"
+											>
+												{'<>'}
+											</span>
+											diff summaries
+										</span>
+										<span className="flex items-center gap-2 rounded border border-border/80 bg-accent/60 px-3 py-1 text-foreground">
+											<span aria-hidden="true" className="text-foreground">
+												$
+											</span>
+											price compare
+										</span>
+									</div>
+									<p className="font-mono text-xs text-muted-foreground">
+										Ping us if you want early access—we'll pull you into the
+										private build as soon as it's spicy enough.
+									</p>
+									<HoverBorderGradient
+										containerClassName="mt-2 w-full"
+										className="flex w-full items-center justify-center font-mono text-xs uppercase"
+										onClick={() => {
+											onClose()
+											setSubscribeOpen(true)
+										}}
+									>
+										Join the Waitlist
+									</HoverBorderGradient>
+								</div>
+							</div>
 						</div>
-						<p className="font-mono text-xs text-muted-foreground">
-							Ping us if you want early access—we'll pull you into the private
-							build as soon as it's spicy enough.
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>,
-		document.body,
+					</div>,
+					document.body,
+				)}
+			<SubscribeDialog
+				open={subscribeOpen}
+				onClose={() => setSubscribeOpen(false)}
+			/>
+		</>
 	)
 }

@@ -3,8 +3,13 @@ import { ArrowRight, Package } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { formatDate, formatRelativeDate } from '@/lib/date-utils'
-import { getToolLogo } from '@/lib/tool-logos'
+import {
+	getLogoHoverClasses,
+	getToolLogo,
+	isMonochromeLogo,
+} from '@/lib/tool-logos'
 import { cn } from '@/lib/utils'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface FeedReleaseCardProps {
 	toolSlug: string
@@ -12,7 +17,7 @@ interface FeedReleaseCardProps {
 	vendor: string | null
 	version: string
 	releaseDate: Date | string | null
-	summary: string | null
+	headline: string | null
 	changeCount: number
 	changesByType: Record<string, number>
 	hasBreaking: boolean
@@ -32,7 +37,7 @@ export function FeedReleaseCard({
 	vendor,
 	version,
 	releaseDate,
-	summary,
+	headline,
 	changeCount,
 	changesByType,
 	hasBreaking,
@@ -103,9 +108,10 @@ export function FeedReleaseCard({
 								<div
 									className={cn(
 										'flex size-10 items-center justify-center rounded p-2 [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-all duration-700 [&>svg_path]:transition-all [&>svg_path]:duration-300 [&>svg_circle]:transition-all [&>svg_circle]:duration-300',
-										!isSameToolHovered &&
+										// Keep monochrome fill for monochrome logos or when not hovered
+										(isMonochromeLogo(toolSlug) || !isSameToolHovered) &&
 											'[&>svg]:fill-foreground [&>svg_path]:fill-foreground [&>svg_circle]:fill-foreground',
-										'group-hover:rotate-45 group-hover:scale-110',
+										getLogoHoverClasses(toolSlug),
 									)}
 								>
 									{logo}
@@ -137,7 +143,7 @@ export function FeedReleaseCard({
 					{/* Version and badges */}
 					<div className="mb-2 flex flex-wrap items-center gap-2">
 						<code className="rounded px-2 py-1 font-mono text-sm font-medium">
-							v{version}
+							{formatVersionForDisplay(version, toolSlug)}
 						</code>
 
 						{hasBreaking && (
@@ -179,10 +185,10 @@ export function FeedReleaseCard({
 						<span>{formatRelativeDate(releaseDate)}</span>
 					</div>
 
-					{/* Summary (truncated to 2 lines) */}
-					{summary && (
+					{/* Headline (truncated to 2 lines) */}
+					{headline && (
 						<p className="mb-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-							{summary}
+							{headline}
 						</p>
 					)}
 

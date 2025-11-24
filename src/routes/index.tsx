@@ -11,7 +11,9 @@ import { LogoShowcase } from '@/components/shared/logo-showcase'
 import { useDebounce } from '@/hooks/use-debounce'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { captureException } from '@/integrations/sentry'
-import { getToolLogo } from '@/lib/tool-logos'
+import { getToolLogo, isMonochromeLogo } from '@/lib/tool-logos'
+import { cn } from '@/lib/utils'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 import { getLatestReleasesAcrossTools } from '@/server/tools'
 
 type ChangeType =
@@ -29,6 +31,7 @@ type ReleaseData = {
 	id: string
 	version: string
 	releaseDate: Date | string | null
+	headline: string | null
 	summary: string | null
 	_count: { changes: number }
 	tool: {
@@ -43,7 +46,7 @@ type ReleaseData = {
 	hasDeprecation: boolean
 }
 
-const trackedToolSlugs = ['claude-code', 'codex'] as const
+const trackedToolSlugs = ['claude-code', 'codex', 'cursor'] as const
 type TrackedToolSlug = (typeof trackedToolSlugs)[number]
 type ToolFilterOption = {
 	slug: TrackedToolSlug
@@ -184,9 +187,16 @@ function HomePage() {
 		const matchesToolName = release.tool.name.toLowerCase().includes(query)
 		const matchesVendor = release.tool.vendor?.toLowerCase().includes(query)
 		const matchesVersion = release.version.toLowerCase().includes(query)
+		const matchesHeadline = release.headline?.toLowerCase().includes(query)
 		const matchesSummary = release.summary?.toLowerCase().includes(query)
 
-		return matchesToolName || matchesVendor || matchesVersion || matchesSummary
+		return (
+			matchesToolName ||
+			matchesVendor ||
+			matchesVersion ||
+			matchesHeadline ||
+			matchesSummary
+		)
 	})
 	const limitedFeedReleases = feedReleases.slice(0, MAX_FEED_RELEASES)
 
@@ -286,6 +296,7 @@ function HomePage() {
 										vendor={heroRelease.tool.vendor}
 										version={heroRelease.version}
 										releaseDate={heroRelease.releaseDate}
+										headline={heroRelease.headline}
 										summary={heroRelease.summary}
 										changeCount={heroRelease._count.changes}
 										changesByType={heroRelease.changesByType}
@@ -338,7 +349,11 @@ function HomePage() {
 														{trackedToolLogos.map(({ slug, logo }) => (
 															<div
 																key={slug}
-																className="flex size-6 items-center justify-center rounded bg-secondary p-1 text-foreground"
+																className={cn(
+																	'flex size-6 items-center justify-center rounded bg-secondary p-1 text-foreground [&>svg]:size-full',
+																	isMonochromeLogo(slug) &&
+																		'[&>svg]:fill-foreground [&>svg_path]:fill-foreground',
+																)}
 															>
 																{logo}
 															</div>
@@ -368,7 +383,10 @@ function HomePage() {
 														•
 													</span>
 													<span className="text-muted-foreground">
-														v{heroRelease.version}
+														{formatVersionForDisplay(
+															heroRelease.version,
+															heroRelease.tool.slug,
+														)}
 													</span>
 												</div>
 											</div>
@@ -409,10 +427,10 @@ function HomePage() {
 									<div className="relative flex-1 sm:max-w-xs">
 										<input
 											type="search"
-											placeholder="Search tools, versions, summaries..."
+											placeholder="Search tools, versions, or release notes..."
 											value={searchQuery}
 											onChange={(e) => setSearchQuery(e.target.value)}
-											aria-label="Search releases by tool name, version, or summary"
+											aria-label="Search releases by tool, version, or release notes"
 											className="w-full rounded border border-border bg-secondary px-3 py-1.5 pr-8 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none focus:ring-1 focus:ring-foreground/20 focus-visible:border-foreground/40 focus-visible:ring-2"
 										/>
 										{isSearching && (
@@ -459,7 +477,13 @@ function HomePage() {
 																		: 'border-border/60 text-muted-foreground'
 																}`}
 															>
-																<span className="flex size-8 items-center justify-center text-current transition-transform duration-700 ease-out group-hover:rotate-30 [&>svg]:size-5">
+																<span
+																	className={cn(
+																		'flex size-8 items-center justify-center text-current transition-transform duration-700 ease-out group-hover:rotate-30 [&>svg]:size-5',
+																		isMonochromeLogo(slug) &&
+																			'[&>svg]:fill-foreground [&>svg_path]:fill-foreground',
+																	)}
+																>
 																	{logo}
 																</span>
 															</button>
@@ -598,7 +622,7 @@ function FeedReleaseCardWithReveal({
 				vendor={release.tool.vendor}
 				version={release.version}
 				releaseDate={release.releaseDate}
-				summary={release.summary}
+				headline={release.headline}
 				changeCount={release._count.changes}
 				changesByType={release.changesByType}
 				hasBreaking={release.hasBreaking}

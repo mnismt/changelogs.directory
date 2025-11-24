@@ -79,6 +79,56 @@ async function main() {
 
 	console.log(`✅ Seeded tool: ${codex.name} (${codex.slug})`)
 
+	// Seed Cursor tool
+	const cursorTool = await prisma.tool.upsert({
+		where: { slug: "cursor" },
+		update: {
+			name: "Cursor",
+			vendor: "Cursor AI",
+			description:
+				"AI-native code editor with agentic workflows, pair programming, and instant search.",
+			homepage: "https://cursor.com",
+			repositoryUrl: "https://cursor.com",
+			sourceType: "CUSTOM_API",
+			sourceUrl: "https://cursor.com/changelog",
+			sourceConfig: {
+				baseUrl: "https://cursor.com",
+				startPath: "/changelog",
+				articleSelector: "#main.section.section--longform article",
+				bodySelector: ".prose",
+				nextLinkSelector: "a.card--pagination",
+				maxPagesPerRun: 6,
+				initialPageCount: 40,
+			},
+			tags: ["ai", "ide", "editor", "pair-programming"],
+			isActive: true,
+		},
+		create: {
+			slug: "cursor",
+			name: "Cursor",
+			vendor: "Cursor AI",
+			description:
+				"AI-native code editor with agentic workflows, pair programming, and instant search.",
+			homepage: "https://cursor.com",
+			repositoryUrl: "https://cursor.com",
+			sourceType: "CUSTOM_API",
+			sourceUrl: "https://cursor.com/changelog",
+			sourceConfig: {
+				baseUrl: "https://cursor.com",
+				startPath: "/changelog",
+				articleSelector: "#main.section.section--longform article",
+				bodySelector: ".prose",
+				nextLinkSelector: "a.card--pagination",
+				maxPagesPerRun: 6,
+				initialPageCount: 40,
+			},
+			tags: ["ai", "ide", "editor", "pair-programming"],
+			isActive: true,
+		},
+	})
+
+	console.log(`✅ Seeded tool: ${cursorTool.name} (${cursorTool.slug})`)
+
 	console.log("Database seed completed!")
 }
 

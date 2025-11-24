@@ -63,7 +63,7 @@ export const ingestClaudeCode = task({
 			// ============================================================================
 			// Phase 5: Enrich with LLM
 			// ============================================================================
-			const enrichResult = await enrichStep(filterResult)
+			const enrichResult = await enrichStep(ctx, filterResult)
 
 			// ============================================================================
 			// Phase 6: Upsert

@@ -90,7 +90,7 @@ export function SubscribeDialog({ open, onClose }: SubscribeDialogProps) {
 						<X className="size-4" />
 					</Button>
 				</div>
-				<SubscribeCta />
+				<SubscribeCta showStats />
 			</div>
 		</div>,
 		document.body,

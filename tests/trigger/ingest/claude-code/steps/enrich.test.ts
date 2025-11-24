@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { enrichStep } from '@/trigger/ingest/claude-code/steps/enrich'
 import { createMockParsedRelease } from 'tests/helpers/fixtures'
 import type { FilterResult } from '@/trigger/ingest/claude-code/types'
+import type { IngestionContext } from '@/trigger/ingest/claude-code/types'
 
 vi.mock('@/lib/enrichment/llm', () => ({
 	enrichReleaseWithLLM: vi.fn(),
@@ -15,6 +16,18 @@ describe('enrichStep', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
+
+	const mockCtx = {
+		prisma: {
+			release: {
+				findFirst: vi.fn().mockResolvedValue(null),
+			},
+		},
+		toolSlug: 'claude-code',
+		tool: { id: 'tool-id' },
+		fetchLog: { id: 'fetch-log-id' },
+		startTime: Date.now(),
+	} as unknown as IngestionContext
 
 	it('should call LLM enrichment for each release', async () => {
 		const { enrichReleaseWithLLM } = await import('@/lib/enrichment/llm')
@@ -39,7 +52,7 @@ describe('enrichStep', () => {
 			releasesSkipped: 0,
 		}
 
-		const result = await enrichStep(filterResult)
+		const result = await enrichStep(mockCtx, filterResult)
 
 		expect(enrichReleaseWithLLM).toHaveBeenCalledTimes(2)
 		expect(result.enrichedReleases).toHaveLength(2)
@@ -61,7 +74,7 @@ describe('enrichStep', () => {
 			releasesSkipped: 0,
 		}
 
-		const result = await enrichStep(filterResult)
+		const result = await enrichStep(mockCtx, filterResult)
 
 		expect(result.enrichedReleases).toHaveLength(1)
 		expect(result.enrichedReleases[0]).toEqual(originalRelease)
@@ -80,7 +93,9 @@ describe('enrichStep', () => {
 			releasesSkipped: 0,
 		}
 
-		await expect(enrichStep(filterResult)).rejects.toThrow('LLM error')
+		await expect(enrichStep(mockCtx, filterResult)).rejects.toThrow(
+			'LLM error',
+		)
 	})
 
 	it('should handle empty releases array', async () => {
@@ -89,7 +104,7 @@ describe('enrichStep', () => {
 			releasesSkipped: 5,
 		}
 
-		const result = await enrichStep(filterResult)
+		const result = await enrichStep(mockCtx, filterResult)
 
 		expect(result.enrichedReleases).toHaveLength(0)
 	})
@@ -108,7 +123,7 @@ describe('enrichStep', () => {
 		}
 
 		const startTime = Date.now()
-		await enrichStep(filterResult)
+		await enrichStep(mockCtx, filterResult)
 		const duration = Date.now() - startTime
 
 		expect(enrichReleaseWithLLM).toHaveBeenCalledTimes(5)

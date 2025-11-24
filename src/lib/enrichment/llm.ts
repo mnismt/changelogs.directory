@@ -43,7 +43,14 @@ const classifiedChangeSchema = z.object({
  * Processes all changes + summary in ONE LLM call
  */
 const releaseEnrichmentSchema = z.object({
-	summary: z.string().describe('Concise 2-3 sentence summary of the release'),
+	headline: z
+		.string()
+		.max(140)
+		.describe('Single sentence (<=120 chars) card headline'),
+	summary: z
+		.string()
+		.max(400)
+		.describe('Concise 1-2 sentence summary for detail view'),
 	keyHighlights: z.array(z.string()).max(3).describe('Up to 3 key highlights'),
 	changes: z
 		.array(classifiedChangeSchema)
@@ -65,8 +72,15 @@ const releaseEnrichmentSchema = z.object({
  * @param release - Raw parsed release from any source
  * @returns Enriched release with LLM classifications and summary
  */
+interface PreviousReleaseContext {
+	version: string
+	headline?: string | null
+	summary?: string | null
+}
+
 export async function enrichReleaseWithLLM(
 	release: ParsedRelease,
+	options?: { previousRelease?: PreviousReleaseContext },
 ): Promise<ParsedRelease> {
 	// Check if LLM is available
 	if (!llm) {
@@ -85,17 +99,35 @@ export async function enrichReleaseWithLLM(
 			)
 			.join('\n')
 
+		const previousContext = formatPreviousRelease(options?.previousRelease)
+
 		// Build comprehensive prompt for batch processing
 		const prompt = `You are analyzing a software release changelog. Please classify ALL changes and generate a summary.
 
 Version: ${release.version}
 Release Date: ${release.releaseDate?.toISOString().split('T')[0] || 'N/A'}
+Previous Version Context: ${previousContext.description}
 
 Full Release Notes:
 ${release.rawContent.substring(0, 2000)}
 
 Changes to classify (by index):
 ${changesText}
+
+Tone + style rules:
+- Audience is other engineers. Be specific, concrete, and honest.
+- Max 1 short headline (120 characters or less) plus a 1-2 sentence summary.
+- Professional but casual. No marketing fluff, no "overall", "enhances", or vague praise.
+- Highlight what changed compared to the previous version, not how great the product is.
+- If a change fixes or reverts something from the previous release, mention it directly.
+- Avoid dark humor or sarcasm.
+- Use active voice.
+
+Examples:
+- Bad headline: "This release introduces several improvements and bug fixes that enhance overall stability."
+- Good headline: "Fixes Linux startup after 0.54.x and calms codex_delegate noise."
+- Bad summary: "This version significantly enhances usability and stability for all users."
+- Good summary: "Adds Ctrl-Y to restore deleted edits, clarifies usage-limit warnings, and fixes the subagent permission slip."
 
 For EACH change, classify based on:
 - FEATURE: New functionality or capabilities
@@ -114,8 +146,9 @@ Impact levels:
 - PATCH: Bug fixes, improvements, documentation
 
 Also generate:
-1. A concise 2-3 sentence summary of this release
-2. Up to 3 key highlights
+1. Headline: <=120 characters, specific, written for cards.
+2. Summary: 1-2 sentences highlighting what is new or fixed versus ${previousContext.versionText}.
+3. Up to 3 key highlights (optional).
 
 Return the changes array with the SAME order/indices as provided.`
 
@@ -151,6 +184,7 @@ Return the changes array with the SAME order/indices as provided.`
 		// Return enriched release
 		return {
 			...release,
+			headline: result.object.headline,
 			summary: result.object.summary,
 			changes: enrichedChanges,
 		}
@@ -160,5 +194,30 @@ Return the changes array with the SAME order/indices as provided.`
 			error,
 		)
 		return release
+	}
+}
+
+function formatPreviousRelease(previous?: PreviousReleaseContext): {
+	description: string
+	versionText: string
+} {
+	if (!previous) {
+		return {
+			description:
+				'No previous version context available. Treat this as a net-new release.',
+			versionText: 'the prior release',
+		}
+	}
+
+	const summarySnippet = [previous.headline, previous.summary]
+		.filter((value) => value && value.trim().length > 0)
+		.join(' — ')
+		.slice(0, 200)
+
+	return {
+		description: `Version ${previous.version}${
+			summarySnippet ? `: ${summarySnippet}` : ''
+		}`,
+		versionText: `v${previous.version}`,
 	}
 }
