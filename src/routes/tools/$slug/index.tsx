@@ -1,3 +1,4 @@
+import type { ChangeType } from '@prisma/client'
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
@@ -87,10 +88,15 @@ function ToolPage() {
 	const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
 	const [isMounted, setIsMounted] = useState(false)
 	const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
+	const [hoveredTypes, setHoveredTypes] = useState<ChangeType[] | null>(null)
 	const loadMoreRef = useRef<HTMLDivElement>(null)
 
 	const handleCardHover = useCallback((id: string | null) => {
 		setHoveredCardId(id)
+	}, [])
+
+	const handleHoverTypesChange = useCallback((types: ChangeType[] | null) => {
+		setHoveredTypes(types)
 	}, [])
 
 	useEffect(() => {
@@ -245,7 +251,7 @@ function ToolPage() {
 				>
 					<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 						<div className="flex-1">
-							<FilterBar />
+							<FilterBar hoveredTypes={hoveredTypes} />
 						</div>
 						<ViewToggle />
 					</div>
@@ -280,6 +286,7 @@ function ToolPage() {
 												hoveredCardId !== null && hoveredCardId !== release.id
 											}
 											onHover={handleCardHover}
+											onHoverTypesChange={handleHoverTypesChange}
 										/>
 									))}
 								</div>
@@ -292,7 +299,11 @@ function ToolPage() {
 									}`}
 									style={{ transitionDelay: '260ms' }}
 								>
-									<TimelineView toolSlug={slug} releases={filteredReleases} />
+									<TimelineView
+										toolSlug={slug}
+										releases={filteredReleases}
+										onHoverTypesChange={handleHoverTypesChange}
+									/>
 								</div>
 							)}
 
@@ -388,6 +399,7 @@ interface ReleaseCardWithRevealProps {
 	toolSlug: string
 	isBlurred?: boolean
 	onHover?: (id: string | null) => void
+	onHoverTypesChange?: (types: ChangeType[] | null) => void
 }
 
 function ReleaseCardWithReveal({
@@ -396,6 +408,7 @@ function ReleaseCardWithReveal({
 	toolSlug,
 	isBlurred = false,
 	onHover,
+	onHoverTypesChange,
 }: ReleaseCardWithRevealProps) {
 	const { ref, isVisible } = useScrollReveal({
 		threshold: 0.2,
@@ -403,6 +416,22 @@ function ReleaseCardWithReveal({
 	})
 	const delay = 150 + Math.min(index, 10) * 40
 	const releaseDate = toDate(release.releaseDate)
+
+	const handleMouseEnter = () => {
+		onHover?.(release.id)
+
+		// Extract change types from the release
+		const types = release.changesByType
+			? (Object.keys(release.changesByType) as ChangeType[])
+			: null
+
+		onHoverTypesChange?.(types)
+	}
+
+	const handleMouseLeave = () => {
+		onHover?.(null)
+		onHoverTypesChange?.(null)
+	}
 
 	return (
 		// biome-ignore lint/a11y/noStaticElementInteractions: Mouse events are for visual enhancement only
@@ -412,8 +441,8 @@ function ReleaseCardWithReveal({
 				isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
 			} ${isBlurred ? 'blur-[2px] opacity-40' : ''}`}
 			style={{ transitionDelay: `${delay}ms` }}
-			onMouseEnter={() => onHover?.(release.id)}
-			onMouseLeave={() => onHover?.(null)}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
 		>
 			<ReleaseCard
 				toolSlug={toolSlug}

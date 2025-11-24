@@ -44,16 +44,16 @@ export function WaitlistChart({ data }: WaitlistChartProps) {
 	})
 
 	return (
-		<Card className="border-border bg-card">
+		<Card className="border-border bg-card h-full">
 			<CardHeader>
-				<CardTitle className="font-mono text-lg">Daily Signups (30d)</CardTitle>
+				<CardTitle className="font-mono text-lg">Daily Signups</CardTitle>
 				<CardDescription>
-					{totalSignups} new subscribers in the last 30 days
+					{totalSignups} new subscribers since Oct 30
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				{data.length > 0 ? (
-					<ChartContainer config={chartConfig} className="h-[200px] w-full">
+					<ChartContainer config={chartConfig} className="h-[350px] w-full">
 						<AreaChart
 							data={formattedData}
 							margin={{ left: 0, right: 12, top: 12, bottom: 0 }}

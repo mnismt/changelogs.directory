@@ -1,10 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, Package } from 'lucide-react'
-import { useState } from 'react'
-import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect'
-import { Badge } from '@/components/ui/badge'
+import { ArrowRight, Terminal } from 'lucide-react'
+import { motion } from 'motion/react'
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { formatDate, formatRelativeDate } from '@/lib/date-utils'
+import { formatDate } from '@/lib/date-utils'
 import {
 	getLogoHoverClasses,
 	getToolLogo,
@@ -28,6 +27,30 @@ interface HeroReleaseProps {
 	hasDeprecation: boolean
 }
 
+const containerVariants = {
+	hidden: { opacity: 0 },
+	visible: {
+		opacity: 1,
+		transition: {
+			staggerChildren: 0.15,
+			delayChildren: 0.1,
+		},
+	},
+}
+
+const itemVariants = {
+	hidden: { opacity: 0, y: 10, filter: 'blur(4px)' },
+	visible: {
+		opacity: 1,
+		y: 0,
+		filter: 'blur(0px)',
+		transition: {
+			duration: 0.6,
+			ease: [0.2, 0.65, 0.3, 0.9] as const, // Custom ease-out-cubic-ish
+		},
+	},
+}
+
 export function HeroRelease({
 	toolSlug,
 	toolName,
@@ -35,191 +58,213 @@ export function HeroRelease({
 	version,
 	releaseDate,
 	headline,
-	summary,
 	changeCount,
 	changesByType,
-	hasBreaking,
-	hasSecurity,
-	hasDeprecation,
 }: HeroReleaseProps) {
 	const logo = getToolLogo(toolSlug)
 	const [isHovered, setIsHovered] = useState(false)
 
+	// Animation state
+	const [typedCommand, setTypedCommand] = useState('')
+	const [showOutput, setShowOutput] = useState(false)
+	const [isTypingDone, setIsTypingDone] = useState(false)
+
+	const fullCommand = `view release --tool=${toolSlug} --version=${version}`
+
+	useEffect(() => {
+		let currentIndex = 0
+		const typingSpeed = 35 // ms per char
+		const startDelay = 1200 // Wait for card to slide in
+
+		const startTimeout = setTimeout(() => {
+			const interval = setInterval(() => {
+				if (currentIndex <= fullCommand.length) {
+					setTypedCommand(fullCommand.slice(0, currentIndex))
+					currentIndex++
+				} else {
+					clearInterval(interval)
+					setIsTypingDone(true)
+					// Delay before showing output
+					setTimeout(() => {
+						setShowOutput(true)
+					}, 300)
+				}
+			}, typingSpeed)
+
+			return () => clearInterval(interval)
+		}, startDelay)
+
+		return () => clearTimeout(startTimeout)
+	}, [fullCommand])
+
 	return (
 		<Card
-			className="relative group overflow-hidden border-border bg-card transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-4"
+			className="relative group overflow-hidden border-border/40 bg-[#09090b] shadow-2xl transition-all duration-500 ease-in-out hover:border-border/60 hover:shadow-accent/5"
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			{/* Background effect */}
-			<div className="absolute inset-0 opacity-20">
-				<BackgroundRippleEffect rows={8} cols={24} cellSize={48} />
-			</div>
-
-			{/* macOS-like window controls */}
-			<div className="relative z-10 flex items-center gap-2 border-b border-border/40 bg-secondary/50 px-4 py-2">
-				<div className="flex items-center gap-1.5">
-					<span
-						className={cn(
-							'size-2 rounded-full transition-colors duration-300',
-							isHovered ? 'bg-[#ff5f56]' : 'bg-muted-foreground/30',
-						)}
-						aria-hidden
-					/>
-					<span
-						className={cn(
-							'size-2 rounded-full transition-colors duration-300',
-							isHovered ? 'bg-[#ffbd2e]' : 'bg-muted-foreground/30',
-						)}
-						aria-hidden
-					/>
-					<span
-						className={cn(
-							'size-2 rounded-full transition-colors duration-300',
-							isHovered ? 'bg-[#27c93f]' : 'bg-muted-foreground/30',
-						)}
-						aria-hidden
-					/>
+			{/* macOS-like window controls - Darker/Subtler */}
+			<div className="relative z-10 flex items-center justify-between border-b border-white/5 bg-white/[0.02] px-4 py-3">
+				<div className="flex items-center gap-2">
+					<div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+						<span className="size-2.5 rounded-full bg-[#ff5f56]" />
+						<span className="size-2.5 rounded-full bg-[#ffbd2e]" />
+						<span className="size-2.5 rounded-full bg-[#27c93f]" />
+					</div>
+					<div className="ml-4 flex items-center gap-2 text-xs font-mono text-muted-foreground/40">
+						<span>changelogs — -zsh — 80x24</span>
+					</div>
 				</div>
 			</div>
 
 			{/* Content */}
-			<div className="relative z-10 p-8 sm:p-12">
-				{/* Header with logo and tool name */}
-				<div className="mb-6 flex items-start gap-4">
-					<div className="shrink-0">
-						{logo ? (
-							<div
-								className={cn(
-									'flex size-16 items-center justify-center rounded p-2 [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-all duration-700 [&>svg_path]:transition-all [&>svg_path]:duration-300 [&>svg_circle]:transition-all [&>svg_circle]:duration-300',
-									// Keep monochrome fill for monochrome logos or when not hovered
-									(isMonochromeLogo(toolSlug) || !isHovered) &&
-										'[&>svg]:fill-foreground [&>svg_path]:fill-foreground [&>svg_circle]:fill-foreground',
-									getLogoHoverClasses(toolSlug),
-								)}
-							>
-								{logo}
-							</div>
-						) : (
-							<div className="flex size-16 items-center justify-center rounded-lg">
-								<Package className="h-8 w-8 text-muted-foreground" />
-							</div>
+			<div className="relative z-10 p-6 sm:p-8 font-mono">
+				{/* Command Prompt Simulation */}
+				<div className="mb-8 flex flex-wrap items-center gap-2 text-sm">
+					<span className="text-green-500 font-bold">➜</span>
+					<span className="text-blue-400 font-bold">~</span>
+					<span className="text-foreground/90">
+						{typedCommand}
+						{!isTypingDone && (
+							<span className="animate-pulse inline-block w-2 h-4 bg-foreground/50 align-middle ml-1" />
 						)}
-					</div>
-
-					<div className="flex-1">
-						<div className="flex flex-wrap items-center gap-2">
-							<h2 className="font-mono text-2xl font-semibold tracking-tight sm:text-3xl">
-								{toolName}
-							</h2>
-							{vendor && (
-								<Badge
-									variant="outline"
-									className="border-border bg-secondary font-mono text-xs uppercase"
-								>
-									{vendor}
-								</Badge>
-							)}
-						</div>
-
-						{/* Version and badges */}
-						<div className="mt-3 flex flex-wrap items-center gap-2">
-							<Link
-								to="/tools/$slug/releases/$version"
-								params={{ slug: toolSlug, version }}
-								className="rounded border border-transparent bg-secondary px-3 py-1 font-mono text-lg font-medium transition-all hover:border-accent cursor-pointer"
-							>
-								{formatVersionForDisplay(version, toolSlug)}
-							</Link>
-
-							{hasBreaking && (
-								<Badge
-									variant="destructive"
-									className="font-mono text-xs uppercase"
-								>
-									Breaking
-								</Badge>
-							)}
-
-							{hasSecurity && (
-								<Badge
-									variant="destructive"
-									className="font-mono text-xs uppercase"
-								>
-									Security
-								</Badge>
-							)}
-
-							{hasDeprecation && (
-								<Badge
-									variant="outline"
-									className="border-yellow-500/50 bg-yellow-500/10 text-yellow-500 font-mono text-xs uppercase"
-								>
-									Deprecation
-								</Badge>
-							)}
-						</div>
-					</div>
+					</span>
 				</div>
 
-				{/* Release date */}
-				{releaseDate ? (
-					<div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-						<time dateTime={releaseDate.toString()}>
-							{formatDate(releaseDate)}
-						</time>
-						<span>•</span>
-						<span>{formatRelativeDate(releaseDate)}</span>
-					</div>
-				) : (
-					<div className="mb-4 text-sm text-muted-foreground">
-						<span>Release date pending</span>
-					</div>
-				)}
-
-				{/* Summary */}
-				{headline && <p className="text-muted-foreground mb-4">{headline}</p>}
-
-				{/* Change count breakdown */}
-				<div className="mb-6 flex flex-wrap items-center gap-4 text-sm">
-					<div className="flex items-center gap-2">
-						<span className="font-mono font-semibold">{changeCount}</span>
-						<span className="text-muted-foreground">
-							{changeCount === 1 ? 'change' : 'changes'}
-						</span>
-					</div>
-
-					{Object.entries(changesByType).length > 0 && (
-						<>
-							<span className="text-muted-foreground/50">•</span>
-							<div className="flex flex-wrap gap-3">
-								{Object.entries(changesByType)
-									.sort(([, a], [, b]) => b - a)
-									.map(([type, count]) => (
-										<div
-											key={type}
-											className="flex items-center gap-1.5 text-muted-foreground"
-										>
-											<span className="font-mono text-xs uppercase">
-												{type.toLowerCase()}s
-											</span>
-											<span className="font-mono text-foreground">{count}</span>
-										</div>
-									))}
-							</div>
-						</>
-					)}
-				</div>
-
-				{/* CTA */}
-				<Link
-					to="/tools/$slug/releases/$version"
-					params={{ slug: toolSlug, version }}
-					className="group/release inline-flex items-center gap-2 font-mono text-sm text-muted-foreground transition-colors duration-700 ease-out hover:text-foreground group-hover:text-foreground/50"
+				{/* Output Area */}
+				<motion.div
+					initial={{ height: 0, opacity: 0 }}
+					animate={
+						showOutput
+							? { height: 'auto', opacity: 1 }
+							: { height: 0, opacity: 0 }
+					}
+					transition={{
+						duration: 0.8,
+						ease: [0.2, 0.65, 0.3, 0.9] as const,
+					}}
+					className="overflow-hidden"
 				>
-					View release details
-					<ArrowRight className="size-4 transition-transform duration-700 ease-out group-hover:translate-x-1 group-hover/release:rotate-180" />
-				</Link>
+					{showOutput && (
+						<motion.div
+							className="pl-2 ml-1 pb-2"
+							variants={containerVariants}
+							initial="hidden"
+							animate="visible"
+						>
+							<div className="flex items-start gap-6 mb-8">
+								{/* Logo */}
+								<motion.div
+									variants={itemVariants}
+									className="shrink-0 hidden sm:block pt-1"
+								>
+									{logo ? (
+										<div
+											className={cn(
+												'flex size-14 items-center justify-center [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-all duration-700',
+												(isMonochromeLogo(toolSlug) || !isHovered) &&
+													'[&>svg]:fill-foreground [&>svg_path]:fill-foreground [&>svg_circle]:fill-foreground',
+												getLogoHoverClasses(toolSlug),
+											)}
+										>
+											{logo}
+										</div>
+									) : (
+										<div className="flex size-14 items-center justify-center text-muted-foreground">
+											<Terminal className="h-8 w-8" />
+										</div>
+									)}
+								</motion.div>
+
+								<div className="flex-1 min-w-0">
+									<motion.div
+										variants={itemVariants}
+										className="flex flex-wrap items-baseline gap-3 mb-2"
+									>
+										<h2 className="text-xl font-bold tracking-tight text-foreground">
+											{toolName}
+										</h2>
+										{vendor && (
+											<span className="text-xs text-muted-foreground/60 uppercase tracking-widest">
+												{vendor}
+											</span>
+										)}
+									</motion.div>
+
+									<motion.div
+										variants={itemVariants}
+										className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground/80 mb-6"
+									>
+										<span className="font-semibold text-foreground">
+											{formatVersionForDisplay(version, toolSlug)}
+										</span>
+										<span className="text-muted-foreground/30">•</span>
+										{releaseDate ? (
+											<time dateTime={releaseDate.toString()}>
+												{formatDate(releaseDate)}
+											</time>
+										) : (
+											<span>Pending</span>
+										)}
+									</motion.div>
+
+									{/* Summary/Headline */}
+									{headline && (
+										<motion.p
+											variants={itemVariants}
+											className="text-base text-foreground/90 leading-relaxed mb-6 border-l-2 border-white/10 pl-4"
+										>
+											{headline}
+										</motion.p>
+									)}
+
+									{/* Stats - Text based */}
+									<motion.div
+										variants={itemVariants}
+										className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground/60 bg-white/[0.02] p-3 rounded border border-white/5"
+									>
+										<div className="flex items-center gap-2">
+											<span className="text-foreground">{changeCount}</span>
+											<span>files changed</span>
+										</div>
+										{Object.entries(changesByType).length > 0 && (
+											<>
+												<span className="text-white/10">|</span>
+												<div className="flex gap-4">
+													{Object.entries(changesByType)
+														.sort(([, a], [, b]) => b - a)
+														.map(([type, count]) => (
+															<span key={type}>
+																<span className="text-foreground">{count}</span>{' '}
+																{type.toLowerCase()}
+															</span>
+														))}
+												</div>
+											</>
+										)}
+									</motion.div>
+								</div>
+							</div>
+
+							{/* CTA - Prompt style */}
+							<motion.div
+								variants={itemVariants}
+								className="mt-8 pt-6 border-t border-white/5 flex items-center justify-end"
+							>
+								<Link
+									to="/tools/$slug/releases/$version"
+									params={{ slug: toolSlug, version }}
+									className="group/btn inline-flex items-center gap-3 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+								>
+									<span className="border-b border-transparent group-hover/btn:border-foreground transition-colors">
+										Read full changelog
+									</span>
+									<ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-1" />
+								</Link>
+							</motion.div>
+						</motion.div>
+					)}
+				</motion.div>
 			</div>
 		</Card>
 	)

@@ -1,3 +1,4 @@
+import type { ChangeType } from '@prisma/client'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toDate } from '@/lib/date-utils'
@@ -18,6 +19,7 @@ export interface TimelineRelease {
 interface TimelineViewProps {
 	toolSlug: string
 	releases: TimelineRelease[]
+	onHoverTypesChange?: (types: ChangeType[] | null) => void
 }
 
 function groupReleasesByYear(releases: TimelineRelease[]) {
@@ -41,15 +43,41 @@ function groupReleasesByYear(releases: TimelineRelease[]) {
 	return groups
 }
 
-export function TimelineView({ toolSlug, releases }: TimelineViewProps) {
+export function TimelineView({
+	toolSlug,
+	releases,
+	onHoverTypesChange,
+}: TimelineViewProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const timelineRef = useRef<HTMLDivElement>(null)
 	const [height, setHeight] = useState(0)
 	const [hoveredId, setHoveredId] = useState<string | null>(null)
 
-	const handleItemHover = useCallback((id: string | null) => {
-		setHoveredId(id)
-	}, [])
+	// Build a map of releases by ID for quick lookup
+	const releasesById = useMemo(() => {
+		const map = new Map<string, TimelineRelease>()
+		for (const release of releases) {
+			map.set(release.id, release)
+		}
+		return map
+	}, [releases])
+
+	const handleItemHover = useCallback(
+		(id: string | null) => {
+			setHoveredId(id)
+
+			if (id === null) {
+				onHoverTypesChange?.(null)
+			} else {
+				const release = releasesById.get(id)
+				const types = release?.changesByType
+					? (Object.keys(release.changesByType) as ChangeType[])
+					: null
+				onHoverTypesChange?.(types)
+			}
+		},
+		[releasesById, onHoverTypesChange],
+	)
 
 	const groupedByYear = useMemo(() => groupReleasesByYear(releases), [releases])
 

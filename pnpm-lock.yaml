@@ -17,6 +17,9 @@ importers:
       '@faker-js/faker':
         specifier: ^10.0.0
         version: 10.1.0
+      '@neondatabase/serverless':
+        specifier: ^1.0.2
+        version: 1.0.2
       '@prisma/adapter-neon':
         specifier: ^6.18.0
         version: 6.18.0
