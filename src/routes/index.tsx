@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { Loader2 } from 'lucide-react'
@@ -139,8 +140,6 @@ function HomePage() {
 	const [searchQuery, setSearchQuery] = useState('')
 	const debouncedSearchQuery = useDebounce(searchQuery, 300)
 	const isSearching = searchQuery !== debouncedSearchQuery
-	const [releases, setReleases] = useState(initialData.releases)
-	const [pagination, setPagination] = useState(initialData.pagination)
 	const [isMounted, setIsMounted] = useState(false)
 	const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
 	const [hoveredTool, setHoveredTool] = useState<string | null>(null)
@@ -150,31 +149,26 @@ function HomePage() {
 		setIsMounted(true)
 	}, [])
 
-	// Fetch more releases when filters change
-	useEffect(() => {
-		const refetch = async () => {
-			try {
-				const data = await fetchReleases({
-					data: {
-						limit: INITIAL_RELEASE_LIMIT,
-						offset: 0,
-						changeTypes:
-							selectedTypes.length > 0
-								? (selectedTypes as ChangeType[])
-								: undefined,
-						toolSlugs: selectedTools.length > 0 ? selectedTools : undefined,
-					},
-				})
-				setReleases(data.releases)
-				setPagination(data.pagination)
-			} catch (error) {
-				console.error('Error fetching releases:', error)
-				captureException(error)
-			}
-		}
+	// Fetch releases with React Query
+	const { data } = useQuery({
+		queryKey: ['releases', { types: selectedTypes, tools: selectedTools }],
+		queryFn: () =>
+			fetchReleases({
+				data: {
+					limit: INITIAL_RELEASE_LIMIT,
+					offset: 0,
+					changeTypes:
+						selectedTypes.length > 0
+							? (selectedTypes as ChangeType[])
+							: undefined,
+					toolSlugs: selectedTools.length > 0 ? selectedTools : undefined,
+				},
+			}),
+		initialData: initialData,
+	})
 
-		refetch()
-	}, [selectedTypes, selectedTools, fetchReleases])
+	const releases = data.releases
+	const pagination = data.pagination
 
 	// Extract hero release (first one)
 	const heroRelease = releases[0]

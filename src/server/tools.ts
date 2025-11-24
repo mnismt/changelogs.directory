@@ -482,8 +482,7 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 			})
 
 			// Fetch paginated releases across all tools
-			// Explicitly select the fields we expose to the homepage so that
-			// text metadata like `headline` is always present in the payload.
+			// Optimize: Fetch changes in the same query to avoid N+1
 			const releases = await prisma.release.findMany({
 				where: whereClause,
 				orderBy: { releaseDate: 'desc' },
@@ -506,106 +505,47 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 					_count: {
 						select: { changes: true },
 					},
-				},
-			})
-
-			// Fetch change counts grouped by type for fetched releases
-			const releaseIds = releases.map((r) => r.id)
-
-			// If no releases, return empty data
-			if (releaseIds.length === 0) {
-				return {
-					releases: [],
-					pagination: {
-						offset: data.offset,
-						limit: data.limit,
-						totalCount: 0,
-						hasMore: false,
-					},
-				}
-			}
-
-			const changesByTypeRaw = await prisma.change.groupBy({
-				by: ['releaseId', 'type'],
-				where: {
-					releaseId: { in: releaseIds },
-				},
-				_count: { id: true },
-			})
-
-			// Transform into a map: releaseId -> { type: count }
-			const changesByTypeMap = new Map<string, Record<string, number>>()
-			for (const item of changesByTypeRaw) {
-				if (!changesByTypeMap.has(item.releaseId)) {
-					changesByTypeMap.set(item.releaseId, {})
-				}
-				const typeCounts = changesByTypeMap.get(item.releaseId)
-				if (typeCounts) {
-					typeCounts[item.type] = item._count.id
-				}
-			}
-
-			// Check for breaking/security/deprecation flags using separate queries
-			const [breakingChanges, securityChanges, deprecationChanges] =
-				await Promise.all([
-					prisma.change.groupBy({
-						by: ['releaseId'],
-						where: {
-							releaseId: { in: releaseIds },
+					// Include changes to aggregate in memory
+					changes: {
+						select: {
+							type: true,
 							isBreaking: true,
-						},
-						_count: { id: true },
-					}),
-					prisma.change.groupBy({
-						by: ['releaseId'],
-						where: {
-							releaseId: { in: releaseIds },
 							isSecurity: true,
-						},
-						_count: { id: true },
-					}),
-					prisma.change.groupBy({
-						by: ['releaseId'],
-						where: {
-							releaseId: { in: releaseIds },
 							isDeprecation: true,
 						},
-						_count: { id: true },
-					}),
-				])
+					},
+				},
+			})
 
-			// Transform into sets for fast lookup
-			const breakingSet = new Set(breakingChanges.map((c) => c.releaseId))
-			const securitySet = new Set(securityChanges.map((c) => c.releaseId))
-			const deprecationSet = new Set(deprecationChanges.map((c) => c.releaseId))
+			// Process releases in memory to calculate stats
+			const releasesWithMetadata = releases.map((release) => {
+				const changesByType: Record<string, number> = {}
+				let hasBreaking = false
+				let hasSecurity = false
+				let hasDeprecation = false
 
-			// Create flagged changes map
-			const flaggedChangesMap = new Map<
-				string,
-				{
-					hasBreaking: boolean
-					hasSecurity: boolean
-					hasDeprecation: boolean
+				for (const change of release.changes) {
+					// Count by type
+					changesByType[change.type] = (changesByType[change.type] || 0) + 1
+
+					// Check flags
+					if (change.isBreaking) hasBreaking = true
+					if (change.isSecurity) hasSecurity = true
+					if (change.isDeprecation) hasDeprecation = true
 				}
-			>()
 
-			for (const releaseId of releaseIds) {
-				flaggedChangesMap.set(releaseId, {
-					hasBreaking: breakingSet.has(releaseId),
-					hasSecurity: securitySet.has(releaseId),
-					hasDeprecation: deprecationSet.has(releaseId),
-				})
-			}
+				// Remove changes array from the result to match the expected return type
+				// (though we need to cast or omit it since it's in the select now)
+				const { changes, ...releaseWithoutChanges } = release
 
-			// Attach changesByType and flags to each release
-			const releasesWithMetadata = releases.map((release) => ({
-				...release,
-				changesByType: changesByTypeMap.get(release.id) || {},
-				hasBreaking: flaggedChangesMap.get(release.id)?.hasBreaking || false,
-				hasSecurity: flaggedChangesMap.get(release.id)?.hasSecurity || false,
-				hasDeprecation:
-					flaggedChangesMap.get(release.id)?.hasDeprecation || false,
-			}))
+				return {
+					...releaseWithoutChanges,
+					changesByType,
+					hasBreaking,
+					hasSecurity,
+					hasDeprecation,
+				}
+			})
 
 			return {
 				releases: releasesWithMetadata,
