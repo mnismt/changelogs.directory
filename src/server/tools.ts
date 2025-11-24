@@ -482,12 +482,19 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 			})
 
 			// Fetch paginated releases across all tools
+			// Explicitly select the fields we expose to the homepage so that
+			// text metadata like `headline` is always present in the payload.
 			const releases = await prisma.release.findMany({
 				where: whereClause,
 				orderBy: { releaseDate: 'desc' },
 				skip: data.offset,
 				take: data.limit,
-				include: {
+				select: {
+					id: true,
+					version: true,
+					releaseDate: true,
+					headline: true,
+					summary: true,
 					tool: {
 						select: {
 							slug: true,

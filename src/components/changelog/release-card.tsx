@@ -87,6 +87,13 @@ export function ReleaseCardBase({
 	const hasSeverityBadges = hasBreaking || hasSecurity || hasDeprecation
 	const summaryClampClass =
 		summaryLineClamp === 2 ? 'line-clamp-2' : 'line-clamp-3'
+	const accessory =
+		rightAccessory ??
+		(typeof changeCount === 'number' ? (
+			<Badge variant="outline" className="font-mono text-xs">
+				{changeCount}
+			</Badge>
+		) : null)
 
 	return (
 		<Card
@@ -103,7 +110,7 @@ export function ReleaseCardBase({
 							{formatVersionForDisplay(version, toolSlug)}
 						</span>
 					</CardTitle>
-					{(hasSeverityBadges || rightAccessory) && (
+					{(hasSeverityBadges || accessory) && (
 						<div className="flex shrink-0 flex-col items-end gap-2">
 							{hasSeverityBadges && (
 								<div className="flex flex-wrap gap-1">
@@ -133,7 +140,7 @@ export function ReleaseCardBase({
 									)}
 								</div>
 							)}
-							{rightAccessory}
+							{accessory}
 						</div>
 					)}
 				</div>

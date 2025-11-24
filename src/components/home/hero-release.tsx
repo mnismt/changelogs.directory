@@ -179,14 +179,7 @@ export function HeroRelease({
 
 				{/* Summary */}
 				{headline && (
-					<p className="mb-2 font-mono text-sm uppercase text-muted-foreground">
-						{headline}
-					</p>
-				)}
-				{summary && (
-					<p className="mb-6 text-base leading-relaxed text-muted-foreground sm:text-lg">
-						{summary}
-					</p>
+					<p className="mb-2 text-muted-foreground mb-4">{headline}</p>
 				)}
 
 				{/* Change count breakdown */}

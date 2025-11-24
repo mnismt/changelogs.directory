@@ -1,5 +1,6 @@
 import { createVertex } from '@ai-sdk/google-vertex/edge'
 import type { LanguageModel } from 'ai'
+import { ensureBraintrustTelemetry } from './telemetry'
 
 interface GoogleCredentials {
 	type: string
@@ -25,6 +26,8 @@ function initializeLLM(): LanguageModel | null {
 		)
 		return null
 	}
+
+	ensureBraintrustTelemetry()
 
 	try {
 		const credentials = JSON.parse(credentialsRaw) as GoogleCredentials
