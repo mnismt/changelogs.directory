@@ -178,9 +178,7 @@ export function HeroRelease({
 				)}
 
 				{/* Summary */}
-				{headline && (
-					<p className="mb-2 text-muted-foreground mb-4">{headline}</p>
-				)}
+				{headline && <p className="text-muted-foreground mb-4">{headline}</p>}
 
 				{/* Change count breakdown */}
 				<div className="mb-6 flex flex-wrap items-center gap-4 text-sm">
