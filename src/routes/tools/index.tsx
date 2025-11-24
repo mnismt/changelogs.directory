@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { ToolCard } from '@/components/changelog/tool/tool-card'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
+import { SparklesCore } from '@/components/ui/sparkles'
 import { captureException } from '@/integrations/sentry'
 import { getToolLogo } from '@/lib/tool-logos'
 import { getAllTools } from '@/server/tools'
@@ -44,7 +45,20 @@ function ToolsDirectoryPage() {
 					</p>
 
 					{/* Stats Bar */}
-					<div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-8 border-t border-border pt-6">
+					<div className="relative mx-auto mt-8 max-w-md">
+						{/* Sparkles effect above divider */}
+						<div className="absolute inset-x-0 -top-8 h-20 w-full">
+							<SparklesCore
+								background="transparent"
+								minSize={0.4}
+								maxSize={1}
+								particleDensity={100}
+								className="h-full w-full"
+								particleColor="#FFFFFF"
+							/>
+						</div>
+					</div>
+					<div className="mx-auto flex max-w-md items-center justify-center gap-8 border-t border-border pt-6">
 						<div className="text-center">
 							<div className="font-mono text-3xl font-bold">
 								{stats.totalTools}
