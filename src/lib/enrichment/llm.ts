@@ -2,6 +2,7 @@ import type { ChangeType, ImpactLevel } from '@prisma/client'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 import { llm } from '@/lib/llm'
+import { buildBraintrustTelemetry } from '@/lib/llm/telemetry'
 import type { ParsedRelease } from '@/lib/parsers/changelog-md'
 
 /**
@@ -78,9 +79,18 @@ interface PreviousReleaseContext {
 	summary?: string | null
 }
 
+interface EnrichReleaseOptions {
+	previousRelease?: PreviousReleaseContext
+	telemetry?: {
+		toolSlug?: string
+		runId?: string
+		source?: string
+	}
+}
+
 export async function enrichReleaseWithLLM(
 	release: ParsedRelease,
-	options?: { previousRelease?: PreviousReleaseContext },
+	options?: EnrichReleaseOptions,
 ): Promise<ParsedRelease> {
 	// Check if LLM is available
 	if (!llm) {
@@ -152,11 +162,20 @@ Also generate:
 
 Return the changes array with the SAME order/indices as provided.`
 
+		const telemetry = buildBraintrustTelemetry({
+			toolSlug: options?.telemetry?.toolSlug,
+			releaseVersion: release.version,
+			ingestionRunId: options?.telemetry?.runId,
+			source: options?.telemetry?.source ?? 'ingestion.enrich',
+			previousVersion: options?.previousRelease?.version,
+		})
+
 		const result = await generateObject({
 			model: llm,
 			schema: releaseEnrichmentSchema,
 			prompt,
 			temperature: 0.3,
+			...(telemetry ? { experimental_telemetry: telemetry } : {}),
 		})
 
 		// Apply LLM classifications to changes

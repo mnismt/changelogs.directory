@@ -7,6 +7,7 @@ import {
 	Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { ReactLenis, useLenis } from 'lenis/react'
 import { AppErrorBoundary } from '@/components/shared/app-error-boundary'
 import { Footer } from '@/components/shared/footer'
 import { Header } from '@/components/shared/header'
@@ -80,12 +81,18 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+	const lenis = useLenis((lenis) => {
+		// called every scroll
+		console.log(lenis)
+	})
+
 	return (
 		<html lang="en" className="dark">
 			<head>
 				<HeadContent />
 			</head>
 			<body>
+				<ReactLenis root />
 				<div className="flex min-h-screen flex-col">
 					<Header />
 					<main className="flex-1">{children}</main>

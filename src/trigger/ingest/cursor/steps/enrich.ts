@@ -25,6 +25,11 @@ export async function enrichStep(
 
 			const enriched = await enrichReleaseWithLLM(release, {
 				previousRelease: previousRelease ?? undefined,
+				telemetry: {
+					toolSlug: ctx.toolSlug,
+					runId: ctx.fetchLog.id,
+					source: `trigger.enrich.${ctx.toolSlug}`,
+				},
 			})
 			logger.debug('Release enriched', {
 				version: enriched.version,
@@ -78,7 +83,7 @@ async function findPreviousRelease(
 
 	return {
 		version: previous.version,
-		headline: (previous as any).headline ?? null,
+		headline: previous.headline ?? null,
 		summary: previous.summary,
 	}
 }
