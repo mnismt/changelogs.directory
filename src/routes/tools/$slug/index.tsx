@@ -86,7 +86,12 @@ function ToolPage() {
 	const [isLoadingMore, setIsLoadingMore] = useState(false)
 	const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
 	const [isMounted, setIsMounted] = useState(false)
+	const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
 	const loadMoreRef = useRef<HTMLDivElement>(null)
+
+	const handleCardHover = useCallback((id: string | null) => {
+		setHoveredCardId(id)
+	}, [])
 
 	useEffect(() => {
 		setIsMounted(true)
@@ -271,6 +276,10 @@ function ToolPage() {
 											release={release}
 											index={index}
 											toolSlug={slug}
+											isBlurred={
+												hoveredCardId !== null && hoveredCardId !== release.id
+											}
+											onHover={handleCardHover}
 										/>
 									))}
 								</div>
@@ -377,12 +386,16 @@ interface ReleaseCardWithRevealProps {
 	release: TimelineRelease
 	index: number
 	toolSlug: string
+	isBlurred?: boolean
+	onHover?: (id: string | null) => void
 }
 
 function ReleaseCardWithReveal({
 	release,
 	index,
 	toolSlug,
+	isBlurred = false,
+	onHover,
 }: ReleaseCardWithRevealProps) {
 	const { ref, isVisible } = useScrollReveal({
 		threshold: 0.2,
@@ -392,12 +405,15 @@ function ReleaseCardWithReveal({
 	const releaseDate = toDate(release.releaseDate)
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: Mouse events are for visual enhancement only
 		<div
 			ref={ref}
 			className={`transition-all duration-500 ease-out ${
 				isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-			}`}
+			} ${isBlurred ? 'blur-[2px] opacity-40' : ''}`}
 			style={{ transitionDelay: `${delay}ms` }}
+			onMouseEnter={() => onHover?.(release.id)}
+			onMouseLeave={() => onHover?.(null)}
 		>
 			<ReleaseCard
 				toolSlug={toolSlug}

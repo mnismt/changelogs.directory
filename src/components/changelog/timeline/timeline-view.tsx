@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { motion, useScroll, useTransform } from 'motion/react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toDate } from '@/lib/date-utils'
 import { TimelineItem } from './timeline-item'
 
@@ -41,6 +42,15 @@ function groupReleasesByYear(releases: TimelineRelease[]) {
 }
 
 export function TimelineView({ toolSlug, releases }: TimelineViewProps) {
+	const containerRef = useRef<HTMLDivElement>(null)
+	const timelineRef = useRef<HTMLDivElement>(null)
+	const [height, setHeight] = useState(0)
+	const [hoveredId, setHoveredId] = useState<string | null>(null)
+
+	const handleItemHover = useCallback((id: string | null) => {
+		setHoveredId(id)
+	}, [])
+
 	const groupedByYear = useMemo(() => groupReleasesByYear(releases), [releases])
 
 	// Sort years in descending order (newest first)
@@ -51,57 +61,93 @@ export function TimelineView({ toolSlug, releases }: TimelineViewProps) {
 		return Number.parseInt(b, 10) - Number.parseInt(a, 10)
 	})
 
+	// Measure the timeline height
+	useEffect(() => {
+		if (timelineRef.current) {
+			const rect = timelineRef.current.getBoundingClientRect()
+			setHeight(rect.height)
+		}
+	}, [releases])
+
+	// Set up scroll-based animation
+	const { scrollYProgress } = useScroll({
+		target: containerRef,
+		offset: ['start 20%', 'end 60%'],
+	})
+
+	const heightTransform = useTransform(scrollYProgress, [0, 1], [0, height])
+	const opacityTransform = useTransform(scrollYProgress, [0, 0.1], [0, 1])
+
 	if (sortedYears.length === 0) {
 		return null
 	}
 
 	return (
-		<div className="mx-auto max-w-5xl">
-			{sortedYears.map((year, yearIndex) => {
-				const yearReleases = groupedByYear[year]
-				const isFirstYear = yearIndex === 0
+		<div ref={containerRef} className="mx-auto max-w-5xl">
+			<div ref={timelineRef} className="relative">
+				{/* Static background line */}
+				<div className="pointer-events-none absolute left-1/2 top-0 h-full w-1 -translate-x-1/2 bg-border/30 [mask-image:linear-gradient(to_bottom,transparent_0%,black_5%,black_95%,transparent_100%)]" />
 
-				return (
-					<div key={year} className={isFirstYear ? '' : 'mt-12'}>
-						{/* Year header */}
-						<h2 className="mb-8 font-mono text-2xl font-semibold text-foreground">
-							{year}
-						</h2>
+				{/* Animated scroll-progress line */}
+				<div
+					style={{ height: `${height}px` }}
+					className="pointer-events-none absolute left-1/2 top-0 w-1 -translate-x-1/2 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_5%,black_95%,transparent_100%)]"
+				>
+					<motion.div
+						style={{
+							height: heightTransform,
+							opacity: opacityTransform,
+						}}
+						className="absolute inset-x-0 top-0 w-1 rounded-full bg-gradient-to-b from-white via-white/70 to-transparent shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+					/>
+				</div>
 
-						{/* Timeline items for this year */}
-						<div>
-							{yearReleases.map((release, releaseIndex) => {
-								const isLastInYear = releaseIndex === yearReleases.length - 1
-								const isLastOverall =
-									yearIndex === sortedYears.length - 1 && isLastInYear
+				{sortedYears.map((year, yearIndex) => {
+					const yearReleases = groupedByYear[year]
+					const isFirstYear = yearIndex === 0
 
-								// Calculate global index for alternating sides
-								const globalIndex =
-									sortedYears
-										.slice(0, yearIndex)
-										.reduce((acc, y) => acc + groupedByYear[y].length, 0) +
-									releaseIndex
-								const isLeft = globalIndex % 2 === 0
+					return (
+						<div key={year} className={isFirstYear ? '' : 'mt-12'}>
+							{/* Year header */}
+							<h2 className="mb-8 font-mono text-2xl font-semibold text-foreground">
+								{year}
+							</h2>
 
-								return (
-									<TimelineItem
-										key={release.id}
-										toolSlug={toolSlug}
-										version={release.version}
-										releaseDate={release.releaseDate}
-										headline={release.headline}
-										changeCount={release._count.changes}
-										changesByType={release.changesByType}
-										isLast={isLastOverall}
-										isLeft={isLeft}
-										sequenceIndex={globalIndex}
-									/>
-								)
-							})}
+							{/* Timeline items for this year */}
+							<div>
+								{yearReleases.map((release, releaseIndex) => {
+									// Calculate global index for alternating sides
+									const globalIndex =
+										sortedYears
+											.slice(0, yearIndex)
+											.reduce((acc, y) => acc + groupedByYear[y].length, 0) +
+										releaseIndex
+									const isLeft = globalIndex % 2 === 0
+									const isBlurred =
+										hoveredId !== null && hoveredId !== release.id
+
+									return (
+										<TimelineItem
+											key={release.id}
+											id={release.id}
+											toolSlug={toolSlug}
+											version={release.version}
+											releaseDate={release.releaseDate}
+											headline={release.headline}
+											changeCount={release._count.changes}
+											changesByType={release.changesByType}
+											isLeft={isLeft}
+											sequenceIndex={globalIndex}
+											isBlurred={isBlurred}
+											onHover={handleItemHover}
+										/>
+									)
+								})}
+							</div>
 						</div>
-					</div>
-				)
-			})}
+					)
+				})}
+			</div>
 		</div>
 	)
 }

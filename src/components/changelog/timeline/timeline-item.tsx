@@ -5,27 +5,31 @@ import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { formatDate } from '@/lib/date-utils'
 
 interface TimelineItemProps {
+	id: string
 	toolSlug: string
 	version: string
 	releaseDate?: Date | string | null
 	headline?: string | null
 	changeCount: number
 	changesByType?: Record<string, number>
-	isLast?: boolean
 	isLeft?: boolean
 	sequenceIndex?: number
+	isBlurred?: boolean
+	onHover?: (id: string | null) => void
 }
 
 export function TimelineItem({
+	id,
 	toolSlug,
 	version,
 	releaseDate,
 	headline,
 	changeCount,
 	changesByType,
-	isLast = false,
 	isLeft = true,
 	sequenceIndex = 0,
+	isBlurred = false,
+	onHover,
 }: TimelineItemProps) {
 	const formattedDate = formatDate(releaseDate)
 	const { ref, isVisible } = useScrollReveal({
@@ -70,7 +74,9 @@ export function TimelineItem({
 			ref={ref}
 			className={`relative grid gap-6 pb-8 transition-all duration-600 ease-out ${
 				isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
-			} ${isLeft ? 'grid-cols-[1fr_auto_1fr]' : 'grid-cols-[1fr_auto_1fr]'}`}
+			} ${isLeft ? 'grid-cols-[1fr_auto_1fr]' : 'grid-cols-[1fr_auto_1fr]'} ${
+				isBlurred ? 'blur-[2px] opacity-40' : ''
+			}`}
 			style={{ transitionDelay: staggerDelay }}
 		>
 			{/* Left content (or empty space) */}
@@ -80,6 +86,8 @@ export function TimelineItem({
 					params={{ slug: toolSlug, version }}
 					className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 					aria-label={ariaLabel}
+					onMouseEnter={() => onHover?.(id)}
+					onMouseLeave={() => onHover?.(null)}
 				>
 					{renderCard()}
 				</Link>
@@ -87,10 +95,8 @@ export function TimelineItem({
 				<div />
 			)}
 
-			{/* Timeline marker and line - centered */}
+			{/* Timeline marker - centered */}
 			<div className="relative flex flex-col items-center">
-				{/* Connector line */}
-				{!isLast && <div className="absolute top-4 h-full w-0.5 bg-border" />}
 				{/* Marker dot with animation for important releases */}
 				<div className="relative mt-2 flex h-3 w-3 items-center justify-center">
 					{/* Ping animation layer (only for breaking/security) */}
@@ -111,6 +117,8 @@ export function TimelineItem({
 					params={{ slug: toolSlug, version }}
 					className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 					aria-label={ariaLabel}
+					onMouseEnter={() => onHover?.(id)}
+					onMouseLeave={() => onHover?.(null)}
 				>
 					{renderCard()}
 				</Link>
