@@ -32,7 +32,11 @@ const DATE_PRESETS = [
 	{ value: 'all', label: 'All time' },
 ] as const
 
-export function FilterBar() {
+interface FilterBarProps {
+	hoveredTypes?: ChangeType[] | null
+}
+
+export function FilterBar({ hoveredTypes }: FilterBarProps) {
 	const navigate = useNavigate()
 	const search = useSearch({ strict: false }) as {
 		type?: string | string[]
@@ -136,6 +140,10 @@ export function FilterBar() {
 				<ButtonGroup>
 					{FILTER_OPTIONS.map((option) => {
 						const isActive = selectedTypes.includes(option.value)
+						const isHoveredMatch = hoveredTypes?.includes(option.value) ?? false
+						const hasHoveredTypes = hoveredTypes && hoveredTypes.length > 0
+						const shouldDim = hasHoveredTypes && !isHoveredMatch
+
 						return (
 							<button
 								key={option.value}
@@ -144,11 +152,15 @@ export function FilterBar() {
 							>
 								<Badge
 									variant={isActive ? 'default' : 'outline'}
-									className={`cursor-pointer font-mono text-xs uppercase transition-colors ${
+									className={`cursor-pointer font-mono text-xs uppercase transition-all duration-300 ${
 										isActive
 											? 'bg-foreground text-background hover:bg-foreground/90'
 											: 'border-border bg-secondary hover:border-accent'
-									}`}
+									} ${
+										isHoveredMatch
+											? 'border-foreground/40 bg-foreground/10 shadow-[0_0_8px_rgba(255,255,255,0.2)]'
+											: ''
+									} ${shouldDim ? 'opacity-30' : ''}`}
 								>
 									{option.label}
 								</Badge>

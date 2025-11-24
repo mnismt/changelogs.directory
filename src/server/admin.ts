@@ -203,7 +203,11 @@ export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
 	async () => {
 		const prisma = await getPrisma()
 
-		const [totalCount, recentSignups] = await Promise.all([
+		const now = new Date()
+		const last24hDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+		const last7dDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+		const [totalCount, recentSignups, last24h, last7d] = await Promise.all([
 			prisma.waitlist.count(),
 			prisma.waitlist.findMany({
 				orderBy: { createdAt: 'desc' },
@@ -213,6 +217,12 @@ export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
 					email: true,
 					createdAt: true,
 				},
+			}),
+			prisma.waitlist.count({
+				where: { createdAt: { gte: last24hDate } },
+			}),
+			prisma.waitlist.count({
+				where: { createdAt: { gte: last7dDate } },
 			}),
 		])
 
@@ -231,24 +241,25 @@ export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
 
 		return {
 			totalCount,
+			last24h,
+			last7d,
 			recentSignups: maskedSignups,
 		}
 	},
 )
 
-// Waitlist Daily Signups - Signups per day over last 30 days
+// Waitlist Daily Signups - Signups per day since Oct 30, 2025
 export const getWaitlistDailySignups = createServerFn({
 	method: 'GET',
 }).handler(async () => {
 	const prisma = await getPrisma()
 
-	const thirtyDaysAgo = new Date()
-	thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-	thirtyDaysAgo.setHours(0, 0, 0, 0)
+	// Start from Oct 30, 2025
+	const startDate = new Date('2025-10-30T00:00:00.000Z') // UTC
 
 	const signups = await prisma.waitlist.findMany({
 		where: {
-			createdAt: { gte: thirtyDaysAgo },
+			createdAt: { gte: startDate },
 		},
 		select: {
 			createdAt: true,
@@ -259,18 +270,23 @@ export const getWaitlistDailySignups = createServerFn({
 	// Group by day
 	const dailyData: Record<string, number> = {}
 
-	// Initialize all days in the range with 0
-	for (let i = 0; i < 30; i++) {
-		const date = new Date(thirtyDaysAgo)
-		date.setDate(date.getDate() + i)
-		const dayKey = date.toISOString().split('T')[0]
+	// Initialize all days from start date to today with 0
+	const now = new Date()
+	const current = new Date(startDate)
+
+	while (current <= now) {
+		const dayKey = current.toISOString().split('T')[0]
 		dailyData[dayKey] = 0
+		current.setDate(current.getDate() + 1)
 	}
 
 	// Count signups per day
 	for (const signup of signups) {
 		const dayKey = new Date(signup.createdAt).toISOString().split('T')[0]
-		dailyData[dayKey] = (dailyData[dayKey] || 0) + 1
+		// Only count if it matches a key we initialized (should be all unless future)
+		if (dayKey in dailyData) {
+			dailyData[dayKey] = (dailyData[dayKey] || 0) + 1
+		}
 	}
 
 	return Object.entries(dailyData)
