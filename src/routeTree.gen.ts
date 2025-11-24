@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const ToolsIndexRoute = ToolsIndexRouteImport.update({
   id: '/tools/',
   path: '/tools/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsSlugIndexRoute = ToolsSlugIndexRouteImport.update({
@@ -38,12 +44,14 @@ const ToolsSlugReleasesVersionRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -51,18 +59,30 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/tools/': typeof ToolsIndexRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/tools' | '/tools/$slug' | '/tools/$slug/releases/$version'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/tools'
+    | '/tools/$slug'
+    | '/tools/$slug/releases/$version'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tools' | '/tools/$slug' | '/tools/$slug/releases/$version'
+  to:
+    | '/'
+    | '/admin'
+    | '/tools'
+    | '/tools/$slug'
+    | '/tools/$slug/releases/$version'
   id:
     | '__root__'
     | '/'
+    | '/admin/'
     | '/tools/'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
@@ -70,6 +90,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ToolsIndexRoute: typeof ToolsIndexRoute
   ToolsSlugIndexRoute: typeof ToolsSlugIndexRoute
   ToolsSlugReleasesVersionRoute: typeof ToolsSlugReleasesVersionRoute
@@ -91,6 +112,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools/$slug/': {
       id: '/tools/$slug/'
       path: '/tools/$slug'
@@ -110,6 +138,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ToolsIndexRoute: ToolsIndexRoute,
   ToolsSlugIndexRoute: ToolsSlugIndexRoute,
   ToolsSlugReleasesVersionRoute: ToolsSlugReleasesVersionRoute,

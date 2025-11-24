@@ -53,6 +53,7 @@ describe('ingestClaudeCode', () => {
 		mockPrismaInstance.fetchLog.update = vi.fn().mockResolvedValue(mockFetchLog as any)
 		mockPrismaInstance.release.findMany = vi.fn().mockResolvedValue([])
 		mockPrismaInstance.release.findUnique = vi.fn().mockResolvedValue(null)
+		mockPrismaInstance.release.findFirst = vi.fn().mockResolvedValue(null)
 		mockPrismaInstance.release.create = vi.fn().mockResolvedValue({ id: 'new-release-id' } as any)
 		mockPrismaInstance.change.deleteMany = vi.fn().mockResolvedValue({ count: 0 })
 		mockPrismaInstance.fetchLog.findFirst = vi.fn().mockResolvedValue({

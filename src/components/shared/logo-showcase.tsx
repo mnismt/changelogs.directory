@@ -4,6 +4,7 @@ import { Ampcode } from '@/components/logo/amp'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
 import { OpenAI } from '@/components/logo/openai'
+import { cn } from '@/lib/utils'
 
 const tools = [
 	{
@@ -11,24 +12,28 @@ const tools = [
 		Logo: Ampcode,
 		url: 'https://ampcode.com',
 		subtitle: 'by Sourcegraph',
+		isMonochrome: false,
 	},
 	{
 		name: 'Claude Code',
 		Logo: ClaudeAI,
 		url: 'https://www.claude.com/product/claude-code',
 		subtitle: 'by Anthropic',
+		isMonochrome: false,
 	},
 	{
 		name: 'Cursor',
 		Logo: Cursor,
 		url: 'https://cursor.com',
 		subtitle: 'by Cursor',
+		isMonochrome: true,
 	},
 	{
 		name: 'Codex',
 		Logo: OpenAI,
 		url: 'https://openai.com/codex',
 		subtitle: 'by OpenAI',
+		isMonochrome: false,
 	},
 ]
 
@@ -69,7 +74,13 @@ export function LogoShowcase() {
 								transitionDelay: isMounted ? `${delayMs}ms` : '0ms',
 							}}
 						>
-							<div className="flex size-10 shrink-0 items-center justify-center transition-transform duration-300 group-hover/item:scale-110 sm:size-12 [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground">
+							<div
+								className={cn(
+									'flex size-10 shrink-0 items-center justify-center transition-transform duration-300 group-hover/item:scale-110 sm:size-12 [&>svg]:h-full [&>svg]:w-full',
+									tool.isMonochrome &&
+										'[&>svg]:fill-foreground [&>svg]:text-foreground [&>svg_path]:fill-foreground',
+								)}
+							>
 								<tool.Logo />
 							</div>
 							<div className="relative flex items-center w-full">

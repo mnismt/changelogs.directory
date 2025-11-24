@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { captureException } from '@/integrations/sentry'
 import { formatDate } from '@/lib/date-utils'
 import { getToolLogo } from '@/lib/tool-logos'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 import {
 	getAdjacentVersions,
 	getAllVersions,
@@ -42,17 +43,23 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 	pendingComponent: ReleaseDetailSkeleton,
 	errorComponent: ReleaseDetailError,
 	component: ReleaseDetailPage,
-	head: ({ params, loaderData }) => ({
-		meta: [
-			{
-				title: `${loaderData.release.tool.name} ${params.version} Changelog - changelogs.directory`,
-			},
-			{
-				name: 'description',
-				content: `View all changes, features, and bugfixes in ${loaderData.release.tool.name} version ${params.version}.`,
-			},
-		],
-	}),
+	head: ({ params, loaderData }) => {
+		const formattedVersion = formatVersionForDisplay(
+			params.version,
+			params.slug,
+		)
+		return {
+			meta: [
+				{
+					title: `${loaderData.release.tool.name} ${formattedVersion} Changelog - changelogs.directory`,
+				},
+				{
+					name: 'description',
+					content: `View all changes, features, and bugfixes in ${loaderData.release.tool.name} version ${formattedVersion}.`,
+				},
+			],
+		}
+	},
 })
 
 function ReleaseDetailPage() {
@@ -61,6 +68,7 @@ function ReleaseDetailPage() {
 	const [copied, setCopied] = useState(false)
 
 	const { release, adjacentVersions, allVersions } = Route.useLoaderData()
+	const formattedVersion = formatVersionForDisplay(version, slug)
 
 	// Group changes by type and apply filters
 	const groupedChanges = useMemo((): Record<ChangeType, Change[]> => {
@@ -111,14 +119,9 @@ function ReleaseDetailPage() {
 		{ type: 'OTHER', title: '📦 Other Changes' },
 	]
 
-	// Default open sections
+	// Default open sections - expand all sections that have content
 	const defaultOpenSections = sections
-		.filter(
-			(section) =>
-				section.type === 'BREAKING' ||
-				section.type === 'SECURITY' ||
-				section.type === 'FEATURE',
-		)
+		.filter((section) => groupedChanges[section.type].length > 0)
 		.map((section) => section.type)
 
 	// Keyboard navigation
@@ -222,7 +225,9 @@ function ReleaseDetailPage() {
 									<ChevronRight className="h-4 w-4 text-muted-foreground" />
 									<span className="text-muted-foreground">Releases</span>
 									<ChevronRight className="h-4 w-4 text-muted-foreground" />
-									<span className="font-mono text-foreground">{version}</span>
+									<span className="font-mono text-foreground">
+										{formattedVersion}
+									</span>
 								</div>
 							</div>
 						</nav>
@@ -231,7 +236,9 @@ function ReleaseDetailPage() {
 					{/* Release Header */}
 					<div className="space-y-4 border-b border-border pb-8">
 						<div className="flex items-start justify-between gap-4">
-							<h1 className="font-mono text-4xl font-bold">{version}</h1>
+							<h1 className="font-mono text-4xl font-bold">
+								{formattedVersion}
+							</h1>
 							<Button
 								variant="outline"
 								size="sm"
@@ -322,6 +329,15 @@ function ReleaseDetailPage() {
 																url: string
 																text: string
 																type?: string
+															}>)
+														: null
+												}
+												media={
+													change.media
+														? (change.media as Array<{
+																type: 'video' | 'image'
+																url: string
+																alt?: string
 															}>)
 														: null
 												}

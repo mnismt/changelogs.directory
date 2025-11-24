@@ -17,6 +17,13 @@ export function loadChangelogFixture(filename = 'claude-code-changelog.md'): str
 	return readFileSync(fixturePath, 'utf-8')
 }
 
+export function loadCursorChangelogFixture(
+	filename = 'cursor-changelog/page-1.html',
+): string {
+	const fixturePath = join(process.cwd(), 'tests', 'fixtures', filename)
+	return readFileSync(fixturePath, 'utf-8')
+}
+
 /**
  * Create a mock Tool record
  */
@@ -80,6 +87,7 @@ export function createMockRelease(overrides?: Partial<Parameters<PrismaClient['r
 		rawContent: '## 2.0.31\n- Windows: native installation...',
 		contentHash: '4b6f114c7c6cec0c7c1e77ba52b9986c018cfe11687e38636c577ebf6b603a70',
 		title: null,
+		headline: 'Improves usability for Windows install flow',
 		summary: 'This release focuses on improving usability...',
 		createdAt: new Date('2025-11-02T08:29:30.198Z'),
 		updatedAt: new Date('2025-11-02T08:29:30.198Z'),
@@ -119,6 +127,7 @@ export function createMockParsedRelease(overrides?: Partial<ParsedRelease>): Par
 		versionSort: '002000031-z',
 		releaseDate: undefined,
 		title: undefined,
+		headline: 'Improves usability for Windows install flow',
 		summary: 'This release focuses on improving usability...',
 		rawContent: '## 2.0.31\n- Windows: native installation...',
 		contentHash: '4b6f114c7c6cec0c7c1e77ba52b9986c018cfe11687e38636c577ebf6b603a70',

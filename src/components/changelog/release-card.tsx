@@ -23,7 +23,7 @@ interface ReleaseCardBaseProps {
 	toolSlug: string
 	version: string
 	releaseDate?: Date | string | null
-	summary?: string | null
+	headline?: string | null
 	changeCount: number
 	changesByType?: Record<string, number>
 	rightAccessory?: ReactNode
@@ -66,7 +66,7 @@ export function ReleaseCardBase({
 	toolSlug,
 	version,
 	releaseDate,
-	summary,
+	headline,
 	changeCount,
 	changesByType,
 	rightAccessory,
@@ -143,10 +143,10 @@ export function ReleaseCardBase({
 					</CardDescription>
 				)}
 			</CardHeader>
-			{summary && (
+			{headline && (
 				<CardContent>
 					<p className={cn(summaryClampClass, 'text-sm text-muted-foreground')}>
-						{summary}
+						{headline}
 					</p>
 					{bodyFooter}
 				</CardContent>
@@ -159,7 +159,7 @@ export function ReleaseCard({
 	toolSlug,
 	version,
 	releaseDate,
-	summary,
+	headline,
 	changeCount,
 	changesByType,
 }: ReleaseCardProps) {
@@ -203,7 +203,7 @@ export function ReleaseCard({
 			toolSlug={toolSlug}
 			version={version}
 			releaseDate={releaseDate}
-			summary={summary}
+			headline={headline}
 			changeCount={changeCount}
 			changesByType={changesByType}
 			rightAccessory={

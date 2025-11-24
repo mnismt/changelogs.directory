@@ -8,7 +8,7 @@ interface TimelineItemProps {
 	toolSlug: string
 	version: string
 	releaseDate?: Date | string | null
-	summary?: string | null
+	headline?: string | null
 	changeCount: number
 	changesByType?: Record<string, number>
 	isLast?: boolean
@@ -20,7 +20,7 @@ export function TimelineItem({
 	toolSlug,
 	version,
 	releaseDate,
-	summary,
+	headline,
 	changeCount,
 	changesByType,
 	isLast = false,
@@ -47,7 +47,7 @@ export function TimelineItem({
 			? 'bg-yellow-500'
 			: 'bg-foreground'
 
-	const cardFooter = summary ? (
+	const cardFooter = headline ? (
 		<p className="mt-2 text-xs opacity-70 transition-opacity duration-700 ease-out group-hover:opacity-100">
 			<ChangeCount changeCount={changeCount} changesByType={changesByType} />
 		</p>
@@ -58,7 +58,7 @@ export function TimelineItem({
 			toolSlug={toolSlug}
 			version={version}
 			releaseDate={releaseDate}
-			summary={summary}
+			headline={headline}
 			changesByType={changesByType}
 			summaryLineClamp={2}
 			bodyFooter={cardFooter}

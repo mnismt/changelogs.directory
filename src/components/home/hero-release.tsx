@@ -5,8 +5,13 @@ import { BackgroundRippleEffect } from '@/components/ui/background-ripple-effect
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { formatDate, formatRelativeDate } from '@/lib/date-utils'
-import { getToolLogo } from '@/lib/tool-logos'
+import {
+	getLogoHoverClasses,
+	getToolLogo,
+	isMonochromeLogo,
+} from '@/lib/tool-logos'
 import { cn } from '@/lib/utils'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface HeroReleaseProps {
 	toolSlug: string
@@ -14,6 +19,7 @@ interface HeroReleaseProps {
 	vendor: string | null
 	version: string
 	releaseDate: Date | string | null
+	headline: string | null
 	summary: string | null
 	changeCount: number
 	changesByType: Record<string, number>
@@ -28,6 +34,7 @@ export function HeroRelease({
 	vendor,
 	version,
 	releaseDate,
+	headline,
 	summary,
 	changeCount,
 	changesByType,
@@ -85,9 +92,10 @@ export function HeroRelease({
 							<div
 								className={cn(
 									'flex size-16 items-center justify-center rounded p-2 [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-all duration-700 [&>svg_path]:transition-all [&>svg_path]:duration-300 [&>svg_circle]:transition-all [&>svg_circle]:duration-300',
-									!isHovered &&
+									// Keep monochrome fill for monochrome logos or when not hovered
+									(isMonochromeLogo(toolSlug) || !isHovered) &&
 										'[&>svg]:fill-foreground [&>svg_path]:fill-foreground [&>svg_circle]:fill-foreground',
-									'group-hover:rotate-45 group-hover:scale-110',
+									getLogoHoverClasses(toolSlug),
 								)}
 							>
 								{logo}
@@ -121,7 +129,7 @@ export function HeroRelease({
 								params={{ slug: toolSlug, version }}
 								className="rounded border border-transparent bg-secondary px-3 py-1 font-mono text-lg font-medium transition-all hover:border-accent cursor-pointer"
 							>
-								v{version}
+								{formatVersionForDisplay(version, toolSlug)}
 							</Link>
 
 							{hasBreaking && (
@@ -170,6 +178,11 @@ export function HeroRelease({
 				)}
 
 				{/* Summary */}
+				{headline && (
+					<p className="mb-2 font-mono text-sm uppercase text-muted-foreground">
+						{headline}
+					</p>
+				)}
 				{summary && (
 					<p className="mb-6 text-base leading-relaxed text-muted-foreground sm:text-lg">
 						{summary}

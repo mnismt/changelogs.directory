@@ -26,6 +26,7 @@ export interface ParsedChange {
 	isDeprecation: boolean
 	impact?: ImpactLevel
 	links?: Array<{ url: string; text: string; type: string }>
+	media?: Array<{ type: 'video' | 'image'; url: string; alt?: string }>
 	order: number
 }
 
@@ -37,6 +38,7 @@ export interface ParsedRelease {
 	versionSort: string
 	releaseDate?: Date
 	title?: string
+	headline: string
 	summary?: string
 	rawContent: string
 	contentHash: string
@@ -106,12 +108,14 @@ export function parseChangelogMd(
 
 		// Generate basic summary (simple truncation - will be replaced by LLM later)
 		const summary = generateSummary(rawContent)
+		const headline = generateHeadline(summary, rawContent, current.version)
 
 		releases.push({
 			version: current.version,
 			versionSort,
 			releaseDate,
 			title: undefined, // Could extract from header if format includes title
+			headline,
 			summary,
 			rawContent,
 			contentHash,
@@ -219,4 +223,31 @@ function parseDate(dateStr: string): Date | undefined {
 	} catch {
 		return undefined
 	}
+}
+
+/**
+ * Generates a short headline (<=120 chars) from summary or raw content
+ */
+function generateHeadline(
+	summary: string | undefined,
+	rawContent: string,
+	version: string,
+): string {
+	const fallbackText = summary
+		? summary.trim()
+		: rawContent
+				.replace(/^##\s+.*/gm, '')
+				.replace(/^[-*+]\s+/gm, '')
+				.trim()
+
+	if (!fallbackText) {
+		return `Updates for ${version}`
+	}
+
+	const normalized = fallbackText.replace(/\s+/g, ' ').trim()
+	const sentenceMatch = normalized.match(/.*?[.!?](\s|$)/)
+	const sentence = (sentenceMatch ? sentenceMatch[0] : normalized).trim()
+	const target = sentence || normalized || `Updates for ${version}`
+
+	return target.length > 120 ? `${target.slice(0, 117)}...` : target
 }

@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import { logger } from '@trigger.dev/sdk'
 import type { EnrichResult, IngestionContext, UpsertResult } from '../types'
 
@@ -64,6 +65,7 @@ export async function upsertStep(
 					rawContent: parsedRelease.rawContent,
 					contentHash: parsedRelease.contentHash,
 					title: parsedRelease.title,
+					headline: parsedRelease.headline,
 					summary: parsedRelease.summary,
 					changes: {
 						create: parsedRelease.changes.map((change) => ({
@@ -80,7 +82,7 @@ export async function upsertStep(
 							order: change.order,
 						})),
 					},
-				},
+				} as Prisma.ReleaseUpdateInput,
 			})
 
 			releasesUpdated++
@@ -93,7 +95,7 @@ export async function upsertStep(
 
 			await ctx.prisma.release.create({
 				data: {
-					toolId: ctx.tool.id,
+					tool: { connect: { id: ctx.tool.id } },
 					version: parsedRelease.version,
 					versionSort: parsedRelease.versionSort,
 					releaseDate: parsedRelease.releaseDate,
@@ -104,6 +106,7 @@ export async function upsertStep(
 					rawContent: parsedRelease.rawContent,
 					contentHash: parsedRelease.contentHash,
 					title: parsedRelease.title,
+					headline: parsedRelease.headline,
 					summary: parsedRelease.summary,
 					changes: {
 						create: parsedRelease.changes.map((change) => ({
@@ -120,7 +123,7 @@ export async function upsertStep(
 							order: change.order,
 						})),
 					},
-				},
+				} as Prisma.ReleaseCreateInput,
 			})
 
 			releasesNew++

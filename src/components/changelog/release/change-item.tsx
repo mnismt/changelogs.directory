@@ -9,6 +9,7 @@ interface ChangeItemProps {
 	isSecurity?: boolean
 	isDeprecation?: boolean
 	links?: Array<{ url: string; text: string; type?: string }> | null
+	media?: Array<{ type: 'video' | 'image'; url: string; alt?: string }> | null
 }
 
 export function ChangeItem({
@@ -19,10 +20,11 @@ export function ChangeItem({
 	isSecurity,
 	isDeprecation,
 	links,
+	media,
 }: ChangeItemProps) {
 	return (
 		<div className="flex gap-3 text-sm">
-			<span className="text-muted-foreground shrink-0 mt-1">•</span>
+			<span className="shrink-0 text-muted-foreground">•</span>
 
 			<div className="flex-1 space-y-2">
 				<div className="flex flex-wrap items-start gap-2">
@@ -70,6 +72,36 @@ export function ChangeItem({
 
 				{/* Description */}
 				{description && <p className="text-muted-foreground">{description}</p>}
+
+				{/* Media */}
+				{media && media.length > 0 && (
+					<div className="space-y-3">
+						{media.map((item, index) => (
+							<div
+								key={`${item.type}-${index}`}
+								className="overflow-hidden rounded-lg border border-border"
+							>
+								{item.type === 'video' ? (
+									<video
+										src={item.url}
+										controls
+										className="w-full max-w-2xl"
+										preload="metadata"
+									>
+										<track kind="captions" />
+									</video>
+								) : (
+									<img
+										src={item.url}
+										alt={item.alt || 'Changelog media'}
+										className="w-full max-w-2xl"
+										loading="lazy"
+									/>
+								)}
+							</div>
+						))}
+					</div>
+				)}
 
 				{/* Links */}
 				{links && links.length > 0 && (

@@ -403,7 +403,7 @@ function ReleaseCardWithReveal({
 				toolSlug={toolSlug}
 				version={release.version}
 				releaseDate={releaseDate}
-				summary={release.summary}
+				headline={release.headline}
 				changeCount={release._count.changes}
 				changesByType={release.changesByType}
 			/>

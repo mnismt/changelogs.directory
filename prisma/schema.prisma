@@ -85,8 +85,8 @@ model Verification {
 // ============================================================================
 
 model Tool {
-  id            String     @id @default(cuid())
-  slug          String     @unique // URL-friendly: "claude-code", "openai-codex"
+  id            String  @id @default(cuid())
+  slug          String  @unique // URL-friendly: "claude-code", "openai-codex"
   name          String // Display name: "Claude Code"
   vendor        String // Company: "Anthropic", "OpenAI"
   description   String? // Short description for directory listing
@@ -119,14 +119,14 @@ model Tool {
 }
 
 model Release {
-  id       String @id @default(cuid())
-  toolId   String
-  tool     Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  toolId String
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   // Version info
-  version       String // "2.0.31", "1.5.0-beta.1"
-  versionSort   String // For semantic version sorting
-  isPrerelease  Boolean @default(false) // Whether this is a pre-release (alpha/beta/rc)
+  version      String // "2.0.31", "1.5.0-beta.1"
+  versionSort  String // For semantic version sorting
+  isPrerelease Boolean @default(false) // Whether this is a pre-release (alpha/beta/rc)
 
   // Dates
   releaseDate DateTime? // Actual release date (if available in source)
@@ -138,8 +138,9 @@ model Release {
   contentHash String // SHA256 hash for change detection
 
   // Parsed metadata
-  title   String? // Optional release title
-  summary String? @db.Text // Auto-generated summary (first N chars)
+  title    String? // Optional release title
+  headline String  @db.Text // One-line headline for cards
+  summary  String? @db.Text // Auto-generated summary (first N chars)
 
   // Relations
   changes Change[]
@@ -182,6 +183,9 @@ model Change {
   // Links (extracted from markdown)
   links Json? // [{ url: "...", text: "...", type: "docs|issue|pr" }]
 
+  // Media (videos/images extracted from content)
+  media Json? // [{ type: "video"|"image", url: "...", alt?: "..." }]
+
   // Order within release
   order Int @default(0) // Preserve original order from changelog
 
@@ -203,7 +207,7 @@ model FetchLog {
 
   // Job metadata
   status      FetchStatus
-  startedAt   DateTime  @default(now())
+  startedAt   DateTime    @default(now())
   completedAt DateTime?
   duration    Int? // milliseconds
 
@@ -218,8 +222,8 @@ model FetchLog {
   errorStack String? @db.Text
 
   // Source info
-  sourceUrl   String // URL fetched
-  sourceEtag  String? // For HTTP caching (if supported)
+  sourceUrl  String // URL fetched
+  sourceEtag String? // For HTTP caching (if supported)
 
   @@index([toolId, startedAt(sort: Desc)])
   @@index([status])

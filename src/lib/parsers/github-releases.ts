@@ -89,14 +89,16 @@ export function parseGitHubReleases(
 		// Compute content hash
 		const contentHash = createHash('sha256').update(release.body).digest('hex')
 
-		// Generate summary
+		// Generate summary + headline
 		const summary = generateSummary(release.body)
+		const headline = generateHeadline(summary, release.body, version)
 
 		parsedReleases.push({
 			version,
 			versionSort,
 			releaseDate,
 			title: release.name || undefined,
+			headline,
 			summary,
 			rawContent: release.body,
 			contentHash,
@@ -246,4 +248,28 @@ function generateSummary(body: string): string | undefined {
 	if (!cleaned) return undefined
 
 	return cleaned.length > 200 ? `${cleaned.substring(0, 200)}...` : cleaned
+}
+
+function generateHeadline(
+	summary: string | undefined,
+	body: string,
+	version: string,
+): string {
+	const fallbackText = summary
+		? summary.trim()
+		: body
+				.replace(/^##\s+.*/gm, '')
+				.replace(/^[-*+]\s+/gm, '')
+				.trim()
+
+	if (!fallbackText) {
+		return `Updates for ${version}`
+	}
+
+	const normalized = fallbackText.replace(/\s+/g, ' ').trim()
+	const sentenceMatch = normalized.match(/.*?[.!?](\s|$)/)
+	const sentence = (sentenceMatch ? sentenceMatch[0] : normalized).trim()
+	const target = sentence || normalized || `Updates for ${version}`
+
+	return target.length > 120 ? `${target.slice(0, 117)}...` : target
 }

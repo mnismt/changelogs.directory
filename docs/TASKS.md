@@ -6,7 +6,7 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 
 ## Phase 1: Database & Ingestion Pipeline
 
-**Goal**: Get Claude Code and OpenAI Codex changelog data flowing into the database.
+**Goal**: Get Claude Code, OpenAI Codex, and Cursor changelog data flowing into the database.
 
 - [x] Implement Prisma schema (Tool, Release, Change, FetchLog models)
 - [x] Run migrations and seed Claude Code tool record
@@ -18,8 +18,12 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 - [x] Create Trigger.dev ingestion task (`src/trigger/ingest-codex.ts`)
 - [x] Test ingestion manually - verify Codex data in database
 - [x] Schedule Trigger.dev task (every 6 hours) for Codex
+- [ ] Seed Cursor tool record and HTML changelog connector
+- [ ] Create Trigger.dev ingestion task (`src/trigger/ingest/cursor`)
+- [ ] Test HTML crawler manually - verify Cursor articles in database
+- [ ] Schedule Trigger.dev task (every 6 hours) for Cursor
 
-**Success metric**: Claude Code and OpenAI Codex releases appear in database after ingestion runs.
+**Success metric**: Claude Code and OpenAI Codex releases appear in database after ingestion runs; Cursor changelog is ingested via HTML crawler.
 
 ---
 
