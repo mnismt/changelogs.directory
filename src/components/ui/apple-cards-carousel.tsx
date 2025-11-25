@@ -1,11 +1,11 @@
 "use client";
 import React, {
+  createContext,
+  type ReactElement,
   useEffect,
   useRef,
-  useState,
-  createContext,
   useContext,
-  ReactNode,
+  useState,
 } from "react";
 import {
   IconArrowNarrowLeft,
@@ -18,7 +18,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 
 interface CarouselProps {
-  items: ReactNode
+  items: ReactElement[];
   initialScroll?: number;
 }
 

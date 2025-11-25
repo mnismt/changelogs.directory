@@ -1,7 +1,12 @@
 "use client";
 import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
-import type { Container, SingleOrMultiple } from "@tsparticles/engine";
+import type {
+  Container,
+  IOptions,
+  RecursivePartial,
+  SingleOrMultiple,
+} from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
 import { cn } from "@/lib/utils";
 import { motion, useAnimation } from "motion/react";
@@ -49,7 +54,7 @@ export const SparklesCore = memo(function SparklesCore(props: ParticlesProps) {
     }
   };
 
-  const options = useMemo(
+  const options = useMemo<RecursivePartial<IOptions>>(
     () => ({
       background: {
         color: {
@@ -107,7 +112,7 @@ export const SparklesCore = memo(function SparklesCore(props: ParticlesProps) {
           },
           enable: false,
           maxSpeed: 50,
-          mode: "bounce",
+          mode: "bounce" as const,
           overlap: {
             enable: true,
             retries: 0,
