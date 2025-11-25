@@ -1,15 +1,8 @@
 import type { ChangeType } from '@prisma/client'
 import { Link } from '@tanstack/react-router'
 import { Package } from 'lucide-react'
+import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
-import { Badge } from '@/components/ui/badge'
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card'
 import {
 	Tooltip,
 	TooltipContent,
@@ -90,74 +83,77 @@ export function ReleaseCardBase({
 		summaryLineClamp === 2 ? 'line-clamp-2' : 'line-clamp-3'
 
 	return (
-		<Card
+		<motion.div
 			className={cn(
-				'group h-full border-border bg-card transition-all duration-700 ease-out hover:border-foreground/20 hover:bg-card/80',
+				'group relative h-full overflow-hidden rounded-lg border border-white/10 bg-black/40 p-5 backdrop-blur-md transition-all duration-500',
+				'hover:border-white/20 hover:bg-black/60 hover:shadow-2xl hover:shadow-white/5',
 				className,
 			)}
+			whileHover={{ y: -4 }}
 		>
-			<CardHeader>
-				<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-					<CardTitle className="flex items-center font-mono text-xl">
-						<Package className="size-5" />
-						<span className="ml-2">
-							{formatVersionForDisplay(version, toolSlug)}
-						</span>
-					</CardTitle>
-					{(hasSeverityBadges || rightAccessory) && (
-						<div className="flex shrink-0 flex-col items-end gap-2">
+			{/* Glow Effect */}
+			<div className="absolute -inset-px opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+				<div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-20" />
+			</div>
+
+			<div className="relative z-10 flex h-full flex-col gap-4">
+				{/* Header */}
+				<div className="flex items-start justify-between gap-4">
+					<div className="space-y-1">
+						<div className="flex items-center gap-3">
+							<div className="flex items-center gap-2 font-mono text-xl font-bold tracking-tight text-foreground">
+								<Package className="size-5 text-muted-foreground" />
+								<span>{formatVersionForDisplay(version, toolSlug)}</span>
+							</div>
 							{hasSeverityBadges && (
-								<div className="flex flex-wrap gap-1">
+								<div className="flex gap-1.5">
 									{hasBreaking && (
-										<Badge
-											variant="destructive"
-											className="font-mono text-xs uppercase"
-										>
+										<span className="rounded-sm bg-red-500/10 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-red-500 border border-red-500/20">
 											Breaking
-										</Badge>
+										</span>
 									)}
 									{hasSecurity && (
-										<Badge
-											variant="destructive"
-											className="font-mono text-xs uppercase"
-										>
+										<span className="rounded-sm bg-red-500/10 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-red-500 border border-red-500/20">
 											Security
-										</Badge>
-									)}
-									{hasDeprecation && (
-										<Badge
-											variant="outline"
-											className="font-mono text-xs uppercase"
-										>
-											Deprecated
-										</Badge>
+										</span>
 									)}
 								</div>
 							)}
-							{rightAccessory}
 						</div>
-					)}
+						<div className="flex items-center gap-2 font-mono text-xs text-muted-foreground/60">
+							<span>
+								{'//'} {relativeDate}
+							</span>
+							<span className="text-muted-foreground/20">•</span>
+							<span>{formattedDate}</span>
+						</div>
+					</div>
+					{rightAccessory}
 				</div>
-				<CardDescription className="text-muted-foreground">
-					<span className="relative inline-flex h-5 min-w-[100px] items-center overflow-hidden text-xs leading-5">
-						<span className="absolute inset-0 flex items-center whitespace-nowrap transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0">
-							{relativeDate}
-						</span>
-						<span className="absolute inset-0 flex -translate-y-full items-center whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
-							{formattedDate}
-						</span>
-					</span>
-				</CardDescription>
-			</CardHeader>
-			{headline && (
-				<CardContent>
-					<p className={cn(summaryClampClass, 'text-sm text-muted-foreground')}>
-						{headline}
-					</p>
-					{bodyFooter}
-				</CardContent>
-			)}
-		</Card>
+
+				{/* Content */}
+				{headline && (
+					<div className="flex-1">
+						<p
+							className={cn(
+								summaryClampClass,
+								'font-mono text-sm text-muted-foreground leading-relaxed',
+							)}
+						>
+							<span className="text-green-500/50 mr-2">$</span>
+							{headline}
+						</p>
+					</div>
+				)}
+
+				{/* Footer */}
+				{bodyFooter && (
+					<div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+						{bodyFooter}
+					</div>
+				)}
+			</div>
+		</motion.div>
 	)
 }
 
@@ -212,9 +208,9 @@ export function ReleaseCard({
 			headline={headline}
 			changesByType={changesByType}
 			rightAccessory={
-				<Badge variant="outline" className="font-mono text-xs">
-					{changeCount}
-				</Badge>
+				<div className="font-mono text-xs text-muted-foreground/40">
+					{changeCount} changes
+				</div>
 			}
 			summaryLineClamp={3}
 		/>
@@ -224,7 +220,7 @@ export function ReleaseCard({
 		<Link
 			to="/tools/$slug/releases/$version"
 			params={{ slug: toolSlug, version }}
-			className="block h-full"
+			className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-lg"
 		>
 			{cardContent}
 		</Link>
@@ -241,7 +237,7 @@ export function ReleaseCard({
 				side="top"
 				align="end"
 				sideOffset={8}
-				className="max-w-xs border border-border bg-card p-3 text-foreground"
+				className="max-w-xs border border-white/10 bg-black/90 p-3 text-foreground backdrop-blur-md"
 			>
 				{tooltipContent}
 			</TooltipContent>

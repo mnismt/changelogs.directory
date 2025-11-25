@@ -87,9 +87,15 @@ Environment variables:
 # Optional – enables Redis-backed incremental caching (Upstash recommended)
 UPSTASH_REDIS_REST_URL=...
 UPSTASH_REDIS_REST_TOKEN=...
+# Optional – namespaces cache keys per environment
+CACHE_NAMESPACE=dev
 ```
 
 Without Redis the pipeline still works but always performs the configured page scan.
+
+### Operational Flags
+
+- `forceFullRescan` payload flag: bypasses cached releases and performs a full scan (useful after a DB reset or when cache is suspected to be stale).
 
 ## Scheduling
 
@@ -110,4 +116,3 @@ Run targeted tests:
 pnpm test tests/lib/parsers/cursor-changelog.test.ts \
   tests/trigger/ingest/cursor/steps/*.test.ts
 ```
-

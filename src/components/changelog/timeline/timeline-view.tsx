@@ -113,20 +113,21 @@ export function TimelineView({
 	return (
 		<div ref={containerRef} className="mx-auto max-w-5xl">
 			<div ref={timelineRef} className="relative">
-				{/* Static background line */}
-				<div className="pointer-events-none absolute left-1/2 top-0 h-full w-1 -translate-x-1/2 bg-border/30 [mask-image:linear-gradient(to_bottom,transparent_0%,black_5%,black_95%,transparent_100%)]" />
+				{/* Static background line - Circuit Trace Style */}
+				<div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/10" />
+				<div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/5 to-transparent blur-[1px]" />
 
-				{/* Animated scroll-progress line */}
+				{/* Animated scroll-progress line - Glowing Pulse */}
 				<div
 					style={{ height: `${height}px` }}
-					className="pointer-events-none absolute left-1/2 top-0 w-1 -translate-x-1/2 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_5%,black_95%,transparent_100%)]"
+					className="pointer-events-none absolute left-1/2 top-0 w-px -translate-x-1/2 overflow-hidden"
 				>
 					<motion.div
 						style={{
 							height: heightTransform,
 							opacity: opacityTransform,
 						}}
-						className="absolute inset-x-0 top-0 w-1 rounded-full bg-gradient-to-b from-white via-white/70 to-transparent shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+						className="absolute inset-x-0 top-0 w-px bg-gradient-to-b from-white via-white/80 to-transparent shadow-[0_0_15px_rgba(255,255,255,0.8)]"
 					/>
 				</div>
 
@@ -137,9 +138,11 @@ export function TimelineView({
 					return (
 						<div key={year} className={isFirstYear ? '' : 'mt-12'}>
 							{/* Year header */}
-							<h2 className="mb-8 font-mono text-2xl font-semibold text-foreground">
-								{year}
-							</h2>
+							<div className="relative mb-8 flex justify-center">
+								<div className="relative z-10 bg-background px-4 font-mono text-2xl font-bold text-foreground/80">
+									{year}
+								</div>
+							</div>
 
 							{/* Timeline items for this year */}
 							<div>

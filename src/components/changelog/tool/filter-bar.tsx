@@ -1,16 +1,8 @@
 import type { ChangeType } from '@prisma/client'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { Calendar, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ButtonGroup } from '@/components/ui/button-group'
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from '@/components/ui/collapsible'
-import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 
 const FILTER_OPTIONS: Array<{ value: ChangeType; label: string }> = [
 	{ value: 'FEATURE', label: 'Features' },
@@ -65,7 +57,6 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 				: 0
 
 	const hasActiveFilters = selectedTypes.length > 0 || dateFilterCount > 0
-	const activeFilterCount = selectedTypes.length + dateFilterCount
 
 	const toggleType = (type: string) => {
 		const newTypes = selectedTypes.includes(type)
@@ -81,7 +72,7 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 		}
 
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
-		navigate({ search: searchObj } as any)
+		navigate({ search: searchObj, replace: true, resetScroll: false } as any)
 	}
 
 	const setDatePreset = (preset: string) => {
@@ -100,7 +91,7 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 		setShowCustomPicker(false)
 
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
-		navigate({ search: searchObj } as any)
+		navigate({ search: searchObj, replace: true, resetScroll: false } as any)
 	}
 
 	const setCustomDateRange = (startDate: string, endDate: string) => {
@@ -121,23 +112,24 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 		delete searchObj.datePreset
 
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
-		navigate({ search: searchObj } as any)
+		navigate({ search: searchObj, replace: true, resetScroll: false } as any)
 	}
 
 	const clearFilters = () => {
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
-		navigate({ search: {} } as any)
+		navigate({ search: {}, replace: true, resetScroll: false } as any)
 		setShowCustomPicker(false)
 	}
 
 	return (
-		<div className="space-y-6 border-b border-border pb-6">
-			{/* Change Type Filters */}
+		<div className="space-y-8">
+			{/* Type Filters */}
 			<div className="space-y-3">
-				<h3 className="font-mono text-xs font-medium uppercase tracking-wide text-muted-foreground">
-					Filter by Type
-				</h3>
-				<ButtonGroup>
+				<div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
+					<span className="text-green-500/50">❯</span>
+					<span>FILTER_BY_TYPE</span>
+				</div>
+				<div className="flex flex-wrap gap-2">
 					{FILTER_OPTIONS.map((option) => {
 						const isActive = selectedTypes.includes(option.value)
 						const isHoveredMatch = hoveredTypes?.includes(option.value) ?? false
@@ -145,37 +137,43 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 						const shouldDim = hasHoveredTypes && !isHoveredMatch
 
 						return (
-							<button
+							<motion.button
 								key={option.value}
 								type="button"
 								onClick={() => toggleType(option.value)}
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								className={cn(
+									'relative px-3 py-1.5 font-mono text-xs transition-all duration-300 border rounded-sm',
+									isActive
+										? 'bg-foreground text-background border-foreground font-bold'
+										: 'bg-transparent text-foreground/60 border-transparent hover:text-foreground hover:border-white/10 hover:bg-white/5',
+									isHoveredMatch &&
+										!isActive &&
+										'text-foreground border-foreground/40 bg-foreground/5',
+									shouldDim && 'opacity-30 blur-[0.5px]',
+								)}
 							>
-								<Badge
-									variant={isActive ? 'default' : 'outline'}
-									className={`cursor-pointer font-mono text-xs uppercase transition-all duration-300 ${
-										isActive
-											? 'bg-foreground text-background hover:bg-foreground/90'
-											: 'border-border bg-secondary hover:border-accent'
-									} ${
-										isHoveredMatch
-											? 'border-foreground/40 bg-foreground/10 shadow-[0_0_8px_rgba(255,255,255,0.2)]'
-											: ''
-									} ${shouldDim ? 'opacity-30' : ''}`}
-								>
-									{option.label}
-								</Badge>
-							</button>
+								{isActive && (
+									<motion.span
+										layoutId="active-dot"
+										className="absolute -top-1 -right-1 size-1.5 rounded-full bg-green-500"
+									/>
+								)}
+								{option.label}
+							</motion.button>
 						)
 					})}
-				</ButtonGroup>
+				</div>
 			</div>
 
-			{/* Date Range Filters */}
+			{/* Date Filters */}
 			<div className="space-y-3">
-				<h3 className="font-mono text-xs font-medium uppercase tracking-wide text-muted-foreground">
-					Filter by Date
-				</h3>
-				<ButtonGroup>
+				<div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
+					<span className="text-blue-500/50">❯</span>
+					<span>FILTER_BY_DATE</span>
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
 					{DATE_PRESETS.map((preset) => {
 						const isActive =
 							search.datePreset === preset.value ||
@@ -184,93 +182,127 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 								!search.startDate &&
 								!search.endDate)
 						return (
-							<button
+							<motion.button
 								key={preset.value}
 								type="button"
 								onClick={() => setDatePreset(preset.value)}
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								className={cn(
+									'relative px-3 py-1.5 font-mono text-xs transition-colors duration-300 border rounded-sm border-transparent',
+									isActive
+										? 'text-background'
+										: 'text-foreground/60 hover:text-foreground hover:bg-white/5',
+								)}
 							>
-								<Badge
-									variant={isActive ? 'default' : 'outline'}
-									className={`cursor-pointer font-mono text-xs uppercase transition-colors ${
-										isActive
-											? 'bg-foreground text-background hover:bg-foreground/90'
-											: 'border-border bg-secondary hover:border-accent'
-									}`}
-								>
-									{preset.label}
-								</Badge>
-							</button>
+								{isActive && (
+									<motion.div
+										layoutId="date-filter-active"
+										className="absolute inset-0 rounded-sm bg-foreground"
+										transition={{
+											type: 'spring',
+											stiffness: 200,
+											damping: 25,
+											mass: 1.2,
+										}}
+									/>
+								)}
+								<span className="relative z-10">{preset.label}</span>
+							</motion.button>
 						)
 					})}
-					<Collapsible
-						open={showCustomPicker}
-						onOpenChange={setShowCustomPicker}
+
+					<div className="h-4 w-px bg-white/10 mx-2" />
+
+					<motion.button
+						type="button"
+						onClick={() => setShowCustomPicker(!showCustomPicker)}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className={cn(
+							'px-3 py-1.5 font-mono text-xs transition-all duration-300 border rounded-sm flex items-center gap-2',
+							showCustomPicker || search.startDate || search.endDate
+								? 'bg-foreground text-background border-foreground font-bold'
+								: 'bg-transparent text-foreground/60 border-transparent hover:text-foreground hover:border-white/10 hover:bg-white/5',
+						)}
 					>
-						<CollapsibleTrigger asChild>
-							<button type="button">
-								<Badge
-									variant={
-										showCustomPicker || search.startDate || search.endDate
-											? 'default'
-											: 'outline'
-									}
-									className={`cursor-pointer font-mono text-xs uppercase transition-colors ${
-										showCustomPicker || search.startDate || search.endDate
-											? 'bg-foreground text-background hover:bg-foreground/90'
-											: 'border-border bg-secondary hover:border-accent'
-									}`}
-								>
-									<Calendar className="mr-1 h-3 w-3" />
-									Custom
-								</Badge>
-							</button>
-						</CollapsibleTrigger>
-						<CollapsibleContent className="mt-3 space-y-2">
-							<div className="flex flex-col gap-2 sm:flex-row">
-								<Input
-									type="date"
-									placeholder="Start date"
-									value={search.startDate || ''}
-									onChange={(e) =>
-										setCustomDateRange(e.target.value, search.endDate || '')
-									}
-									className="font-mono text-xs"
-								/>
-								<Input
-									type="date"
-									placeholder="End date"
-									value={search.endDate || ''}
-									onChange={(e) =>
-										setCustomDateRange(search.startDate || '', e.target.value)
-									}
-									className="font-mono text-xs"
-								/>
+						<span>CUSTOM_RANGE</span>
+						<motion.span
+							animate={{ rotate: showCustomPicker ? 180 : 0 }}
+							className="text-[10px]"
+						>
+							▼
+						</motion.span>
+					</motion.button>
+				</div>
+
+				<AnimatePresence>
+					{showCustomPicker && (
+						<motion.div
+							initial={{ opacity: 0, height: 0, y: -10 }}
+							animate={{ opacity: 1, height: 'auto', y: 0 }}
+							exit={{ opacity: 0, height: 0, y: -10 }}
+							className="overflow-hidden"
+						>
+							<div className="flex items-center gap-4 pt-2 pl-1">
+								<div className="relative group">
+									<span className="absolute -top-2 left-0 text-[9px] text-muted-foreground/50 font-mono">
+										FROM
+									</span>
+									<input
+										type="date"
+										value={search.startDate || ''}
+										onChange={(e) =>
+											setCustomDateRange(e.target.value, search.endDate || '')
+										}
+										className="bg-transparent border-b border-white/20 py-1 font-mono text-xs text-foreground focus:outline-none focus:border-foreground transition-colors w-32"
+									/>
+								</div>
+								<span className="text-muted-foreground/30 font-mono">→</span>
+								<div className="relative group">
+									<span className="absolute -top-2 left-0 text-[9px] text-muted-foreground/50 font-mono">
+										TO
+									</span>
+									<input
+										type="date"
+										value={search.endDate || ''}
+										onChange={(e) =>
+											setCustomDateRange(search.startDate || '', e.target.value)
+										}
+										className="bg-transparent border-b border-white/20 py-1 font-mono text-xs text-foreground focus:outline-none focus:border-foreground transition-colors w-32"
+									/>
+								</div>
 							</div>
-						</CollapsibleContent>
-					</Collapsible>
-				</ButtonGroup>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
 
 			{/* Active Filters Summary & Clear */}
-			{hasActiveFilters && (
-				<div className="flex items-center gap-3">
-					<Badge
-						variant="outline"
-						className="border-accent bg-accent/10 font-mono text-xs"
+			<AnimatePresence>
+				{hasActiveFilters && (
+					<motion.div
+						initial={{ opacity: 0, y: 10 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: 10 }}
+						className="flex items-center gap-4 pt-4 border-t border-white/5"
 					>
-						{activeFilterCount} active
-					</Badge>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={clearFilters}
-						className="h-7 border-border font-mono text-xs hover:border-accent"
-					>
-						<X className="mr-1 h-3 w-3" />
-						Clear all
-					</Button>
-				</div>
-			)}
+						<div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+							<span className="size-1.5 rounded-full bg-accent animate-pulse" />
+							<span>
+								{selectedTypes.length + dateFilterCount} ACTIVE_FILTERS
+							</span>
+						</div>
+						<button
+							type="button"
+							onClick={clearFilters}
+							className="text-xs font-mono text-red-400/70 hover:text-red-400 hover:underline decoration-red-400/30 underline-offset-4 transition-colors"
+						>
+							[ CLEAR_ALL ]
+						</button>
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</div>
 	)
 }

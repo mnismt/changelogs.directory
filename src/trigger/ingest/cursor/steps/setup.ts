@@ -6,7 +6,9 @@ export async function setupStep(
 	prisma: PrismaClient,
 	toolSlug: string,
 	startTime: number,
-): Promise<IngestionContext | { skipped: true; reason: string }> {
+): Promise<
+	Omit<IngestionContext, 'forceFullRescan'> | { skipped: true; reason: string }
+> {
 	logger.info('Phase 1: Setup', { toolSlug })
 
 	const tool = await prisma.tool.findUnique({

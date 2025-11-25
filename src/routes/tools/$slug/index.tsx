@@ -1,5 +1,6 @@
 import type { ChangeType } from '@prisma/client'
 import { createFileRoute } from '@tanstack/react-router'
+import { motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { ReleaseCard } from '@/components/changelog/release/release-card'
@@ -8,15 +9,15 @@ import {
 	TimelineView,
 } from '@/components/changelog/timeline/timeline-view'
 import { FilterBar } from '@/components/changelog/tool/filter-bar'
-import { ToolHeader } from '@/components/changelog/tool/tool-header'
+import { StickyFilterBar } from '@/components/changelog/tool/sticky-filter-bar'
 import { ToolPageSkeleton } from '@/components/changelog/tool/tool-skeleton'
 import { ViewToggle } from '@/components/changelog/tool/view-toggle'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { captureException } from '@/integrations/sentry'
 import { toDate } from '@/lib/date-utils'
-import { getToolLogo } from '@/lib/tool-logos'
-import { getToolMetadata, getToolReleasesPaginated } from '@/server/tools'
+import { cn } from '@/lib/utils'
+import { getToolReleasesPaginated } from '@/server/tools'
 
 const INITIAL_PAGE_SIZE = 20
 
@@ -36,22 +37,18 @@ export const Route = createFileRoute('/tools/$slug/')({
 		endDate: search.endDate,
 	}),
 	loader: async ({ params, deps }) => {
-		const [toolMetadata, firstPage] = await Promise.all([
-			getToolMetadata({ data: { slug: params.slug } }),
-			getToolReleasesPaginated({
-				data: {
-					slug: params.slug,
-					limit: INITIAL_PAGE_SIZE,
-					offset: 0,
-					datePreset: deps.datePreset,
-					startDate: deps.startDate,
-					endDate: deps.endDate,
-				},
-			}),
-		])
+		const firstPage = await getToolReleasesPaginated({
+			data: {
+				slug: params.slug,
+				limit: INITIAL_PAGE_SIZE,
+				offset: 0,
+				datePreset: deps.datePreset,
+				startDate: deps.startDate,
+				endDate: deps.endDate,
+			},
+		})
 
 		return {
-			tool: toolMetadata,
 			initialReleases: firstPage.releases,
 			initialPagination: firstPage.pagination,
 		}
@@ -59,16 +56,14 @@ export const Route = createFileRoute('/tools/$slug/')({
 	pendingComponent: ToolPageSkeleton,
 	errorComponent: ToolPageError,
 	component: ToolPage,
-	head: ({ loaderData }) => {
-		const toolName = loaderData?.tool?.name || 'Tool'
+	head: ({ params }) => {
+		// Note: We don't have tool name here anymore, but layout handles main meta.
+		// We can keep basic title or rely on parent.
+		// For now, let's keep it simple.
 		return {
 			meta: [
 				{
-					title: `${toolName} Changelog - changelogs.directory`,
-				},
-				{
-					name: 'description',
-					content: `Track all releases, features, improvements, and breaking changes for ${toolName}.`,
+					title: `${params.slug} Changelog - changelogs.directory`,
 				},
 			],
 		}
@@ -77,16 +72,14 @@ export const Route = createFileRoute('/tools/$slug/')({
 
 function ToolPage() {
 	const search = Route.useSearch()
-
 	const loaderData = Route.useLoaderData()
 	const slug = Route.useParams().slug
 
-	// State for accumulated releases and pagination
+	// State
 	const [releases, setReleases] = useState(loaderData.initialReleases)
 	const [pagination, setPagination] = useState(loaderData.initialPagination)
 	const [isLoadingMore, setIsLoadingMore] = useState(false)
 	const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
-	const [isMounted, setIsMounted] = useState(false)
 	const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
 	const [hoveredTypes, setHoveredTypes] = useState<ChangeType[] | null>(null)
 	const loadMoreRef = useRef<HTMLDivElement>(null)
@@ -97,10 +90,6 @@ function ToolPage() {
 
 	const handleHoverTypesChange = useCallback((types: ChangeType[] | null) => {
 		setHoveredTypes(types)
-	}, [])
-
-	useEffect(() => {
-		setIsMounted(true)
 	}, [])
 
 	// Reset releases when filters change
@@ -190,178 +179,104 @@ function ToolPage() {
 	const filteredReleases = useMemo(() => {
 		if (!releases) return []
 		if (selectedTypes.length === 0) return releases
-
-		// Filter releases that have changes matching the selected types
 		return releases.filter((release) => {
-			// Check if release has any of the selected types in changesByType
 			return selectedTypes.some((type) => release.changesByType?.[type])
 		})
 	}, [releases, selectedTypes])
 
-	// Not found state
-	if (!loaderData.tool) {
-		return (
-			<div className="container mx-auto max-w-7xl px-4 pt-20 pb-12">
-				<div className="rounded-lg border border-border bg-card p-8 text-center">
-					<h2 className="mb-2 text-xl font-semibold">Tool not found</h2>
-					<p className="text-muted-foreground">
-						The requested tool could not be found.
-					</p>
-				</div>
-			</div>
-		)
-	}
-
-	const tool = loaderData.tool
-	const logo = getToolLogo(slug)
-
 	return (
-		<div className="container mx-auto max-w-7xl px-4 pt-20 pb-12">
-			<div className="space-y-8">
-				{/* Tool Header */}
-				<div
-					className={`transition-all duration-700 ease-out ${
-						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
-					}`}
+		<div className="space-y-6">
+			{/* Controls */}
+			<StickyFilterBar>
+				<motion.div
+					initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+					animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+					transition={{
+						duration: 0.8,
+						ease: [0.2, 0.8, 0.2, 1],
+						delay: 0.6,
+					}}
+					className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:px-4"
 				>
-					<ToolHeader
-						slug={slug}
-						name={tool.name}
-						vendor={tool.vendor}
-						description={tool.description}
-						homepage={tool.homepage}
-						repositoryUrl={tool.repositoryUrl}
-						releaseCount={tool._count.releases}
-						lastFetchedAt={tool.lastFetchedAt}
-						latestVersion={tool.latestVersion || undefined}
-						latestReleaseDate={tool.latestReleaseDate || undefined}
-						firstVersion={tool.firstVersion || undefined}
-						firstReleaseDate={tool.firstReleaseDate || undefined}
-						tags={tool.tags}
-						logo={logo}
-					/>
-				</div>
-
-				{/* Filter Bar and View Toggle */}
-				<div
-					className={`transition-all duration-700 ease-out ${
-						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-					}`}
-					style={{ transitionDelay: '120ms' }}
-				>
-					<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-						<div className="flex-1">
-							<FilterBar hoveredTypes={hoveredTypes} />
-						</div>
-						<ViewToggle />
+					<div className="flex-1">
+						<FilterBar hoveredTypes={hoveredTypes} />
 					</div>
-				</div>
+					<ViewToggle />
+				</motion.div>
+			</StickyFilterBar>
 
-				{/* Releases - Grid or Timeline */}
-				<div
-					className={`transition-all duration-700 ease-out ${
-						isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-					}`}
-					style={{ transitionDelay: '220ms' }}
-				>
-					{filteredReleases.length === 0 ? (
-						<div className="rounded-lg border border-border bg-card p-8 text-center">
-							<p className="text-muted-foreground">
-								{selectedTypes.length > 0
-									? 'No releases match the selected filters.'
-									: 'No releases found.'}
-							</p>
+			{/* Feed */}
+			<motion.div
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.5, delay: 0.8 }}
+				className="min-h-[500px]"
+			>
+				{filteredReleases.length === 0 ? (
+					<div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-white/10 rounded-lg">
+						<div className="font-mono text-muted-foreground">
+							<p className="mb-2">No releases found</p>
+							<p className="text-xs opacity-50">Try adjusting your filters</p>
 						</div>
-					) : (
-						<>
-							{search.view === 'grid' ? (
-								<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-									{filteredReleases.map((release, index) => (
-										<ReleaseCardWithReveal
-											key={release.id}
-											release={release}
-											index={index}
-											toolSlug={slug}
-											isBlurred={
-												hoveredCardId !== null && hoveredCardId !== release.id
-											}
-											onHover={handleCardHover}
-											onHoverTypesChange={handleHoverTypesChange}
-										/>
-									))}
-								</div>
-							) : (
-								<div
-									className={`transition-all duration-600 ease-out ${
-										isMounted
-											? 'translate-y-0 opacity-100'
-											: 'translate-y-4 opacity-0'
-									}`}
-									style={{ transitionDelay: '260ms' }}
-								>
-									<TimelineView
+					</div>
+				) : (
+					<>
+						{search.view === 'grid' ? (
+							<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+								{filteredReleases.map((release, index) => (
+									<ReleaseCardWithReveal
+										key={release.id}
+										release={release}
+										index={index}
 										toolSlug={slug}
-										releases={filteredReleases}
+										isBlurred={
+											hoveredCardId !== null && hoveredCardId !== release.id
+										}
+										onHover={handleCardHover}
 										onHoverTypesChange={handleHoverTypesChange}
 									/>
-								</div>
-							)}
+								))}
+							</div>
+						) : (
+							<TimelineView
+								toolSlug={slug}
+								releases={filteredReleases}
+								onHoverTypesChange={handleHoverTypesChange}
+							/>
+						)}
 
-							{/* Infinite scroll trigger */}
-							{pagination.hasMore && (
-								<div
-									ref={loadMoreRef}
-									className="flex min-h-[100px] flex-col items-center justify-center gap-4 py-8"
-								>
-									{isLoadingMore ? (
-										<div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-											{TOOL_FEED_SKELETON_KEYS.map((key) => (
-												<ReleaseCardSkeletonPlaceholder key={key} />
-											))}
-										</div>
-									) : null}
-									{loadMoreError ? (
-										<div className="text-center text-sm text-muted-foreground">
-											<p>{loadMoreError}</p>
-											<button
-												type="button"
-												onClick={() => {
-													void loadMoreReleases()
-												}}
-												className="mt-1 font-mono text-xs uppercase tracking-wide text-foreground transition-colors hover:text-muted-foreground"
-											>
-												Try again
-											</button>
-										</div>
-									) : null}
-								</div>
-							)}
-						</>
-					)}
-				</div>
-			</div>
+						{/* Load More */}
+						{pagination.hasMore && (
+							<div
+								ref={loadMoreRef}
+								className="flex min-h-[100px] flex-col items-center justify-center gap-4 py-12"
+							>
+								{isLoadingMore ? (
+									<div className="flex items-center gap-2 font-mono text-xs text-muted-foreground animate-pulse">
+										<span>LOADING_DATA...</span>
+									</div>
+								) : null}
+
+								{loadMoreError && (
+									<div className="text-center font-mono text-xs text-red-400/80">
+										<p>{loadMoreError}</p>
+										<button
+											type="button"
+											onClick={() => void loadMoreReleases()}
+											className="mt-2 hover:text-red-400 underline decoration-red-400/30 underline-offset-4"
+										>
+											RETRY_CONNECTION
+										</button>
+									</div>
+								)}
+							</div>
+						)}
+					</>
+				)}
+			</motion.div>
 		</div>
 	)
 }
-
-function ReleaseCardSkeletonPlaceholder() {
-	return (
-		<div className="space-y-3 rounded border border-border/60 bg-card/60 p-5">
-			<div className="animate-pulse space-y-2">
-				<div className="h-3 w-16 rounded bg-secondary/60" />
-				<div className="h-5 w-32 rounded bg-secondary/60" />
-				<div className="h-3 w-full rounded bg-secondary/60" />
-				<div className="h-3 w-3/4 rounded bg-secondary/60" />
-			</div>
-		</div>
-	)
-}
-
-const TOOL_FEED_SKELETON_KEYS = [
-	'tool-feed-1',
-	'tool-feed-2',
-	'tool-feed-3',
-] as const
 
 function ToolPageError({
 	error,
@@ -437,9 +352,11 @@ function ReleaseCardWithReveal({
 		// biome-ignore lint/a11y/noStaticElementInteractions: Mouse events are for visual enhancement only
 		<div
 			ref={ref}
-			className={`transition-all duration-500 ease-out ${
-				isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-			} ${isBlurred ? 'blur-[2px] opacity-40' : ''}`}
+			className={cn(
+				'transition-all duration-500 ease-out',
+				isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
+				isBlurred && 'blur-[2px] opacity-40',
+			)}
 			style={{ transitionDelay: `${delay}ms` }}
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}

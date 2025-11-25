@@ -13,6 +13,7 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
 import { Route as AnalyticsIndexRouteImport } from './routes/analytics/index'
+import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
 
@@ -36,24 +37,30 @@ const AnalyticsIndexRoute = AnalyticsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AnalyticsRoute,
 } as any)
-const ToolsSlugIndexRoute = ToolsSlugIndexRouteImport.update({
-  id: '/tools/$slug/',
-  path: '/tools/$slug/',
+const ToolsSlugRoute = ToolsSlugRouteImport.update({
+  id: '/tools/$slug',
+  path: '/tools/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsSlugIndexRoute = ToolsSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ToolsSlugRoute,
 } as any)
 const ToolsSlugReleasesVersionRoute =
   ToolsSlugReleasesVersionRouteImport.update({
-    id: '/tools/$slug/releases/$version',
-    path: '/tools/$slug/releases/$version',
-    getParentRoute: () => rootRouteImport,
+    id: '/releases/$version',
+    path: '/releases/$version',
+    getParentRoute: () => ToolsSlugRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRouteWithChildren
+  '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/analytics/': typeof AnalyticsIndexRoute
   '/tools': typeof ToolsIndexRoute
-  '/tools/$slug': typeof ToolsSlugIndexRoute
+  '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesByTo {
@@ -67,6 +74,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRouteWithChildren
+  '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/analytics/': typeof AnalyticsIndexRoute
   '/tools/': typeof ToolsIndexRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
@@ -77,9 +85,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analytics'
+    | '/tools/$slug'
     | '/analytics/'
     | '/tools'
-    | '/tools/$slug'
+    | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -92,6 +101,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/analytics'
+    | '/tools/$slug'
     | '/analytics/'
     | '/tools/'
     | '/tools/$slug/'
@@ -101,9 +111,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRouteWithChildren
+  ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
   ToolsIndexRoute: typeof ToolsIndexRoute
-  ToolsSlugIndexRoute: typeof ToolsSlugIndexRoute
-  ToolsSlugReleasesVersionRoute: typeof ToolsSlugReleasesVersionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -136,19 +145,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyticsIndexRouteImport
       parentRoute: typeof AnalyticsRoute
     }
-    '/tools/$slug/': {
-      id: '/tools/$slug/'
+    '/tools/$slug': {
+      id: '/tools/$slug'
       path: '/tools/$slug'
       fullPath: '/tools/$slug'
-      preLoaderRoute: typeof ToolsSlugIndexRouteImport
+      preLoaderRoute: typeof ToolsSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/tools/$slug/': {
+      id: '/tools/$slug/'
+      path: '/'
+      fullPath: '/tools/$slug/'
+      preLoaderRoute: typeof ToolsSlugIndexRouteImport
+      parentRoute: typeof ToolsSlugRoute
     }
     '/tools/$slug/releases/$version': {
       id: '/tools/$slug/releases/$version'
-      path: '/tools/$slug/releases/$version'
+      path: '/releases/$version'
       fullPath: '/tools/$slug/releases/$version'
       preLoaderRoute: typeof ToolsSlugReleasesVersionRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ToolsSlugRoute
     }
   }
 }
@@ -165,12 +181,25 @@ const AnalyticsRouteWithChildren = AnalyticsRoute._addFileChildren(
   AnalyticsRouteChildren,
 )
 
+interface ToolsSlugRouteChildren {
+  ToolsSlugIndexRoute: typeof ToolsSlugIndexRoute
+  ToolsSlugReleasesVersionRoute: typeof ToolsSlugReleasesVersionRoute
+}
+
+const ToolsSlugRouteChildren: ToolsSlugRouteChildren = {
+  ToolsSlugIndexRoute: ToolsSlugIndexRoute,
+  ToolsSlugReleasesVersionRoute: ToolsSlugReleasesVersionRoute,
+}
+
+const ToolsSlugRouteWithChildren = ToolsSlugRoute._addFileChildren(
+  ToolsSlugRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRouteWithChildren,
+  ToolsSlugRoute: ToolsSlugRouteWithChildren,
   ToolsIndexRoute: ToolsIndexRoute,
-  ToolsSlugIndexRoute: ToolsSlugIndexRoute,
-  ToolsSlugReleasesVersionRoute: ToolsSlugReleasesVersionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
