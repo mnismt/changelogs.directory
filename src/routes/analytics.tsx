@@ -86,6 +86,7 @@ function AdminDashboard() {
 		waitlistStats,
 		waitlistDailySignups,
 	} = Route.useLoaderData()
+	const recentSignups = waitlistStats.recentSignups.slice(0, 7)
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-8">
@@ -200,19 +201,19 @@ function AdminDashboard() {
 						icon={<Calendar className="size-5" />}
 					/>
 				</div>
-				<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
 					<WaitlistChart data={waitlistDailySignups} />
-					<Card className="border-border bg-card">
+					<Card className="border-border bg-card flex h-full flex-col">
 						<CardHeader>
 							<CardTitle className="font-mono text-lg">
 								Recent Signups
 							</CardTitle>
-							<CardDescription>Last 10 email subscriptions</CardDescription>
+							<CardDescription>Last 5 email subscriptions</CardDescription>
 						</CardHeader>
 						<CardContent>
-							{waitlistStats.recentSignups.length > 0 ? (
+							{recentSignups.length > 0 ? (
 								<ul className="space-y-2">
-									{waitlistStats.recentSignups.map((signup) => (
+									{recentSignups.map((signup) => (
 										<li
 											key={signup.id}
 											className="border-border flex items-center justify-between border-b pb-2 last:border-0"

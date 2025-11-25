@@ -8,6 +8,7 @@ import { FeedReleaseCard } from '@/components/home/feed-release-card'
 import { HeroSection } from '@/components/home/hero-section'
 import { HomePageSkeleton } from '@/components/home/home-skeleton'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
+import { SparklesCore } from '@/components/ui/sparkles'
 import { useDebounce } from '@/hooks/use-debounce'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { captureException } from '@/integrations/sentry'
@@ -259,232 +260,227 @@ function HomePage() {
 	}, [])
 
 	return (
-		<div className="relative min-h-screen flex flex-col">
-			{/* Global Grid Background */}
-			<div className="fixed inset-0 z-0 pointer-events-none bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]">
-				<div className="absolute inset-0 bg-background/90 mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-			</div>
+		<div className="flex-1 pt-20 sm:pt-24 lg:pt-28">
+			{/* Hero Section */}
+			<HeroSection
+				heroRelease={heroRelease}
+				isMounted={isMounted}
+				onAnimationComplete={handleHeroAnimationComplete}
+			/>
 
-			<div className="relative z-10 flex flex-col flex-1">
-				<main className="flex-1 pt-20 sm:pt-24 lg:pt-28">
-					{/* Hero Section */}
-					<HeroSection
-						heroRelease={heroRelease}
-						isMounted={isMounted}
-						onAnimationComplete={handleHeroAnimationComplete}
-					/>
+			{/* Connector & Prompt Section */}
+			<div className="flex flex-col items-center justify-center">
+				{/* Connector Line */}
+				<div
+					className={cn(
+						'w-px bg-gradient-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
+						animationStep === 'hero' ? 'h-0 opacity-0' : 'h-12 opacity-100',
+					)}
+				/>
 
-					{/* Connector & Prompt Section */}
-					<div className="flex flex-col items-center justify-center">
-						{/* Connector Line */}
-						<div
-							className={cn(
-								'w-px bg-gradient-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
-								animationStep === 'hero' ? 'h-0 opacity-0' : 'h-12 opacity-100',
-							)}
-						/>
-
-						{/* Terminal Prompt */}
-						<div
-							className={cn(
-								'font-mono text-sm transition-all duration-300 flex items-center gap-2',
-								animationStep === 'hero' || animationStep === 'connector'
-									? 'opacity-0 translate-y-[-10px]'
-									: 'opacity-100 translate-y-0',
-							)}
-						>
-							<span className="text-muted-foreground/50">$</span>
-							<span className="text-foreground">
-								{animationStep === 'prompt' ? (
-									<TypewriterText text="view releases" />
-								) : (
-									'view releases'
-								)}
-							</span>
-							{animationStep === 'prompt' && (
-								<span className="animate-pulse text-green-500">_</span>
-							)}
-						</div>
-
-						{/* Connector Line to Feed */}
-						<div
-							className={cn(
-								'w-px bg-gradient-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
-								showFeed ? 'h-8 opacity-100' : 'h-0 opacity-0',
-							)}
+				{/* Terminal Prompt */}
+				<div
+					className={cn(
+						'font-mono text-sm transition-all duration-300 flex items-center gap-2 relative',
+						animationStep === 'hero' || animationStep === 'connector'
+							? 'opacity-0 translate-y-[-10px]'
+							: 'opacity-100 translate-y-0',
+					)}
+				>
+					{/* Sparkles Effect */}
+					<div className="absolute inset-0 -top-12 h-24 w-full pointer-events-none">
+						<SparklesCore
+							background="transparent"
+							minSize={0.4}
+							maxSize={1}
+							particleDensity={100}
+							className="h-full w-full"
+							particleColor="#FFFFFF"
 						/>
 					</div>
-
-					{/* Feed Section - Expandable Wrapper */}
-					<div
-						className={cn(
-							'grid transition-[grid-template-rows] duration-1000 ease-in-out',
-							showFeed ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+					<span className="text-muted-foreground/50">$</span>
+					<span className="text-foreground">
+						{animationStep === 'prompt' ? (
+							<TypewriterText text="view releases" />
+						) : (
+							'view releases'
 						)}
-					>
-						<div className="overflow-hidden min-h-0">
-							<section className="px-4 pb-12 sm:px-6 lg:px-8">
-								<div className="mx-auto max-w-7xl">
-									{/* Terminal-style frame wrapper */}
-									<div className="rounded-none border border-border/60 bg-card/40 md:rounded-sm">
-										{/* Command Strip */}
-										<div className="border-b border-border/40">
-											<div className="flex flex-col gap-3 bg-card/60 p-4 sm:flex-row sm:items-center sm:justify-between">
-												<div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
-													<span className="hidden sm:inline">
-														Command palette (coming soon)
-													</span>
-													<span className="hidden sm:inline text-muted-foreground/50">
-														/
-													</span>
-													<span>Search releases</span>
-													<span className="text-muted-foreground/50">/</span>
-													<span>Filter by type</span>
-												</div>
+					</span>
+					{animationStep === 'prompt' && (
+						<span className="animate-pulse text-green-500">_</span>
+					)}
+				</div>
 
-												<div className="relative flex-1 sm:max-w-xs">
-													<input
-														type="search"
-														placeholder="Search tools, versions, or release notes..."
-														value={searchQuery}
-														onChange={(e) => setSearchQuery(e.target.value)}
-														aria-label="Search releases by tool, version, or release notes"
-														className="w-full rounded border border-border bg-secondary px-3 py-1.5 pr-8 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none focus:ring-1 focus:ring-foreground/20 focus-visible:border-foreground/40 focus-visible:ring-2"
-													/>
-													{isSearching && (
-														<Loader2 className="absolute right-2 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground/50" />
-													)}
-												</div>
-											</div>
+				{/* Connector Line to Feed */}
+				<div
+					className={cn(
+						'w-px bg-gradient-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
+						showFeed ? 'h-8 opacity-100' : 'h-0 opacity-0',
+					)}
+				/>
+			</div>
+
+			{/* Feed Section - Expandable Wrapper */}
+			<div
+				className={cn(
+					'grid transition-[grid-template-rows] duration-1000 ease-in-out',
+					showFeed ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+				)}
+			>
+				<div className="overflow-hidden min-h-0">
+					<section className="px-4 pb-12 sm:px-6 lg:px-8">
+						<div className="mx-auto max-w-7xl">
+							{/* Terminal-style frame wrapper */}
+							<div className="rounded-none border border-border/60 bg-card/40 md:rounded-sm">
+								{/* Command Strip */}
+								<div className="border-b border-border/40">
+									<div className="flex flex-col gap-3 bg-card/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+										<div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
+											<span className="hidden sm:inline">
+												Command palette (coming soon)
+											</span>
+											<span className="hidden sm:inline text-muted-foreground/50">
+												/
+											</span>
+											<span>Search releases</span>
+											<span className="text-muted-foreground/50">/</span>
+											<span>Filter by type</span>
 										</div>
 
-										{/* Filters */}
-										<div className="border-b border-border/40">
-											<div className="p-4">
-												<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-													<FeedFilters
-														selectedTypes={selectedTypes}
-														onTypeChange={setSelectedTypes}
-													/>
-
-													{toolFilterOptions.length > 0 && (
-														<div className="flex flex-wrap items-center gap-3 lg:justify-end">
-															<div className="flex flex-wrap gap-2">
-																{toolFilterOptions.map(
-																	({ slug, name, logo }) => {
-																		const isSelected =
-																			selectedTools.includes(slug)
-																		return (
-																			<button
-																				key={slug}
-																				type="button"
-																				onClick={() => handleToolToggle(slug)}
-																				aria-pressed={isSelected}
-																				aria-label={`Filter by ${name}`}
-																				onMouseEnter={() =>
-																					setHoveredTool(slug)
-																				}
-																				onMouseLeave={() =>
-																					setHoveredTool(null)
-																				}
-																				onFocus={() => setHoveredTool(slug)}
-																				onBlur={() => setHoveredTool(null)}
-																				className={`group flex flex-col items-center gap-1 rounded border bg-secondary px-3 py-2 text-center transition-all duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 hover:border-foreground/40 hover:bg-card/80 ${
-																					isSelected
-																						? 'border-foreground/60 text-foreground'
-																						: 'border-border/60 text-muted-foreground'
-																				}`}
-																			>
-																				<span
-																					className={cn(
-																						'flex size-8 items-center justify-center text-current transition-transform duration-700 ease-out group-hover:rotate-30 [&>svg]:size-5',
-																						isMonochromeLogo(slug) &&
-																							'[&>svg]:fill-foreground [&>svg_path]:fill-foreground',
-																					)}
-																				>
-																					{logo}
-																				</span>
-																			</button>
-																		)
-																	},
-																)}
-															</div>
-														</div>
-													)}
-												</div>
-											</div>
+										<div className="relative flex-1 sm:max-w-xs">
+											<input
+												type="search"
+												placeholder="Search tools, versions, or release notes..."
+												value={searchQuery}
+												onChange={(e) => setSearchQuery(e.target.value)}
+												aria-label="Search releases by tool, version, or release notes"
+												className="w-full rounded border border-border bg-secondary px-3 py-1.5 pr-8 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none focus:ring-1 focus:ring-foreground/20 focus-visible:border-foreground/40 focus-visible:ring-2"
+											/>
+											{isSearching && (
+												<Loader2 className="absolute right-2 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground/50" />
+											)}
 										</div>
+									</div>
+								</div>
 
-										{/* Stats */}
-										<div className="border-b border-border/40 flex items-center gap-4 px-4 py-3 text-sm text-muted-foreground">
-											<div className="flex items-center gap-2">
-												<span className="font-mono font-semibold text-foreground">
-													{totalTools}
-												</span>
-												<span>tools tracked</span>
-											</div>
-											<span className="text-muted-foreground/50">•</span>
-											<div className="flex items-center gap-2">
-												<span className="font-mono font-semibold text-foreground">
-													{totalReleases}
-												</span>
-												<span>total releases</span>
-											</div>
-										</div>
+								{/* Filters */}
+								<div className="border-b border-border/40">
+									<div className="p-4">
+										<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+											<FeedFilters
+												selectedTypes={selectedTypes}
+												onTypeChange={setSelectedTypes}
+											/>
 
-										{/* Feed Grid */}
-										<div className="p-6">
-											{limitedFeedReleases.length > 0 ? (
-												<div
-													className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-300 ease-out ${
-														isSearching ? 'opacity-60' : 'opacity-100'
-													}`}
-												>
-													{limitedFeedReleases.map((release, index) => (
-														<FeedReleaseCardWithReveal
-															key={release.id}
-															release={release}
-															index={index}
-															isMounted={true} // Always mounted once expanded
-															hoveredCardId={hoveredCardId}
-															hoveredTool={hoveredTool}
-															setHoveredCardId={setHoveredCardId}
-															setHoveredTool={setHoveredTool}
-															isSearching={isSearching}
-														/>
-													))}
-												</div>
-											) : (
-												<div
-													className={`py-12 text-center transition-opacity duration-300 ease-out ${
-														isSearching ? 'opacity-60' : 'opacity-100'
-													}`}
-												>
-													<p className="text-muted-foreground">
-														No releases found matching your filters.
-													</p>
+											{toolFilterOptions.length > 0 && (
+												<div className="flex flex-wrap items-center gap-3 lg:justify-end">
+													<div className="flex flex-wrap gap-2">
+														{toolFilterOptions.map(({ slug, name, logo }) => {
+															const isSelected = selectedTools.includes(slug)
+															return (
+																<button
+																	key={slug}
+																	type="button"
+																	onClick={() => handleToolToggle(slug)}
+																	aria-pressed={isSelected}
+																	aria-label={`Filter by ${name}`}
+																	onMouseEnter={() => setHoveredTool(slug)}
+																	onMouseLeave={() => setHoveredTool(null)}
+																	onFocus={() => setHoveredTool(slug)}
+																	onBlur={() => setHoveredTool(null)}
+																	className={`group flex flex-col items-center gap-1 rounded border bg-secondary px-3 py-2 text-center transition-all duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 hover:border-foreground/40 hover:bg-card/80 ${
+																		isSelected
+																			? 'border-foreground/60 text-foreground'
+																			: 'border-border/60 text-muted-foreground'
+																	}`}
+																>
+																	<span
+																		className={cn(
+																			'flex size-8 items-center justify-center text-current transition-transform duration-700 ease-out group-hover:rotate-30 [&>svg]:size-5',
+																			isMonochromeLogo(slug) &&
+																				'[&>svg]:fill-foreground [&>svg_path]:fill-foreground',
+																		)}
+																	>
+																		{logo}
+																	</span>
+																</button>
+															)
+														})}
+													</div>
 												</div>
 											)}
 										</div>
 									</div>
+								</div>
 
-									{/* View all link */}
-									<div className="mt-12 flex flex-col items-center gap-2 text-center">
-										<p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-											Need deeper history?
-										</p>
-										<Link
-											to="/tools"
-											className="font-mono text-sm uppercase tracking-wide text-foreground transition-colors hover:text-muted-foreground"
-										>
-											All tools →
-										</Link>
+								{/* Stats */}
+								<div className="border-b border-border/40 flex items-center gap-4 px-4 py-3 text-sm text-muted-foreground">
+									<div className="flex items-center gap-2">
+										<span className="font-mono font-semibold text-foreground">
+											{totalTools}
+										</span>
+										<span>tools tracked</span>
+									</div>
+									<span className="text-muted-foreground/50">•</span>
+									<div className="flex items-center gap-2">
+										<span className="font-mono font-semibold text-foreground">
+											{totalReleases}
+										</span>
+										<span>total releases</span>
 									</div>
 								</div>
-							</section>
+
+								{/* Feed Grid */}
+								<div className="p-6">
+									{limitedFeedReleases.length > 0 ? (
+										<div
+											className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-300 ease-out ${
+												isSearching ? 'opacity-60' : 'opacity-100'
+											}`}
+										>
+											{limitedFeedReleases.map((release, index) => (
+												<FeedReleaseCardWithReveal
+													key={release.id}
+													release={release}
+													index={index}
+													isMounted={true} // Always mounted once expanded
+													hoveredCardId={hoveredCardId}
+													hoveredTool={hoveredTool}
+													setHoveredCardId={setHoveredCardId}
+													setHoveredTool={setHoveredTool}
+													isSearching={isSearching}
+												/>
+											))}
+										</div>
+									) : (
+										<div
+											className={`py-12 text-center transition-opacity duration-300 ease-out ${
+												isSearching ? 'opacity-60' : 'opacity-100'
+											}`}
+										>
+											<p className="text-muted-foreground">
+												No releases found matching your filters.
+											</p>
+										</div>
+									)}
+								</div>
+							</div>
+
+							{/* View all link */}
+							<div className="mt-12 flex flex-col items-center gap-2 text-center">
+								<p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+									Need deeper history?
+								</p>
+								<Link
+									to="/tools"
+									className="font-mono text-sm uppercase tracking-wide text-foreground transition-colors hover:text-muted-foreground"
+								>
+									All tools →
+								</Link>
+							</div>
 						</div>
-					</div>
-				</main>
+					</section>
+				</div>
 			</div>
 		</div>
 	)

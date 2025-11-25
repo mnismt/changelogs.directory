@@ -12,7 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AnalyticsIndexRouteImport } from './routes/analytics/index'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
 
@@ -31,10 +31,10 @@ const ToolsIndexRoute = ToolsIndexRouteImport.update({
   path: '/tools/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => rootRouteImport,
+const AnalyticsIndexRoute = AnalyticsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AnalyticsRoute,
 } as any)
 const ToolsSlugIndexRoute = ToolsSlugIndexRouteImport.update({
   id: '/tools/$slug/',
@@ -50,16 +50,15 @@ const ToolsSlugReleasesVersionRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsRoute
-  '/admin': typeof AdminIndexRoute
+  '/analytics': typeof AnalyticsRouteWithChildren
+  '/analytics/': typeof AnalyticsIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsRoute
-  '/admin': typeof AdminIndexRoute
+  '/analytics': typeof AnalyticsIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -67,8 +66,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsRoute
-  '/admin/': typeof AdminIndexRoute
+  '/analytics': typeof AnalyticsRouteWithChildren
+  '/analytics/': typeof AnalyticsIndexRoute
   '/tools/': typeof ToolsIndexRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -78,7 +77,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analytics'
-    | '/admin'
+    | '/analytics/'
     | '/tools'
     | '/tools/$slug'
     | '/tools/$slug/releases/$version'
@@ -86,7 +85,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/analytics'
-    | '/admin'
     | '/tools'
     | '/tools/$slug'
     | '/tools/$slug/releases/$version'
@@ -94,7 +92,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/analytics'
-    | '/admin/'
+    | '/analytics/'
     | '/tools/'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
@@ -102,8 +100,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnalyticsRoute: typeof AnalyticsRoute
-  AdminIndexRoute: typeof AdminIndexRoute
+  AnalyticsRoute: typeof AnalyticsRouteWithChildren
   ToolsIndexRoute: typeof ToolsIndexRoute
   ToolsSlugIndexRoute: typeof ToolsSlugIndexRoute
   ToolsSlugReleasesVersionRoute: typeof ToolsSlugReleasesVersionRoute
@@ -132,12 +129,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/analytics/': {
+      id: '/analytics/'
+      path: '/'
+      fullPath: '/analytics/'
+      preLoaderRoute: typeof AnalyticsIndexRouteImport
+      parentRoute: typeof AnalyticsRoute
     }
     '/tools/$slug/': {
       id: '/tools/$slug/'
@@ -156,10 +153,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AnalyticsRouteChildren {
+  AnalyticsIndexRoute: typeof AnalyticsIndexRoute
+}
+
+const AnalyticsRouteChildren: AnalyticsRouteChildren = {
+  AnalyticsIndexRoute: AnalyticsIndexRoute,
+}
+
+const AnalyticsRouteWithChildren = AnalyticsRoute._addFileChildren(
+  AnalyticsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnalyticsRoute: AnalyticsRoute,
-  AdminIndexRoute: AdminIndexRoute,
+  AnalyticsRoute: AnalyticsRouteWithChildren,
   ToolsIndexRoute: ToolsIndexRoute,
   ToolsSlugIndexRoute: ToolsSlugIndexRoute,
   ToolsSlugReleasesVersionRoute: ToolsSlugReleasesVersionRoute,
