@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { createFileRoute } from '@tanstack/react-router'
+import { AnimatePresence, motion } from 'motion/react'
+import { useState } from 'react'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
-import { Card, Carousel } from '@/components/ui/apple-cards-carousel'
+import { ToolCard } from '@/components/tools/tool-card'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { captureException } from '@/integrations/sentry'
 import { getAllTools } from '@/server/tools'
@@ -30,111 +30,136 @@ export const Route = createFileRoute('/tools/')({
 
 function ToolsDirectoryPage() {
 	const { tools, stats } = Route.useLoaderData()
-	const navigate = useNavigate()
-	const [isExiting, setIsExiting] = useState(false)
-	const [targetHref, setTargetHref] = useState<string | null>(null)
-
-	// Handle navigation after exit animation
-	useEffect(() => {
-		if (isExiting && targetHref) {
-			const timer = setTimeout(() => {
-				navigate({ to: targetHref })
-			}, 700) // Wait for animations to complete
-			return () => clearTimeout(timer)
-		}
-	}, [isExiting, targetHref, navigate])
-
-	const handleCardNavigate = (href: string) => {
-		setTargetHref(href)
-		setIsExiting(true)
-	}
-
-	// Create carousel cards for each tool
-	const toolCards = tools.map((tool, index) => {
-		return (
-			<Card
-				key={tool.id}
-				index={index}
-				layout
-				card={{
-					src: `/images/tools/${tool.slug}.png`,
-					title: tool.name,
-					category: tool.vendor,
-					href: `/tools/${tool.slug}`,
-				}}
-				onNavigate={() => handleCardNavigate(`/tools/${tool.slug}`)}
-			/>
-		)
-	})
+	const [hoveredToolSlug, setHoveredToolSlug] = useState<string | null>(null)
 
 	return (
-		<div className="container mx-auto max-w-7xl px-4 pb-12 pt-20 md:pt-32">
-			{/* Hero Section with fade-in animation */}
-			<motion.div
-				className="mb-12"
-				initial={{ opacity: 0, y: 16 }}
-				animate={{
-					opacity: isExiting ? 0 : 1,
-					y: isExiting ? -8 : 0,
-				}}
-				transition={{
-					duration: isExiting ? 0.3 : 0.7,
-					ease: 'easeOut',
-					delay: isExiting ? 0.15 : 0,
-				}}
-			>
-				<div className="space-y-4 text-center">
-					<h1 className="font-mono text-4xl font-bold sm:text-5xl">
-						Developer Tools Directory
-					</h1>
-					<p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+		<div className="container mx-auto max-w-7xl px-4 pb-12 pt-20 md:pt-32 relative min-h-screen">
+			{/* Global Background Layer */}
+			<div className="fixed inset-0 z-[-1] bg-background">
+				<AnimatePresence mode="wait">
+					{hoveredToolSlug && (
+						<motion.div
+							key={hoveredToolSlug}
+							initial={{ opacity: 0, scale: 1.1 }}
+							animate={{ opacity: 0.3, scale: 1 }}
+							exit={{ opacity: 0 }}
+							transition={{ duration: 0.7, ease: 'easeOut' }}
+							className="absolute inset-0"
+						>
+							<img
+								src={`/images/tools/${hoveredToolSlug}.png`}
+								alt=""
+								className="h-full w-full object-cover grayscale"
+							/>
+							<div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/20" />
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+			{/* Header Section */}
+			<div className="mb-16 relative">
+				<div className="absolute inset-x-0 -top-20 -bottom-20 opacity-30 pointer-events-none">
+					<SparklesCore
+						background="transparent"
+						minSize={0.4}
+						maxSize={1}
+						particleDensity={50}
+						className="h-full w-full"
+						particleColor="#FFFFFF"
+					/>
+				</div>
+
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.6, ease: 'easeOut' }}
+					className="relative z-10 text-center space-y-6"
+				>
+					<div className="inline-block">
+						<h1 className="font-mono text-4xl font-bold tracking-tighter sm:text-5xl">
+							<span className="text-muted-foreground/50 mr-2">~/</span>
+							tools
+						</h1>
+					</div>
+
+					<p className="mx-auto max-w-2xl text-lg text-muted-foreground leading-relaxed">
 						Track changelogs for your favorite CLI tools. Stay updated with the
 						latest releases, features, improvements, and breaking changes.
 					</p>
 
-					{/* Stats Bar */}
-					<div className="relative mx-auto mt-8 max-w-md">
-						{/* Sparkles effect above divider */}
-						<div className="absolute inset-x-0 -top-8 h-20 w-full">
-							<SparklesCore
-								background="transparent"
-								minSize={0.4}
-								maxSize={1}
-								particleDensity={100}
-								className="h-full w-full"
-								particleColor="#FFFFFF"
-							/>
+					{/* System Stats */}
+					<div className="flex items-center justify-center gap-6 text-xs font-mono text-muted-foreground mt-8">
+						<div className="flex items-center gap-2">
+							<span className="w-2 h-2 rounded-full bg-green-500/50 animate-pulse" />
+							<span>SYSTEM_READY</span>
+						</div>
+						<span className="text-border">|</span>
+						<div>
+							TOTAL_TOOLS:{' '}
+							<span className="text-foreground">{stats.totalTools}</span>
+						</div>
+						<span className="text-border">|</span>
+						<div>
+							TOTAL_RELEASES:{' '}
+							<span className="text-foreground">{stats.totalReleases}</span>
 						</div>
 					</div>
-					<div className="mx-auto flex max-w-md items-center justify-center gap-8 border-t border-border pt-6">
-						<div className="text-center">
-							<div className="font-mono text-3xl font-bold">
-								{stats.totalTools}
-							</div>
-							<div className="text-xs uppercase text-muted-foreground">
-								Tools Tracked
-							</div>
-						</div>
-						<div className="h-12 w-px bg-border" />
-						<div className="text-center">
-							<div className="font-mono text-3xl font-bold">
-								{stats.totalReleases}
-							</div>
-							<div className="text-xs uppercase text-muted-foreground">
-								Total Releases
-							</div>
-						</div>
-					</div>
-				</div>
-			</motion.div>
+				</motion.div>
+			</div>
 
-			{/* Tools Carousel */}
+			{/* Tools Grid */}
 			{tools.length > 0 ? (
-				<Carousel items={toolCards} initialScroll={0} />
+				<motion.div
+					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+					initial="hidden"
+					animate="visible"
+					variants={{
+						visible: {
+							transition: {
+								staggerChildren: 0.05,
+							},
+						},
+					}}
+				>
+					{tools.map((tool, index) => (
+						<motion.div
+							key={tool.id}
+							variants={{
+								hidden: { opacity: 0, y: 20 },
+								visible: {
+									opacity: 1,
+									y: 0,
+									transition: {
+										duration: 0.5,
+										ease: 'easeOut',
+									},
+								},
+							}}
+							className="h-full"
+						>
+							<ToolCard
+								tool={tool}
+								latestRelease={
+									tool.latestVersion && tool.latestReleaseDate
+										? {
+												version: tool.latestVersion,
+												createdAt: tool.latestReleaseDate,
+											}
+										: undefined
+								}
+								releaseCount={tool._count.releases}
+								index={index}
+								isHovered={hoveredToolSlug === tool.slug}
+								onHoverStart={() => setHoveredToolSlug(tool.slug)}
+								onHoverEnd={() => setHoveredToolSlug(null)}
+							/>
+						</motion.div>
+					))}
+				</motion.div>
 			) : (
 				<div className="py-20 text-center">
-					<p className="text-muted-foreground">
-						No tools found. Check back soon!
+					<p className="text-muted-foreground font-mono">
+						No tools found in directory.
 					</p>
 				</div>
 			)}
@@ -145,19 +170,16 @@ function ToolsDirectoryPage() {
 function ToolsDirectorySkeleton() {
 	return (
 		<div className="container mx-auto max-w-7xl px-4 pb-12 pt-20 md:pt-32">
-			<div className="mb-12 space-y-4 text-center">
-				<div className="mx-auto h-10 w-64 animate-pulse rounded bg-secondary/60" />
-				<div className="mx-auto h-4 w-80 animate-pulse rounded bg-secondary/60" />
-				<div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-8 border-t border-border pt-6">
-					<div className="h-12 w-12 animate-pulse rounded bg-secondary/60" />
-					<div className="h-12 w-12 animate-pulse rounded bg-secondary/60" />
-				</div>
+			<div className="mb-16 space-y-6 text-center">
+				<div className="mx-auto h-12 w-48 animate-pulse rounded bg-secondary/60" />
+				<div className="mx-auto h-4 w-96 animate-pulse rounded bg-secondary/60" />
+				<div className="mx-auto h-4 w-64 animate-pulse rounded bg-secondary/60" />
 			</div>
-			<div className="grid gap-8 sm:grid-cols-2">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{TOOLS_DIRECTORY_SKELETON_KEYS.map((key) => (
 					<div
 						key={key}
-						className="h-48 animate-pulse rounded border border-border/60 bg-card/60"
+						className="h-48 animate-pulse rounded border border-border/60 bg-card/40"
 					/>
 				))}
 			</div>
@@ -170,6 +192,8 @@ const TOOLS_DIRECTORY_SKELETON_KEYS = [
 	'tools-skeleton-2',
 	'tools-skeleton-3',
 	'tools-skeleton-4',
+	'tools-skeleton-5',
+	'tools-skeleton-6',
 ] as const
 
 function ToolsDirectoryError({
@@ -179,9 +203,9 @@ function ToolsDirectoryError({
 	error: unknown
 	reset: () => void
 }) {
-	useEffect(() => {
+	useState(() => {
 		captureException(error)
-	}, [error])
+	})
 
 	const detail =
 		error instanceof Error
