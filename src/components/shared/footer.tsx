@@ -3,69 +3,55 @@ import { Link } from '@tanstack/react-router'
 const NAV_LINKS = [
 	{ label: 'Home', href: '/' },
 	{ label: 'Tools', href: '/tools' },
-	{
-		label: 'PRD',
-		href: 'https://github.com/minhthanh/changelogs-directory/blob/main/docs/PRD.md',
-		external: true,
-	},
 ] as const
 
 export function Footer() {
 	return (
-		<footer className="border-t border-border/50 bg-background/80">
-			<div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
-				<div className="space-y-1 text-center md:text-left">
-					<p className="font-mono text-sm text-foreground">
-						changelogs.directory
-					</p>
+		<footer className="border-t border-border/40 bg-background">
+			<div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:px-6 lg:px-8 md:flex-row">
+				<div className="flex items-center gap-4">
 					<p className="font-mono text-xs text-muted-foreground">
-						Track CLI tool releases in one monochrome feed.
+						<span className="text-foreground">changelogs.directory</span>
+						<span className="mx-2 text-border">::</span>
+						<span>v1.0.0</span>
 					</p>
 				</div>
 
-				<nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
-					{NAV_LINKS.map((link) =>
-						link.external ? (
-							<a
-								key={link.label}
-								href={link.href}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="font-mono uppercase tracking-wide transition-colors hover:text-foreground"
-							>
-								{link.label}
-							</a>
-						) : (
-							<Link
-								key={link.label}
-								to={link.href}
-								className="font-mono uppercase tracking-wide transition-colors hover:text-foreground"
-							>
-								{link.label}
-							</Link>
-						),
-					)}
+				<nav className="flex items-center gap-6">
+					{NAV_LINKS.map((link) => (
+						<Link
+							key={link.label}
+							to={link.href}
+							className="font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
+							activeProps={{
+								className: 'text-foreground font-medium',
+							}}
+						>
+							{link.label}
+						</Link>
+					))}
 				</nav>
 
-				<div className="flex flex-col items-center gap-2 text-center text-xs text-muted-foreground md:items-end md:text-right">
+				<div className="flex items-center gap-4">
 					<div className="flex items-center gap-2">
-						<div className="relative flex items-center justify-center">
-							<span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-foreground/30" />
-							<span className="relative inline-flex h-2 w-2 rounded-full bg-foreground" />
-						</div>
-						<span className="font-mono uppercase tracking-wide">
+						<span className="relative flex h-2 w-2">
+							<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
+							<span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+						</span>
+						<span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
 							Operational
 						</span>
 					</div>
-					<p className="font-mono text-[11px] text-muted-foreground/80">
+					<span className="text-border">|</span>
+					<p className="font-mono text-[10px] text-muted-foreground">
 						Built by{' '}
 						<a
 							href="https://twitter.com/leodoan_"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="text-foreground transition-colors hover:text-muted-foreground"
+							className="text-foreground hover:underline"
 						>
-							leodoan
+							@leodoan
 						</a>
 					</p>
 				</div>
