@@ -2,7 +2,13 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { Loader2 } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react'
 import { FeedFilters } from '@/components/home/feed-filters'
 import { FeedReleaseCard } from '@/components/home/feed-release-card'
 import { HeroSection } from '@/components/home/hero-section'
@@ -142,6 +148,20 @@ function HomePage() {
 	const [isMounted, setIsMounted] = useState(false)
 	const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
 	const [hoveredTool, setHoveredTool] = useState<string | null>(null)
+
+	const viewReleasesSparkles = useMemo(
+		() => (
+			<SparklesCore
+				background="transparent"
+				minSize={0.4}
+				maxSize={1}
+				particleDensity={100}
+				className="h-full w-full"
+				particleColor="#FFFFFF"
+			/>
+		),
+		[],
+	)
 
 	// Animation State Machine
 	type AnimationStep = 'hero' | 'connector' | 'prompt' | 'expanding' | 'done'
@@ -289,14 +309,7 @@ function HomePage() {
 				>
 					{/* Sparkles Effect */}
 					<div className="absolute inset-0 -top-12 h-24 w-full pointer-events-none">
-						<SparklesCore
-							background="transparent"
-							minSize={0.4}
-							maxSize={1}
-							particleDensity={100}
-							className="h-full w-full"
-							particleColor="#FFFFFF"
-						/>
+						{viewReleasesSparkles}
 					</div>
 					<span className="text-muted-foreground/50">$</span>
 					<span className="text-foreground">
