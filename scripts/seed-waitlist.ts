@@ -3,8 +3,8 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
-const TOTAL_SIGNUPS = 100
-const PROVIDERS = ["gmail.com", "outlook.com", "icloud.com", "yahoo.com", "proton.me"] as const
+const TOTAL_SIGNUPS = 74
+const PROVIDERS = ["gmail.com", "outlook.com", "icloud.com", "yahoo.com"] as const
 
 const currentYear = new Date().getFullYear()
 const startDate = new Date(Date.UTC(currentYear, 9, 30, 0, 0, 0))
@@ -30,10 +30,22 @@ async function main() {
 		emails.add(generateEmail(emails.size))
 	}
 
-	const waitlistEntries = Array.from(emails).map((email) => ({
-		email,
-		createdAt: getRandomDate(),
-	}))
+	const waitlistEntries = Array.from(emails).map((email, index) => {
+		// Ensure we have at least one entry on the start and end dates
+		let createdAt: Date
+		if (index === 0) {
+			createdAt = startDate
+		} else if (index === 1) {
+			createdAt = endDate
+		} else {
+			createdAt = getRandomDate()
+		}
+
+		return {
+			email,
+			createdAt,
+		}
+	})
 
 	// Optional wipe: set CLEAR_WAITLIST=true when running if you want a clean slate
 	if (process.env.CLEAR_WAITLIST === "true") {

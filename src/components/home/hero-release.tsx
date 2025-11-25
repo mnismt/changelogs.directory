@@ -256,10 +256,8 @@ export function HeroRelease({
 									params={{ slug: toolSlug, version }}
 									className="group/btn inline-flex items-center gap-3 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
 								>
-									<span className="border-b border-transparent group-hover/btn:border-foreground transition-colors">
-										Read full changelog
-									</span>
-									<ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-1" />
+									<span>Read full changelog</span>
+									<ArrowRight className="size-4 transition-transform duration-700 ease-out group-hover:translate-x-1 group-hover/btn:rotate-180" />
 								</Link>
 							</motion.div>
 						</motion.div>

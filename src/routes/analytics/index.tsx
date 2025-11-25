@@ -34,7 +34,7 @@ import {
 	getWaitlistStats,
 } from '@/server/admin'
 
-export const Route = createFileRoute('/admin/')({
+export const Route = createFileRoute('/analytics/')({
 	loader: async () => {
 		const [
 			ingestionOverview,

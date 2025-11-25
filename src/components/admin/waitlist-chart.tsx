@@ -53,7 +53,7 @@ export function WaitlistChart({ data }: WaitlistChartProps) {
 			</CardHeader>
 			<CardContent>
 				{data.length > 0 ? (
-					<ChartContainer config={chartConfig} className="h-[350px] w-full">
+					<ChartContainer config={chartConfig} className="h-[280px] w-full">
 						<AreaChart
 							data={formattedData}
 							margin={{ left: 0, right: 12, top: 12, bottom: 0 }}
