@@ -17,8 +17,11 @@ export const ingestCursor = task({
 		concurrencyLimit: 1,
 	},
 	maxDuration: 1200,
-	run: async (payload: { toolSlug?: string } = {}) => {
+	run: async (
+		payload: { toolSlug?: string; forceFullRescan?: boolean } = {},
+	) => {
 		const toolSlug = payload.toolSlug || 'cursor'
+		const forceFullRescan = payload.forceFullRescan ?? false
 		const startTime = Date.now()
 		let ctx: IngestionContext | null = null
 
@@ -30,7 +33,7 @@ export const ingestCursor = task({
 				return setupResult
 			}
 
-			ctx = setupResult
+			ctx = { ...setupResult, forceFullRescan }
 
 			const fetchResult = await fetchPagesStep(ctx)
 			const parseResult = parseStep(ctx, fetchResult)

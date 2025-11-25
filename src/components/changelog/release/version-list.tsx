@@ -1,5 +1,6 @@
 import type { ChangeType } from '@prisma/client'
 import { Link } from '@tanstack/react-router'
+import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -51,7 +52,7 @@ export function VersionList({
 	toolSlug,
 	currentVersion,
 	versions,
-	initialLimit = 10,
+	initialLimit = 12,
 }: VersionListProps) {
 	const [showAll, setShowAll] = useState(false)
 
@@ -100,37 +101,53 @@ export function VersionList({
 		const hasTooltip = tooltipContent !== null
 
 		const content = (
-			<div className="flex items-start justify-between gap-2">
-				<div className="flex-1 space-y-1">
-					<div className="font-mono text-sm font-semibold group-hover:text-foreground">
-						{formatVersionForDisplay(version.version, toolSlug)}
+			<div className="flex flex-col h-full justify-between gap-4">
+				<div className="flex items-start justify-between gap-2">
+					<div className="space-y-1.5">
+						<div className="font-mono text-sm font-bold tracking-tight group-hover:text-foreground transition-colors">
+							{formatVersionForDisplay(version.version, toolSlug)}
+						</div>
+						<div className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider">
+							{formatDate(version.releaseDate, 'MMM d, yyyy')}
+						</div>
 					</div>
-					<div className="text-xs text-muted-foreground">
-						{formatDate(version.releaseDate, 'MMM d, yyyy')}
-					</div>
-				</div>
-				<div className="flex shrink-0 flex-col items-end gap-1">
 					{isCurrent && (
-						<span className="text-xs font-mono uppercase text-muted-foreground">
-							You're here
-						</span>
+						<div className="size-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
 					)}
-					<Badge variant="outline" className="font-mono text-xs">
-						{version._count.changes}
-					</Badge>
+				</div>
+
+				<div className="flex items-center justify-between pt-2 border-t border-white/5">
+					<div className="flex items-center gap-2">
+						<span className="text-[10px] font-mono text-muted-foreground/40">
+							CHANGES
+						</span>
+						<span className="text-xs font-mono text-foreground/80">
+							{version._count.changes}
+						</span>
+					</div>
+					<div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
+						<ArrowRight className="size-3 text-muted-foreground" />
+					</div>
 				</div>
 			</div>
 		)
 
+		const cardClasses = `
+			group block h-full p-4 rounded-sm border transition-all duration-300
+			${
+				isCurrent
+					? 'bg-white/[0.03] border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
+					: 'bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/[0.02] hover:-translate-y-0.5 hover:shadow-lg'
+			}
+		`
+
 		const cardElement = isCurrent ? (
-			<div className="block rounded-lg border border-accent bg-secondary p-4">
-				{content}
-			</div>
+			<div className={cardClasses}>{content}</div>
 		) : (
 			<Link
 				to="/tools/$slug/releases/$version"
 				params={{ slug: toolSlug, version: version.version }}
-				className="group block rounded-lg border border-border bg-card p-4 transition-all hover:border-accent"
+				className={cardClasses}
 			>
 				{content}
 			</Link>
@@ -147,7 +164,7 @@ export function VersionList({
 					side="top"
 					align="end"
 					sideOffset={8}
-					className="max-w-xs border border-border bg-card p-3 text-foreground"
+					className="max-w-xs border border-white/10 bg-black/90 backdrop-blur-xl p-3 text-foreground shadow-xl"
 				>
 					{tooltipContent}
 				</TooltipContent>
@@ -156,34 +173,44 @@ export function VersionList({
 	}
 
 	return (
-		<div className="mt-16 border-t border-border pt-8">
-			<h2 className="mb-6 text-2xl font-bold">More Versions</h2>
+		<div className="mt-8 pt-8 border-t border-white/5">
+			<div className="flex items-center gap-4 mb-8">
+				<h2 className="font-mono text-lg font-bold uppercase tracking-wider text-muted-foreground/60">
+					{'// Version_History'}
+				</h2>
+				<div className="h-px flex-1 bg-gradient-to-r from-white/5 to-transparent" />
+				<Badge
+					variant="outline"
+					className="font-mono text-[10px] border-white/10 bg-white/5 text-muted-foreground"
+				>
+					TOTAL: {versions.length}
+				</Badge>
+			</div>
 
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			<div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 				{displayedVersions.map(renderVersionCard)}
 			</div>
 
 			{!showAll && remainingCount > 0 && (
-				<div className="mt-6 text-center">
+				<div className="mt-8 text-center">
 					<Button
-						variant="outline"
+						variant="ghost"
 						onClick={() => setShowAll(true)}
-						className="font-mono"
+						className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/10"
 					>
-						Show {remainingCount} more{' '}
-						{remainingCount === 1 ? 'version' : 'versions'}
+						{'>'} load_more_versions({remainingCount})
 					</Button>
 				</div>
 			)}
 
 			{showAll && versions.length > initialLimit && (
-				<div className="mt-6 text-center">
+				<div className="mt-8 text-center">
 					<Button
-						variant="outline"
+						variant="ghost"
 						onClick={() => setShowAll(false)}
-						className="font-mono"
+						className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/10"
 					>
-						Show less
+						{'>'} collapse_history()
 					</Button>
 				</div>
 			)}

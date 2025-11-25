@@ -1,18 +1,12 @@
 import type { Change, ChangeType } from '@prisma/client'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, ChevronRight, Copy, ExternalLink } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { AnimatePresence, motion } from 'motion/react'
+import { useEffect, useMemo } from 'react'
 import { ChangeItem } from '@/components/changelog/release/change-item'
-import { CollapsibleSection } from '@/components/changelog/release/collapsible-section'
 import { ReleaseDetailSkeleton } from '@/components/changelog/release/release-detail-skeleton'
-import { ReleaseStickyHeader } from '@/components/changelog/release/release-sticky-header'
 import { VersionList } from '@/components/changelog/release/version-list'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
-import { Accordion } from '@/components/ui/accordion'
-import { Button } from '@/components/ui/button'
 import { captureException } from '@/integrations/sentry'
-import { formatDate } from '@/lib/date-utils'
-import { getToolLogo } from '@/lib/tool-logos'
 import { formatVersionForDisplay } from '@/lib/version-formatter'
 import {
 	getAdjacentVersions,
@@ -65,10 +59,8 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 function ReleaseDetailPage() {
 	const { slug, version } = Route.useParams()
 	const navigate = useNavigate()
-	const [copied, setCopied] = useState(false)
 
 	const { release, adjacentVersions, allVersions } = Route.useLoaderData()
-	const formattedVersion = formatVersionForDisplay(version, slug)
 
 	// Group changes by type and apply filters
 	const groupedChanges = useMemo((): Record<ChangeType, Change[]> => {
@@ -119,11 +111,6 @@ function ReleaseDetailPage() {
 		{ type: 'OTHER', title: '📦 Other Changes' },
 	]
 
-	// Default open sections - expand all sections that have content
-	const defaultOpenSections = sections
-		.filter((section) => groupedChanges[section.type].length > 0)
-		.map((section) => section.type)
-
 	// Keyboard navigation
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -152,168 +139,104 @@ function ReleaseDetailPage() {
 		return () => window.removeEventListener('keydown', handleKeyDown)
 	}, [adjacentVersions, navigate, slug])
 
-	// Copy permalink
-	const copyPermalink = () => {
-		const url = window.location.href
-		navigator.clipboard.writeText(url).then(() => {
-			setCopied(true)
-			setTimeout(() => setCopied(false), 3000)
-		})
-	}
-
-	// Not found state
-	if (!release) {
-		return (
-			<div className="container mx-auto max-w-7xl px-4 py-12">
-				<div className="rounded-lg border border-border bg-card p-8 text-center">
-					<h2 className="mb-2 text-xl font-semibold">Release not found</h2>
-					<p className="text-muted-foreground">
-						The requested release could not be found.
-					</p>
-				</div>
-			</div>
-		)
-	}
-
-	const formattedDate = formatDate(release.releaseDate, 'MMMM d, yyyy')
-
-	const logo = getToolLogo(slug)
-
 	return (
-		<div className="animate-fade-in">
-			{/* Sticky Header */}
-			{adjacentVersions && allVersions && (
-				<ReleaseStickyHeader
-					toolSlug={slug}
-					version={version}
-					prevVersion={adjacentVersions.prev}
-					nextVersion={adjacentVersions.next}
-					allVersions={allVersions}
-					logo={logo}
-				/>
-			)}
+		<motion.div
+			initial="hidden"
+			animate="visible"
+			variants={{
+				hidden: { opacity: 0 },
+				visible: {
+					opacity: 1,
+					transition: {
+						staggerChildren: 0.1,
+						delayChildren: 0.05,
+					},
+				},
+			}}
+			className="space-y-8"
+		>
+			{/* Changes by Type */}
+			<AnimatePresence mode="wait">
+				{Object.values(groupedChanges).every(
+					(changes) => changes.length === 0,
+				) ? (
+					<motion.div
+						key={`empty-${version}`}
+						initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+						animate={{
+							opacity: 1,
+							y: 0,
+							filter: 'blur(0px)',
+							transition: { duration: 0.4, ease: 'easeOut' },
+						}}
+						exit={{
+							opacity: 0,
+							y: -20,
+							filter: 'blur(10px)',
+							transition: { duration: 0.3, ease: 'easeIn' },
+						}}
+						className="rounded-lg border border-dashed border-white/10 bg-white/5 p-12 text-center"
+					>
+						<p className="font-mono text-muted-foreground">
+							No changes found in this release.
+						</p>
+					</motion.div>
+				) : (
+					<motion.div
+						key={`content-${version}`}
+						initial="hidden"
+						animate="visible"
+						exit="exit"
+						variants={{
+							hidden: { opacity: 0 },
+							visible: {
+								opacity: 1,
+								transition: {
+									staggerChildren: 0.1,
+									delayChildren: 0.05,
+								},
+							},
+							exit: {
+								opacity: 0,
+								transition: { duration: 0.2 },
+							},
+						}}
+						className="space-y-10"
+					>
+						{sections.map((section) => {
+							const changes = groupedChanges[section.type]
+							if (!changes || changes.length === 0) return null
 
-			<div className="container mx-auto max-w-7xl px-4 py-12">
-				<div className="space-y-8">
-					{/* Back Button & Breadcrumbs */}
-					<div className="space-y-4">
-						<Link
-							to="/tools/$slug"
-							params={{ slug }}
-							className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							<span>Back to all releases</span>
-						</Link>
-
-						{/* Breadcrumbs with Logo */}
-						<nav className="flex items-center gap-3">
-							<div className="flex items-center gap-3">
-								{logo && (
-									<div className="[&>svg]:h-8 [&>svg]:w-8 [&>svg]:fill-foreground [&>svg_path]:fill-foreground">
-										{logo}
-									</div>
-								)}
-								<div className="flex items-center gap-2 text-sm">
-									<Link
-										to="/tools/$slug"
-										params={{ slug }}
-										className="font-mono text-foreground transition-colors hover:text-muted-foreground"
-									>
-										{release.tool.name}
-									</Link>
-									<ChevronRight className="h-4 w-4 text-muted-foreground" />
-									<span className="text-muted-foreground">Releases</span>
-									<ChevronRight className="h-4 w-4 text-muted-foreground" />
-									<span className="font-mono text-foreground">
-										{formattedVersion}
-									</span>
-								</div>
-							</div>
-						</nav>
-					</div>
-
-					{/* Release Header */}
-					<div className="space-y-4 border-b border-border pb-8">
-						<div className="flex items-start justify-between gap-4">
-							<h1 className="font-mono text-4xl font-bold">
-								{formattedVersion}
-							</h1>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={copyPermalink}
-								className="gap-1 font-mono text-xs transition-all"
-							>
-								<Copy
-									className={`h-3 w-3 transition-all duration-300 ${
-										copied ? 'scale-110 text-green-500' : ''
-									}`}
-								/>
-								<span
-									className={`transition-all duration-300 ${
-										copied ? 'text-green-500' : ''
-									}`}
+							return (
+								<motion.div
+									key={`${section.type}-${version}`}
+									layout
+									variants={{
+										hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+										visible: {
+											opacity: 1,
+											y: 0,
+											filter: 'blur(0px)',
+											transition: { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] },
+										},
+										exit: {
+											opacity: 0,
+											height: 0,
+											marginBottom: 0,
+											overflow: 'hidden',
+											transition: { duration: 0.3, ease: 'easeInOut' },
+										},
+									}}
+									className="space-y-4"
 								>
-									{copied ? 'Copied!' : 'Copy link'}
-								</span>
-							</Button>
-						</div>
+									<div className="flex items-center gap-4 pl-2">
+										<h3 className="font-mono text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">
+											{section.title}
+										</h3>
+										<div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+									</div>
 
-						<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-							<span>Released on {formattedDate}</span>
-							<span>•</span>
-							<span>
-								{release.changes.length}{' '}
-								{release.changes.length === 1 ? 'change' : 'changes'}
-							</span>
-							{release.sourceUrl && (
-								<>
-									<span>•</span>
-									<a
-										href={release.sourceUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="flex items-center gap-1 transition-colors hover:text-foreground"
-									>
-										View source
-										<ExternalLink className="h-3 w-3" />
-									</a>
-								</>
-							)}
-						</div>
-
-						{release.summary && (
-							<p className="text-muted-foreground">{release.summary}</p>
-						)}
-					</div>
-
-					{/* Changes by Type */}
-					{Object.values(groupedChanges).every(
-						(changes) => changes.length === 0,
-					) ? (
-						<div className="rounded-lg border border-border bg-card p-8 text-center">
-							<p className="text-muted-foreground">
-								No changes found in this release.
-							</p>
-						</div>
-					) : (
-						<Accordion
-							type="multiple"
-							defaultValue={defaultOpenSections}
-							className="space-y-0"
-						>
-							{sections.map((section) => {
-								const changes = groupedChanges[section.type]
-								if (!changes || changes.length === 0) return null
-
-								return (
-									<CollapsibleSection
-										key={section.type}
-										value={section.type}
-										title={section.title}
-										count={changes.length}
-									>
+									<div className="space-y-1">
 										{changes.map((change) => (
 											<ChangeItem
 												key={change.id}
@@ -343,23 +266,33 @@ function ReleaseDetailPage() {
 												}
 											/>
 										))}
-									</CollapsibleSection>
-								)
-							})}
-						</Accordion>
-					)}
+									</div>
+								</motion.div>
+							)
+						})}
+					</motion.div>
+				)}
+			</AnimatePresence>
 
-					{/* Version List at Bottom */}
-					{allVersions && (
-						<VersionList
-							toolSlug={slug}
-							currentVersion={version}
-							versions={allVersions}
-						/>
-					)}
-				</div>
-			</div>
-		</div>
+			{/* Version List at Bottom */}
+			{allVersions && (
+				<motion.div
+					variants={{
+						hidden: { opacity: 0 },
+						visible: {
+							opacity: 1,
+							transition: { duration: 0.5, delay: 0.3 },
+						},
+					}}
+				>
+					<VersionList
+						toolSlug={slug}
+						currentVersion={version}
+						versions={allVersions}
+					/>
+				</motion.div>
+			)}
+		</motion.div>
 	)
 }
 

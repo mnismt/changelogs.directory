@@ -19,6 +19,7 @@ describe('parseStep', () => {
 		}),
 		fetchLog: createMockFetchLog(),
 		startTime: Date.now(),
+		forceFullRescan: false,
 	}
 
 	it('returns releases until cached slug and keeps cached release for change detection', () => {
@@ -51,4 +52,3 @@ describe('parseStep', () => {
 		expect(result.releases).toHaveLength(2)
 	})
 })
-

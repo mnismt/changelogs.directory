@@ -22,6 +22,7 @@ export interface IngestionContext {
 	tool: Tool
 	fetchLog: FetchLog
 	startTime: number
+	forceFullRescan: boolean
 }
 
 export interface FetchResult {

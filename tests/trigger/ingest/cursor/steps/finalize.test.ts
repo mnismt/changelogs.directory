@@ -31,6 +31,7 @@ describe('finalizeStep', () => {
 			tool: createMockTool({ slug: 'cursor' }),
 			fetchLog: createMockFetchLog(),
 			startTime: Date.now(),
+			forceFullRescan: false,
 		}
 
 		vi.clearAllMocks()
@@ -70,4 +71,3 @@ describe('finalizeStep', () => {
 		)
 	})
 })
-
