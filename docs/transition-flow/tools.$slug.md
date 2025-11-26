@@ -9,6 +9,7 @@ While the Tools Directory (`/tools`) acts as a file explorer, the Tool Slug page
 -   **Metaphor**: A sci-fi system monitor or HUD.
 -   **Goal**: To make reading a changelog feel like analyzing system telemetry.
 -   **Key Elements**:
+    -   **Persistent Layout**: The Hero and Background remain stable when navigating to child routes (Releases).
     -   **Hero**: Cinematic entrance with "typing" stats.
     -   **Status**: A live "BOOTING" -> "ACTIVE" system check.
     -   **Timeline**: A continuous stream of updates.
