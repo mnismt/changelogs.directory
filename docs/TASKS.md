@@ -62,7 +62,8 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 - [ ] Set up error monitoring (Sentry or similar)
 - [ ] Deploy to production (Vercel or Cloudflare)
 - [ ] Test ingestion in production environment
-- [ ] Write basic docs (README, how to add a tool)
+- [x] Write basic docs (README, how to add a tool)
+- [x] Document design rules and transition flows (`docs/transition-flow`)
 
 **Success metric**: Site is live, ingestion runs reliably, monitoring shows healthy status.
 

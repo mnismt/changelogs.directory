@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { getToolLogo } from '@/lib/tool-logos'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ToolHeroProps {
 	slug: string
@@ -27,7 +28,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 	)
 	const version = versionMatch?.params?.version
 	const releaseData = versionMatch?.loaderData as
-		| { release: { changes: unknown[]; url: string } }
+		| { release: { changes: unknown[]; sourceUrl: string } }
 		| undefined
 	const release = releaseData?.release
 
@@ -125,7 +126,9 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 								className="flex items-center gap-2 overflow-hidden whitespace-nowrap"
 							>
 								<span>/</span>
-								<span className="text-foreground">{version}</span>
+								<span className="text-foreground">
+									{formatVersionForDisplay(version, slug)}
+								</span>
 							</motion.div>
 						)}
 					</AnimatePresence>
@@ -250,7 +253,9 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 						{tool.latestVersion && (
 							<div className="flex items-center gap-2">
 								<span className="text-muted-foreground/40">LATEST_VER:</span>
-								<span className="text-foreground">{tool.latestVersion}</span>
+								<span className="text-foreground">
+									{formatVersionForDisplay(tool.latestVersion, slug)}
+								</span>
 							</div>
 						)}
 
@@ -263,9 +268,9 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 							</span>
 						</div>
 
-						{(tool.homepage || release?.url) && (
+						{(tool.homepage || release?.sourceUrl) && (
 							<a
-								href={release?.url || tool.homepage || '#'}
+								href={release?.sourceUrl || tool.homepage || '#'}
 								target="_blank"
 								rel="noreferrer"
 								className="group flex items-center gap-2 ml-auto px-3 py-1.5 rounded-sm border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300"

@@ -75,6 +75,7 @@ When implementing new UI features, ask:
 For detailed documentation on how specific pages implement these design rules, including animation choreography and state machines, see:
 
 -   **[Homepage Flow](transition-flow/index.md)**: The "Terminal Boot Sequence" with its multi-stage animation.
--   **[Tools Page Flow](transition-flow/tools.md)**: The "Directory Listing" with staggered entrance and global background effects.
+-   **[Tools Page Flow](transition-flow/tools.$slug.md)**: The "Directory Listing" with staggered entrance and global background effects.
+-   **[Release Page Flow](transition-flow/tools.$slug/releases.$version.md)**: The "Deep Dive" with context persistence and cinematic data stream.
 
 These documents provide concrete examples of how the abstract principles above are applied in practice.
