@@ -116,6 +116,13 @@ export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 								changes: true,
 							},
 						},
+						changes: {
+							select: {
+								isBreaking: true,
+								isSecurity: true,
+								isDeprecation: true,
+							},
+						},
 					},
 				},
 				fetchLogs: {
@@ -130,17 +137,36 @@ export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 			},
 		})
 
-		return tools.map((tool) => ({
-			id: tool.id,
-			name: tool.name,
-			slug: tool.slug,
-			isActive: tool.isActive,
-			lastFetchedAt: tool.lastFetchedAt,
-			releaseCount: tool._count.releases,
-			changeCount: tool.releases.reduce((sum, r) => sum + r._count.changes, 0),
-			lastFetchStatus: tool.fetchLogs[0]?.status || null,
-			lastFetchStartedAt: tool.fetchLogs[0]?.startedAt || null,
-		}))
+		return tools.map((tool) => {
+			let changeCount = 0
+			let breakingCount = 0
+			let securityCount = 0
+			let deprecationCount = 0
+
+			for (const release of tool.releases) {
+				changeCount += release._count.changes
+				for (const change of release.changes) {
+					if (change.isBreaking) breakingCount++
+					if (change.isSecurity) securityCount++
+					if (change.isDeprecation) deprecationCount++
+				}
+			}
+
+			return {
+				id: tool.id,
+				name: tool.name,
+				slug: tool.slug,
+				isActive: tool.isActive,
+				lastFetchedAt: tool.lastFetchedAt,
+				releaseCount: tool._count.releases,
+				changeCount,
+				breakingCount,
+				securityCount,
+				deprecationCount,
+				lastFetchStatus: tool.fetchLogs[0]?.status || null,
+				lastFetchStartedAt: tool.fetchLogs[0]?.startedAt || null,
+			}
+		})
 	},
 )
 
@@ -297,7 +323,7 @@ export const getWaitlistDailySignups = createServerFn({
 		}))
 })
 
-// Release Trends - Releases per week over last 8 weeks
+// Release Trends - Releases per week over last 8 weeks (based on actual release date)
 export const getReleaseTrends = createServerFn({ method: 'GET' }).handler(
 	async () => {
 		const prisma = await getPrisma()
@@ -307,18 +333,23 @@ export const getReleaseTrends = createServerFn({ method: 'GET' }).handler(
 
 		const releases = await prisma.release.findMany({
 			where: {
-				publishedAt: { gte: eightWeeksAgo },
+				releaseDate: {
+					gte: eightWeeksAgo,
+					not: null,
+				},
 			},
 			select: {
-				publishedAt: true,
+				releaseDate: true,
 			},
-			orderBy: { publishedAt: 'asc' },
+			orderBy: { releaseDate: 'asc' },
 		})
 
 		// Group by week
 		const weeklyData: Record<string, number> = {}
 		for (const release of releases) {
-			const weekStart = new Date(release.publishedAt)
+			if (!release.releaseDate) continue
+
+			const weekStart = new Date(release.releaseDate)
 			weekStart.setDate(weekStart.getDate() - weekStart.getDay())
 			const weekKey = weekStart.toISOString().split('T')[0]
 			weeklyData[weekKey] = (weeklyData[weekKey] || 0) + 1

@@ -41,6 +41,20 @@ The release content enters with a heavy, sequential animation to simulate data l
     -   **Blur**: A subtle blur effect (`blur(10px)` -> `0`) adds a "focusing" feel.
     -   **Easing**: `[0.2, 0.8, 0.2, 1]` (Custom cubic bezier) for a premium, "heavy" feel.
 
+### D. Terminal Boot Sequence (Loading State)
+When data is fetching (e.g., initial load), a "Terminal Boot" sequence replaces the generic skeleton:
+-   **Visuals**: A dark, translucent window with scrolling system logs (`> INITIALIZING...`, `> DECRYPTING...`).
+-   **Progress**: A spring-animated progress bar and hex dump background.
+-   **Vibe**: Reinforces the "dev-vibe" and "system access" metaphor.
+
+### E. Optimistic Version Switching
+To ensure navigation feels instant:
+-   **Interaction**: Clicking a version in the history list immediately triggers a "Loading" state.
+-   **Visual Feedback**:
+    -   **Pending**: The version card turns **Yellow** (Border + Background) with a pulsing yellow dot.
+    -   **Active**: Once loaded, it snaps to **Green** (Active state).
+-   **Zero Delay**: The artificial delay is removed to prioritize perceived performance.
+
 ## 3. Visual Aesthetics ("Dev-Vibe")
 
 ### Breadcrumbs as Navigation

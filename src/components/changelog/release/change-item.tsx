@@ -130,7 +130,7 @@ export function ChangeItem({
 								href={link.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="group/link flex items-center gap-1 text-xs font-mono text-muted-foreground transition-colors hover:text-accent"
+								className="group/link link-animated flex items-center gap-1 text-xs font-mono"
 							>
 								<span>[{link.text || 'LINK'}]</span>
 								<ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0" />

@@ -75,6 +75,32 @@ export function Header() {
 						</TooltipContent>
 					</Tooltip>
 
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								to="/analytics"
+								className="group relative flex h-8 items-center rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground data-[status=active]:bg-muted/50 data-[status=active]:text-foreground"
+								activeProps={{
+									'data-status': 'active',
+								}}
+							>
+								<span className="relative font-mono overflow-hidden">
+									<span className="relative z-10">/analytics</span>
+									<span className="absolute inset-0 translate-y-full bg-foreground/10 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100" />
+									<span className="absolute bottom-0 left-0 h-[1px] w-0 bg-foreground transition-all duration-300 group-hover:w-full" />
+								</span>
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent
+							side="bottom"
+							className="border-border bg-popover px-3 py-1.5 text-popover-foreground shadow-xl"
+						>
+							<p className="font-mono text-[10px] tracking-wide uppercase">
+								View Analytics
+							</p>
+						</TooltipContent>
+					</Tooltip>
+
 					<div className="mx-2 h-4 w-px bg-border/50" />
 
 					<Button

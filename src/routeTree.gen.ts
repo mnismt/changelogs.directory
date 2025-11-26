@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
-import { Route as AnalyticsIndexRouteImport } from './routes/analytics/index'
 import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
@@ -31,11 +30,6 @@ const ToolsIndexRoute = ToolsIndexRouteImport.update({
   id: '/tools/',
   path: '/tools/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AnalyticsIndexRoute = AnalyticsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AnalyticsRoute,
 } as any)
 const ToolsSlugRoute = ToolsSlugRouteImport.update({
   id: '/tools/$slug',
@@ -56,16 +50,15 @@ const ToolsSlugReleasesVersionRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsRouteWithChildren
+  '/analytics': typeof AnalyticsRoute
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
-  '/analytics/': typeof AnalyticsIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsIndexRoute
+  '/analytics': typeof AnalyticsRoute
   '/tools': typeof ToolsIndexRoute
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -73,9 +66,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsRouteWithChildren
+  '/analytics': typeof AnalyticsRoute
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
-  '/analytics/': typeof AnalyticsIndexRoute
   '/tools/': typeof ToolsIndexRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -86,7 +78,6 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/tools/$slug'
-    | '/analytics/'
     | '/tools'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
@@ -102,7 +93,6 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/tools/$slug'
-    | '/analytics/'
     | '/tools/'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
@@ -110,7 +100,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnalyticsRoute: typeof AnalyticsRouteWithChildren
+  AnalyticsRoute: typeof AnalyticsRoute
   ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
   ToolsIndexRoute: typeof ToolsIndexRoute
 }
@@ -138,13 +128,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/analytics/': {
-      id: '/analytics/'
-      path: '/'
-      fullPath: '/analytics/'
-      preLoaderRoute: typeof AnalyticsIndexRouteImport
-      parentRoute: typeof AnalyticsRoute
-    }
     '/tools/$slug': {
       id: '/tools/$slug'
       path: '/tools/$slug'
@@ -169,18 +152,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AnalyticsRouteChildren {
-  AnalyticsIndexRoute: typeof AnalyticsIndexRoute
-}
-
-const AnalyticsRouteChildren: AnalyticsRouteChildren = {
-  AnalyticsIndexRoute: AnalyticsIndexRoute,
-}
-
-const AnalyticsRouteWithChildren = AnalyticsRoute._addFileChildren(
-  AnalyticsRouteChildren,
-)
-
 interface ToolsSlugRouteChildren {
   ToolsSlugIndexRoute: typeof ToolsSlugIndexRoute
   ToolsSlugReleasesVersionRoute: typeof ToolsSlugReleasesVersionRoute
@@ -197,7 +168,7 @@ const ToolsSlugRouteWithChildren = ToolsSlugRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnalyticsRoute: AnalyticsRouteWithChildren,
+  AnalyticsRoute: AnalyticsRoute,
   ToolsSlugRoute: ToolsSlugRouteWithChildren,
   ToolsIndexRoute: ToolsIndexRoute,
 }

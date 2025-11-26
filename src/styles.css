@@ -135,6 +135,17 @@ code {
 	}
 }
 
+@layer utilities {
+	.link-animated {
+		@apply text-muted-foreground transition-all duration-300 relative no-underline;
+	}
+
+	.link-animated:hover {
+		@apply text-foreground;
+		text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+	}
+}
+
 @keyframes scroll {
 	0% {
 		transform: translateX(0);
