@@ -186,12 +186,14 @@ function collectDescriptionUntilNextHeading(
 		}
 
 		if (tag === 'figure') {
+			const mediaFragments: string[] = []
 			const video = node.querySelector('video')
 			const img = node.querySelector('img')
 			if (video) {
 				const src = video.getAttribute('src')
 				if (src) {
 					media.push({ type: 'video', url: src })
+					mediaFragments.push(`Video: ${src}`)
 				}
 			}
 			if (img) {
@@ -203,7 +205,11 @@ function collectDescriptionUntilNextHeading(
 						url: src,
 						alt: alt || undefined,
 					})
+					mediaFragments.push(alt ? `![${alt}](${src})` : src)
 				}
+			}
+			if (mediaFragments.length > 0) {
+				descriptionParts.push(mediaFragments.join('\n'))
 			}
 		} else {
 			const text = getNodeText(node).trim()
