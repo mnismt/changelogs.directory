@@ -12,7 +12,7 @@ async function main() {
 			name: "Claude Code",
 			vendor: "Anthropic",
 			description:
-				"AI-powered CLI tool that helps with software engineering tasks, integrating Claude with your terminal.",
+				"Anthropic's CLI tool that unleashs Claude's raw power directly in your terminal or IDE",
 			homepage: "https://claude.ai/code",
 			repositoryUrl: "https://github.com/anthropics/claude-code",
 			sourceType: "CHANGELOG_MD",
@@ -26,13 +26,13 @@ async function main() {
 			name: "Claude Code",
 			vendor: "Anthropic",
 			description:
-				"AI-powered CLI tool that helps with software engineering tasks, integrating Claude with your terminal.",
+				"Anthropic's CLI tool that unleashs Claude's raw power directly in your terminal or IDE",
 			homepage: "https://claude.ai/code",
 			repositoryUrl: "https://github.com/anthropics/claude-code",
 			sourceType: "CHANGELOG_MD",
 			sourceUrl:
 				"https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md",
-			tags: ["ai", "cli", "code-editor", "agent", "anthropic"],
+			tags: ["cli", "code-editor", "agent", "anthropic", "claude", "sonnet", "opus"],
 			isActive: true,
 		},
 	})
@@ -46,7 +46,7 @@ async function main() {
 			name: "Codex",
 			vendor: "OpenAI",
 			description:
-				"OpenAI Codex CLI - AI-powered code generation and understanding tool built with Rust.",
+				"OpenAI's Rust-based CLI for interacting with the Codex model.",
 			homepage: "https://github.com/openai/codex",
 			repositoryUrl: "https://github.com/openai/codex",
 			sourceType: "GITHUB_RELEASES",
@@ -55,7 +55,7 @@ async function main() {
 				versionPrefix: "rust-v",
 				includePreReleases: true,
 			},
-			tags: ["ai", "cli", "code-generation", "openai", "rust"],
+			tags: ["cli", "code-editor", "openai", "chatgpt", "codex"],
 			isActive: true,
 		},
 		create: {
@@ -63,7 +63,7 @@ async function main() {
 			name: "Codex",
 			vendor: "OpenAI",
 			description:
-				"OpenAI Codex CLI - AI-powered code generation and understanding tool built with Rust.",
+				"OpenAI's Rust-based CLI for interacting with the Codex model.",
 			homepage: "https://github.com/openai/codex",
 			repositoryUrl: "https://github.com/openai/codex",
 			sourceType: "GITHUB_RELEASES",
@@ -72,7 +72,7 @@ async function main() {
 				versionPrefix: "rust-v",
 				includePreReleases: true,
 			},
-			tags: ["ai", "cli", "code-generation", "openai", "rust"],
+			tags: ["cli", "code-editor", "openai", "chatgpt", "codex"],
 			isActive: true,
 		},
 	})
@@ -84,9 +84,9 @@ async function main() {
 		where: { slug: "cursor" },
 		update: {
 			name: "Cursor",
-			vendor: "Cursor AI",
+			vendor: "Anysphere",
 			description:
-				"AI-native code editor with agentic workflows, pair programming, and instant search.",
+				"One of the first AI-native code editors, built on a VS Code fork",
 			homepage: "https://cursor.com",
 			repositoryUrl: "https://cursor.com",
 			sourceType: "CUSTOM_API",
@@ -100,15 +100,15 @@ async function main() {
 				maxPagesPerRun: 6,
 				initialPageCount: 40,
 			},
-			tags: ["ai", "ide", "editor", "pair-programming"],
+			tags: ["ide", "editor", "pair-programming", "anysphere", "cursor"],
 			isActive: true,
 		},
 		create: {
 			slug: "cursor",
 			name: "Cursor",
-			vendor: "Cursor AI",
+			vendor: "Anysphere",
 			description:
-				"AI-native code editor with agentic workflows, pair programming, and instant search.",
+				"One of the first AI-native code editors, built on a VS Code fork",
 			homepage: "https://cursor.com",
 			repositoryUrl: "https://cursor.com",
 			sourceType: "CUSTOM_API",
@@ -122,7 +122,7 @@ async function main() {
 				maxPagesPerRun: 6,
 				initialPageCount: 40,
 			},
-			tags: ["ai", "ide", "editor", "pair-programming"],
+			tags: ["ide", "editor", "pair-programming", "anysphere", "cursor"],
 			isActive: true,
 		},
 	})

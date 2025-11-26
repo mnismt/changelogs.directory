@@ -126,7 +126,7 @@ ${changesText}
 
 Tone + style rules:
 - Audience is other engineers. Be specific, concrete, and honest.
-- Max 1 short headline (120 characters or less) plus a 1-2 sentence summary.
+- Max 1 short headline (<=120 characters) plus a 1-2 sentence summary.
 - Professional but casual. No marketing fluff, no "overall", "enhances", or vague praise.
 - Highlight what changed compared to the previous version, not how great the product is.
 - If a change fixes or reverts something from the previous release, mention it directly.
@@ -137,7 +137,7 @@ Examples:
 - Bad headline: "This release introduces several improvements and bug fixes that enhance overall stability."
 - Good headline: "Fixes Linux startup after 0.54.x and calms codex_delegate noise."
 - Bad summary: "This version significantly enhances usability and stability for all users."
-- Good summary: "Adds Ctrl-Y to restore deleted edits, clarifies usage-limit warnings, and fixes the subagent permission slip."
+- Good summary: "Adds Ctrl-Y to restore deleted text, clarifies usage-limit warnings, and fixes the subagent permission slip."
 
 For EACH change, classify based on:
 - FEATURE: New functionality or capabilities
