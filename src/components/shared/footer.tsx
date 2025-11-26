@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 const NAV_LINKS = [
 	{ label: 'Home', href: '/' },
 	{ label: 'Tools', href: '/tools' },
+	{ label: 'Analytics', href: '/analytics' },
 ] as const
 
 export function Footer() {

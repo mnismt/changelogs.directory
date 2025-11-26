@@ -45,11 +45,11 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 		return {
 			meta: [
 				{
-					title: `${loaderData.release.tool.name} ${formattedVersion} Changelog - changelogs.directory`,
+					title: `${loaderData?.release?.tool?.name ?? 'Release'} ${formattedVersion} Changelog - changelogs.directory`,
 				},
 				{
 					name: 'description',
-					content: `View all changes, features, and bugfixes in ${loaderData.release.tool.name} version ${formattedVersion}.`,
+					content: `View all changes, features, and bugfixes in ${loaderData?.release?.tool?.name ?? 'the tool'} version ${formattedVersion}.`,
 				},
 			],
 		}
@@ -92,7 +92,9 @@ function ReleaseDetailPage() {
 		}
 
 		release.changes.forEach((change) => {
-			grouped[change.type].push(change)
+			if (grouped[change.type]) {
+				grouped[change.type].push(change)
+			}
 		})
 
 		return grouped
@@ -221,9 +223,8 @@ function ReleaseDetailPage() {
 										},
 										exit: {
 											opacity: 0,
-											height: 0,
-											marginBottom: 0,
-											overflow: 'hidden',
+											y: -10,
+											filter: 'blur(5px)',
 											transition: { duration: 0.3, ease: 'easeInOut' },
 										},
 									}}

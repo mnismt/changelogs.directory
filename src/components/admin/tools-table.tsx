@@ -7,6 +7,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 interface ToolOverview {
 	id: string
@@ -16,6 +17,9 @@ interface ToolOverview {
 	lastFetchedAt: Date | null
 	releaseCount: number
 	changeCount: number
+	breakingCount: number
+	securityCount: number
+	deprecationCount: number
 	lastFetchStatus: string | null
 	lastFetchStartedAt: Date | null
 }
@@ -64,7 +68,13 @@ export function ToolsTable({ tools }: ToolsTableProps) {
 								<th className="text-muted-foreground pb-3 text-right text-xs font-medium">
 									Changes
 								</th>
-								<th className="text-muted-foreground pb-3 text-left text-xs font-medium">
+								<th className="text-muted-foreground pb-3 text-right text-xs font-medium">
+									Breaking
+								</th>
+								<th className="text-muted-foreground pb-3 text-right text-xs font-medium">
+									Security
+								</th>
+								<th className="text-muted-foreground pb-3 text-left text-xs font-medium pl-4">
 									Last Fetch
 								</th>
 								<th className="text-muted-foreground pb-3 text-left text-xs font-medium">
@@ -105,7 +115,31 @@ export function ToolsTable({ tools }: ToolsTableProps) {
 											{tool.changeCount}
 										</span>
 									</td>
-									<td className="py-3">
+									<td className="py-3 text-right">
+										<span
+											className={cn(
+												'font-mono text-sm',
+												tool.breakingCount > 0
+													? 'text-red-500'
+													: 'text-muted-foreground',
+											)}
+										>
+											{tool.breakingCount}
+										</span>
+									</td>
+									<td className="py-3 text-right">
+										<span
+											className={cn(
+												'font-mono text-sm',
+												tool.securityCount > 0
+													? 'text-green-500'
+													: 'text-muted-foreground',
+											)}
+										>
+											{tool.securityCount}
+										</span>
+									</td>
+									<td className="py-3 pl-4">
 										<span className="text-muted-foreground text-xs">
 											{formatRelativeTime(tool.lastFetchedAt)}
 										</span>

@@ -1,7 +1,7 @@
 import type { ChangeType } from '@prisma/client'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -55,6 +55,12 @@ export function VersionList({
 	initialLimit = 12,
 }: VersionListProps) {
 	const [showAll, setShowAll] = useState(false)
+	const [pendingVersion, setPendingVersion] = useState<string | null>(null)
+
+	// Reset pending state when the version actually changes
+	useEffect(() => {
+		setPendingVersion(null)
+	}, [currentVersion])
 
 	if (versions.length === 0) {
 		return null
@@ -97,6 +103,7 @@ export function VersionList({
 
 	const renderVersionCard = (version: (typeof versions)[0]) => {
 		const isCurrent = version.version === currentVersion
+		const isPending = version.version === pendingVersion
 		const tooltipContent = renderChangeTypeTooltip(version.changesByType)
 		const hasTooltip = tooltipContent !== null
 
@@ -113,6 +120,9 @@ export function VersionList({
 					</div>
 					{isCurrent && (
 						<div className="size-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
+					)}
+					{isPending && !isCurrent && (
+						<div className="size-1.5 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)] animate-pulse" />
 					)}
 				</div>
 
@@ -132,14 +142,20 @@ export function VersionList({
 			</div>
 		)
 
-		const cardClasses = `
+		let cardClasses = `
 			group block h-full p-4 rounded-sm border transition-all duration-300
-			${
-				isCurrent
-					? 'bg-white/[0.03] border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
-					: 'bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/[0.02] hover:-translate-y-0.5 hover:shadow-lg'
-			}
 		`
+
+		if (isCurrent) {
+			cardClasses +=
+				' bg-white/[0.03] border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
+		} else if (isPending) {
+			cardClasses +=
+				' bg-yellow-500/5 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.1)]'
+		} else {
+			cardClasses +=
+				' bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/[0.02] hover:-translate-y-0.5 hover:shadow-lg'
+		}
 
 		const cardElement = isCurrent ? (
 			<div className={cardClasses}>{content}</div>
@@ -148,6 +164,7 @@ export function VersionList({
 				to="/tools/$slug/releases/$version"
 				params={{ slug: toolSlug, version: version.version }}
 				className={cardClasses}
+				onClick={() => setPendingVersion(version.version)}
 			>
 				{content}
 			</Link>
