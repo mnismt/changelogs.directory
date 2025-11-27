@@ -1,5 +1,8 @@
+import { render } from '@react-email/components'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
+import { createEmailProvider } from '@/lib/email'
+import { WelcomeEmail } from '@/lib/email/templates'
 import { getPrisma } from './db'
 
 // Popular email providers whitelist
@@ -92,6 +95,31 @@ export const subscribeToWaitlist = createServerFn({ method: 'POST' })
 					email: data.email,
 				},
 			})
+
+			// Send welcome email (non-critical: log errors but don't fail the subscription)
+			try {
+				const emailProvider = createEmailProvider()
+				const html = await render(WelcomeEmail({ email: data.email }))
+				const text = await render(WelcomeEmail({ email: data.email }), {
+					plainText: true,
+				})
+
+				const result = await emailProvider.sendEmail({
+					from: {
+						email: 'noreply@changelogs.directory',
+						name: 'Changelogs Directory',
+					},
+					to: data.email,
+					subject: '> SYSTEM_INIT: Welcome to changelogs.directory',
+					html,
+					text,
+				})
+				if (!result.success) {
+					console.error('Failed to send welcome email:', result.error)
+				}
+			} catch (emailError) {
+				console.error('Email provider error:', emailError)
+			}
 
 			return {
 				success: true,

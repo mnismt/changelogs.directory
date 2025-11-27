@@ -69,6 +69,15 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 - Search and filters: full-text search over title/description and chips for change type and time windows, implemented via server functions.
 - RSS/Atom feeds: global and per-tool feeds generated from normalized releases for subscriptions and automation.
 
+## Email subscription & notifications
+
+- "Subscribe to updates" UI (homepage modal and CTAs) reuses the waitlist storage model for a single canonical subscriber list.
+- Email delivery is handled via a generic `EmailProvider` abstraction (`lib/email`) with a shared `EmailParams` shape for all providers.
+- Factory pattern selects the concrete provider by environment variable (`EMAIL_PROVIDER`), defaulting to **Resend** for MVP.
+- ZeptoMail provider is implemented as a drop-in replacement behind the same interface so switching providers only requires config changes.
+- Initial flow: on successful subscription, validate and store the email, then optionally send a confirmation/welcome email via the active provider.
+- Future flows (post-MVP) reuse the same abstraction for release digests and targeted notifications (see "Email notifications for breaking changes/security updates" in Post-MVP).
+
 ## Admin and ops
 
 - Internal status page: last successful fetch per connector via FetchLog queries, and mapper validation results for safe deploys.
