@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
@@ -16,6 +17,11 @@ import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
 
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -51,6 +57,7 @@ const ToolsSlugReleasesVersionRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/tools': typeof ToolsIndexRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/tools': typeof ToolsIndexRoute
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/tools/': typeof ToolsIndexRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analytics'
+    | '/unsubscribe'
     | '/tools/$slug'
     | '/tools'
     | '/tools/$slug/'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/analytics'
+    | '/unsubscribe'
     | '/tools'
     | '/tools/$slug'
     | '/tools/$slug/releases/$version'
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/analytics'
+    | '/unsubscribe'
     | '/tools/$slug'
     | '/tools/'
     | '/tools/$slug/'
@@ -101,12 +113,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
   ToolsIndexRoute: typeof ToolsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analytics': {
       id: '/analytics'
       path: '/analytics'
@@ -169,6 +189,7 @@ const ToolsSlugRouteWithChildren = ToolsSlugRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   ToolsSlugRoute: ToolsSlugRouteWithChildren,
   ToolsIndexRoute: ToolsIndexRoute,
 }

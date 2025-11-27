@@ -137,3 +137,45 @@ export const subscribeToWaitlist = createServerFn({ method: 'POST' })
 			await prisma.$disconnect()
 		}
 	})
+
+export const unsubscribeFromWaitlist = createServerFn({ method: 'POST' })
+	.inputValidator((data: { email: string }) => {
+		return z.object({ email: z.string().email() }).parse(data)
+	})
+	.handler(async ({ data }) => {
+		const prisma = getPrisma()
+
+		try {
+			// Check if email exists first
+			const existing = await prisma.waitlist.findUnique({
+				where: { email: data.email },
+			})
+
+			if (!existing) {
+				// If not found, just return success to avoid leaking existence
+				// But for the "terminal" vibe, maybe we want to be explicit?
+				// Let's stick to standard security practice: don't reveal.
+				// However, for the "boot sequence" UX, it might be cool to say "User not found"
+				// Since this is a public waitlist, the risk is low.
+				// Let's return a specific message for the UI to handle.
+				return {
+					success: false,
+					message: 'Email not found in registry.',
+				}
+			}
+
+			await prisma.waitlist.delete({
+				where: { email: data.email },
+			})
+
+			return {
+				success: true,
+				message: 'Successfully unsubscribed.',
+			}
+		} catch (error) {
+			console.error('Unsubscribe error:', error)
+			throw new Error('Failed to unsubscribe')
+		} finally {
+			await prisma.$disconnect()
+		}
+	})

@@ -218,6 +218,20 @@ export function WelcomeEmail({
 							</Link>
 						</Text>
 					</Section>
+
+					{/* Hidden content to prevent Gmail clipping */}
+					<Section
+						style={{
+							display: 'none',
+							opacity: 0,
+							fontSize: '0px',
+							lineHeight: '0px',
+							maxHeight: '0px',
+							msoHide: 'all',
+						}}
+					>
+						{new Date().toISOString()} - {Math.random()}
+					</Section>
 				</Container>
 			</Body>
 		</Html>
