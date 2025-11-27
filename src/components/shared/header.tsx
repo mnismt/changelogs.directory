@@ -1,4 +1,5 @@
 import { Link, useMatches } from '@tanstack/react-router'
+import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { CompareDialog } from '@/components/shared/compare-dialog'
 import { SubscribeDialog } from '@/components/shared/subscribe-dialog'
@@ -9,6 +10,8 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { getToolLogo } from '@/lib/tool-logos'
+
+// ... existing imports ...
 
 export function Header() {
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -137,24 +140,34 @@ function ToolHeaderInfo() {
 		| undefined
 	const params = toolMatch?.params as { slug: string } | undefined
 
-	if (!toolMatch || !toolData?.tool || !params?.slug) return null
-
-	const logo = getToolLogo(params.slug)
+	const show = !!(toolMatch && toolData?.tool && params?.slug)
+	const logo = show && params?.slug ? getToolLogo(params.slug) : null
 
 	return (
-		<div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-4 duration-500">
-			<span className="text-muted-foreground/40 font-mono">/</span>
-			<div className="flex items-center gap-2 group/tool">
-				<div className="relative flex h-6 w-6 items-center justify-center overflow-hidden rounded-sm bg-foreground/5 ring-1 ring-foreground/10 transition-all duration-300 group-hover/tool:bg-foreground/10 group-hover/tool:ring-foreground/20">
-					<div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 transition-opacity group-hover/tool:opacity-100" />
-					<div className="h-3.5 w-3.5 text-foreground transition-transform duration-500 group-hover/tool:scale-110 group-hover/tool:rotate-3 [&>svg]:size-full [&>svg]:fill-foreground">
-						{logo}
+		<AnimatePresence>
+			{show && (
+				<motion.div
+					key="tool-breadcrumb"
+					initial={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
+					animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+					exit={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
+					transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+					className="flex items-center gap-2"
+				>
+					<span className="text-muted-foreground/40 font-mono">/</span>
+					<div className="flex items-center gap-2 group/tool">
+						<div className="relative flex h-6 w-6 items-center justify-center overflow-hidden rounded-sm bg-foreground/5 ring-1 ring-foreground/10 transition-all duration-300 group-hover/tool:bg-foreground/10 group-hover/tool:ring-foreground/20">
+							<div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 transition-opacity group-hover/tool:opacity-100" />
+							<div className="h-3.5 w-3.5 text-foreground transition-transform duration-500 group-hover/tool:scale-110 group-hover/tool:rotate-3 [&>svg]:size-full [&>svg]:fill-foreground">
+								{logo}
+							</div>
+						</div>
+						<span className="font-mono text-sm font-medium text-foreground/80 transition-colors group-hover/tool:text-foreground">
+							{toolData?.tool?.name}
+						</span>
 					</div>
-				</div>
-				<span className="font-mono text-sm font-medium text-foreground/80 transition-colors group-hover/tool:text-foreground">
-					{toolData.tool.name}
-				</span>
-			</div>
-		</div>
+				</motion.div>
+			)}
+		</AnimatePresence>
 	)
 }

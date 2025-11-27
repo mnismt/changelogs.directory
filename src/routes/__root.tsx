@@ -5,9 +5,11 @@ import {
 	HeadContent,
 	Outlet,
 	Scripts,
+	useRouterState,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { ReactLenis } from 'lenis/react'
+import { ReactLenis, useLenis } from 'lenis/react'
+import { useEffect } from 'react'
 import { AppErrorBoundary } from '@/components/shared/app-error-boundary'
 import { Footer } from '@/components/shared/footer'
 import { Header } from '@/components/shared/header'
@@ -67,11 +69,28 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 	notFoundComponent: NotFound,
 })
 
+/**
+ * ScrollRestoration component that scrolls to top on route changes
+ * Uses Lenis for smooth scrolling integration
+ */
+function ScrollRestoration() {
+	const lenis = useLenis()
+	const pathname = useRouterState({ select: (s) => s.location.pathname })
+
+	useEffect(() => {
+		// Scroll to top when pathname changes
+		lenis?.scrollTo(0, { immediate: false })
+	}, [pathname, lenis])
+
+	return null
+}
+
 function RootComponent() {
 	return (
 		<SentryProvider>
 			<PostHogProvider>
 				<PostHogPageView />
+				<ScrollRestoration />
 				<AppErrorBoundary>
 					<Outlet />
 				</AppErrorBoundary>
