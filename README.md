@@ -12,9 +12,16 @@ Create a `.env` file in the project root:
 # PostHog Analytics
 VITE_PUBLIC_POSTHOG_KEY=phc_your_key_here
 VITE_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+
+# Email Provider (resend or zeptomail, defaults to resend)
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=re_your_key_here
+# ZEPTOMAIL_API_KEY=your_zepto_key  # Only needed if EMAIL_PROVIDER=zeptomail
 ```
 
 Get your PostHog key from: https://app.posthog.com/project/settings
+
+Get your Resend API key from: https://resend.com/api-keys
 
 ### Install Dependencies
 

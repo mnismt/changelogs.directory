@@ -6,3 +6,11 @@ interface ImportMetaEnv {
 interface ImportMeta {
 	readonly env: ImportMetaEnv
 }
+
+declare namespace NodeJS {
+	interface ProcessEnv {
+		EMAIL_PROVIDER?: 'resend' | 'zeptomail'
+		RESEND_API_KEY?: string
+		ZEPTOMAIL_API_KEY?: string
+	}
+}
