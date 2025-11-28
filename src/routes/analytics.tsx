@@ -101,7 +101,7 @@ function AdminDashboard() {
 		toolChangeProfiles,
 		toolQualityMetrics,
 	} = Route.useLoaderData()
-	const recentSignups = waitlistStats.recentSignups.slice(0, 7)
+	const recentSignups = waitlistStats.recentSignups?.slice(0, 7) || []
 
 	return (
 		<div className="relative min-h-screen w-full overflow-hidden pt-20 pb-12">

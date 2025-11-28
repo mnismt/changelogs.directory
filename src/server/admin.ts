@@ -1,121 +1,175 @@
 import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
+import { z } from 'zod'
+import { auth } from '../lib/auth/server'
+import { UserRole } from '../lib/auth/types'
 import { getPrisma } from './db'
 
-// Ingestion Overview - Recent FetchLogs with all metrics
-export const getIngestionOverview = createServerFn({ method: 'GET' }).handler(
-	async () => {
-		const prisma = await getPrisma()
+const adminMiddleware = async () => {
+	const request = getRequest()
+	const session = await auth.api.getSession({
+		headers: request?.headers,
+	})
 
-		const recentLogs = await prisma.fetchLog.findMany({
-			orderBy: { startedAt: 'desc' },
-			take: 20,
-			include: {
-				tool: {
-					select: {
-						name: true,
-						slug: true,
-					},
-				},
+	if (!session?.user || session.user.role !== UserRole.ADMIN) {
+		throw new Error('Unauthorized')
+	}
+
+	return { session }
+}
+
+export const updateTool = createServerFn({ method: 'POST' })
+	.inputValidator(
+		z.object({
+			id: z.string(),
+			description: z.string().optional(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		await adminMiddleware()
+		const prisma = getPrisma()
+		await prisma.tool.update({
+			where: { id: data.id },
+			data: {
+				description: data.description,
 			},
 		})
+		return { success: true }
+	})
 
-		return recentLogs
-	},
-)
-
-// Ingestion Stats - Success/failure rates and averages
-export const getIngestionStats = createServerFn({ method: 'GET' }).handler(
+export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
 	async () => {
-		const prisma = await getPrisma()
+		const prisma = getPrisma()
+		const now = new Date()
+		const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+		const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-		// Get stats for last 7 days
-		const sevenDaysAgo = new Date()
-		sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-		const [statusCounts, avgDuration, totalJobs] = await Promise.all([
-			prisma.fetchLog.groupBy({
-				by: ['status'],
-				_count: true,
-				where: {
-					startedAt: { gte: sevenDaysAgo },
-				},
+		const [totalCount, recentSignups, last24h, last7d] = await Promise.all([
+			prisma.waitlist.count(),
+			prisma.waitlist.findMany({
+				take: 5,
+				orderBy: { createdAt: 'desc' },
+				select: { id: true, email: true, createdAt: true },
 			}),
-			prisma.fetchLog.aggregate({
-				_avg: { duration: true },
-				where: {
-					status: 'SUCCESS',
-					startedAt: { gte: sevenDaysAgo },
-				},
+			prisma.waitlist.count({
+				where: { createdAt: { gte: twentyFourHoursAgo } },
 			}),
-			prisma.fetchLog.count({
-				where: {
-					startedAt: { gte: sevenDaysAgo },
-				},
+			prisma.waitlist.count({
+				where: { createdAt: { gte: sevenDaysAgo } },
 			}),
 		])
 
-		const successCount =
-			statusCounts.find((s) => s.status === 'SUCCESS')?._count || 0
-		const failedCount =
-			statusCounts.find((s) => s.status === 'FAILED')?._count || 0
-		const successRate =
-			totalJobs > 0 ? Math.round((successCount / totalJobs) * 100) : 0
-
 		return {
-			successRate,
-			avgDuration: avgDuration._avg.duration || 0,
-			totalJobs,
-			successCount,
-			failedCount,
+			totalCount,
+			recentSignups,
+			last24h,
+			last7d,
 		}
 	},
 )
 
-// Recent Errors - Failed jobs with error messages
-export const getRecentErrors = createServerFn({ method: 'GET' }).handler(
+export const getWaitlistDailySignups = createServerFn({
+	method: 'GET',
+}).handler(async () => {
+	const prisma = getPrisma()
+	// Get signups for the last 30 days
+	const thirtyDaysAgo = new Date()
+	thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+	// Group by day manually since Prisma groupBy with date truncation is tricky across DBs
+	// or requires raw query. For simplicity/portability, we'll fetch and aggregate in JS
+	// if the volume is low. But waitlist might be large.
+	// Let's use a raw query for better performance or just fetch all and aggregate if MVP.
+	// Given it's an MVP, let's try raw query for postgres.
+
+	const dailySignups = (await prisma.$queryRaw`
+			SELECT DATE(created_at) as date, COUNT(*)::int as count
+			FROM waitlist
+			WHERE created_at >= ${thirtyDaysAgo}
+			GROUP BY DATE(created_at)
+			ORDER BY DATE(created_at) ASC
+		`) as Array<{ date: Date; count: number }>
+
+	return dailySignups.map((item) => ({
+		date: item.date.toISOString(),
+		count: Number(item.count),
+	}))
+})
+
+export const getIngestionOverview = createServerFn({ method: 'GET' }).handler(
 	async () => {
-		const prisma = await getPrisma()
-
-		const errors = await prisma.fetchLog.findMany({
-			where: {
-				status: 'FAILED',
-			},
-			orderBy: { startedAt: 'desc' },
+		const prisma = getPrisma()
+		const logs = await prisma.fetchLog.findMany({
 			take: 10,
-			include: {
-				tool: {
-					select: {
-						name: true,
-						slug: true,
-					},
-				},
-			},
+			orderBy: { startedAt: 'desc' },
+			include: { tool: true },
 		})
-
-		return errors
+		return logs
 	},
 )
 
-// Tools Overview - All tools with release/change counts
+export const getIngestionStats = createServerFn({ method: 'GET' }).handler(
+	async () => {
+		const prisma = getPrisma()
+		const sevenDaysAgo = new Date()
+		sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+		const [totalJobs, successCount, failedCount, avgDurationAgg] =
+			await Promise.all([
+				prisma.fetchLog.count({
+					where: { startedAt: { gte: sevenDaysAgo } },
+				}),
+				prisma.fetchLog.count({
+					where: {
+						startedAt: { gte: sevenDaysAgo },
+						status: 'SUCCESS',
+					},
+				}),
+				prisma.fetchLog.count({
+					where: {
+						startedAt: { gte: sevenDaysAgo },
+						status: 'FAILED',
+					},
+				}),
+				prisma.fetchLog.aggregate({
+					where: {
+						startedAt: { gte: sevenDaysAgo },
+						status: 'SUCCESS',
+					},
+					_avg: { duration: true },
+				}),
+			])
+
+		const successRate =
+			totalJobs > 0 ? Math.round((successCount / totalJobs) * 100) : 0
+
+		return {
+			totalJobs,
+			successCount,
+			failedCount,
+			successRate,
+			avgDuration: avgDurationAgg._avg.duration || 0,
+		}
+	},
+)
+
 export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 	async () => {
-		const prisma = await getPrisma()
-
+		const prisma = getPrisma()
 		const tools = await prisma.tool.findMany({
-			orderBy: { name: 'asc' },
 			include: {
 				_count: {
 					select: {
 						releases: true,
 					},
 				},
+				fetchLogs: {
+					take: 1,
+					orderBy: { startedAt: 'desc' },
+					select: { status: true, startedAt: true },
+				},
 				releases: {
 					select: {
-						_count: {
-							select: {
-								changes: true,
-							},
-						},
 						changes: {
 							select: {
 								isBreaking: true,
@@ -125,32 +179,17 @@ export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 						},
 					},
 				},
-				fetchLogs: {
-					orderBy: { startedAt: 'desc' },
-					take: 1,
-					select: {
-						status: true,
-						startedAt: true,
-						completedAt: true,
-					},
-				},
 			},
+			orderBy: { name: 'asc' },
 		})
 
 		return tools.map((tool) => {
-			let changeCount = 0
-			let breakingCount = 0
-			let securityCount = 0
-			let deprecationCount = 0
-
-			for (const release of tool.releases) {
-				changeCount += release._count.changes
-				for (const change of release.changes) {
-					if (change.isBreaking) breakingCount++
-					if (change.isSecurity) securityCount++
-					if (change.isDeprecation) deprecationCount++
-				}
-			}
+			// Count all changes across all releases
+			const allChanges = tool.releases.flatMap((r) => r.changes)
+			const changeCount = allChanges.length
+			const breakingCount = allChanges.filter((c) => c.isBreaking).length
+			const securityCount = allChanges.filter((c) => c.isSecurity).length
+			const deprecationCount = allChanges.filter((c) => c.isDeprecation).length
 
 			return {
 				id: tool.id,
@@ -170,33 +209,25 @@ export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 	},
 )
 
-// Change Type Distribution
 export const getChangeTypeDistribution = createServerFn({
 	method: 'GET',
 }).handler(async () => {
-	const prisma = await getPrisma()
-
+	const prisma = getPrisma()
 	const distribution = await prisma.change.groupBy({
 		by: ['type'],
-		_count: true,
-		orderBy: {
-			_count: {
-				type: 'desc',
-			},
-		},
+		_count: { id: true },
 	})
 
-	return distribution.map((d) => ({
-		type: d.type,
-		count: d._count,
+	// Return as array of objects with type and count
+	return distribution.map((item) => ({
+		type: item.type,
+		count: item._count.id,
 	}))
 })
 
-// Content Summary - Total releases, changes, and flag counts
 export const getContentSummary = createServerFn({ method: 'GET' }).handler(
 	async () => {
-		const prisma = await getPrisma()
-
+		const prisma = getPrisma()
 		const [
 			totalReleases,
 			totalChanges,
@@ -207,7 +238,7 @@ export const getContentSummary = createServerFn({ method: 'GET' }).handler(
 		] = await Promise.all([
 			prisma.release.count(),
 			prisma.change.count(),
-			prisma.tool.count({ where: { isActive: true } }),
+			prisma.tool.count(),
 			prisma.change.count({ where: { isBreaking: true } }),
 			prisma.change.count({ where: { isSecurity: true } }),
 			prisma.change.count({ where: { isDeprecation: true } }),
@@ -224,140 +255,77 @@ export const getContentSummary = createServerFn({ method: 'GET' }).handler(
 	},
 )
 
-// Waitlist Stats
-export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
-	async () => {
-		const prisma = await getPrisma()
-
-		const now = new Date()
-		const last24hDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-		const last7dDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-
-		const [totalCount, recentSignups, last24h, last7d] = await Promise.all([
-			prisma.waitlist.count(),
-			prisma.waitlist.findMany({
-				orderBy: { createdAt: 'desc' },
-				take: 10,
-				select: {
-					id: true,
-					email: true,
-					createdAt: true,
-				},
-			}),
-			prisma.waitlist.count({
-				where: { createdAt: { gte: last24hDate } },
-			}),
-			prisma.waitlist.count({
-				where: { createdAt: { gte: last7dDate } },
-			}),
-		])
-
-		// Mask emails for privacy
-		const maskedSignups = recentSignups.map((signup) => {
-			const [local, domain] = signup.email.split('@')
-			const maskedLocal =
-				local.length > 2
-					? `${local[0]}${'*'.repeat(local.length - 2)}${local[local.length - 1]}`
-					: local
-			return {
-				...signup,
-				email: `${maskedLocal}@${domain}`,
-			}
-		})
-
-		return {
-			totalCount,
-			last24h,
-			last7d,
-			recentSignups: maskedSignups,
-		}
-	},
-)
-
-// Waitlist Daily Signups - Signups per day since Oct 30, 2025
-export const getWaitlistDailySignups = createServerFn({
-	method: 'GET',
-}).handler(async () => {
-	const prisma = await getPrisma()
-
-	// Start from Oct 30, 2025
-	const startDate = new Date('2025-10-30T00:00:00.000Z') // UTC
-
-	const signups = await prisma.waitlist.findMany({
-		where: {
-			createdAt: { gte: startDate },
-		},
-		select: {
-			createdAt: true,
-		},
-		orderBy: { createdAt: 'asc' },
-	})
-
-	// Group by day
-	const dailyData: Record<string, number> = {}
-
-	// Initialize all days from start date to today with 0
-	const now = new Date()
-	const current = new Date(startDate)
-
-	while (current <= now) {
-		const dayKey = current.toISOString().split('T')[0]
-		dailyData[dayKey] = 0
-		current.setDate(current.getDate() + 1)
-	}
-
-	// Count signups per day
-	for (const signup of signups) {
-		const dayKey = new Date(signup.createdAt).toISOString().split('T')[0]
-		// Only count if it matches a key we initialized (should be all unless future)
-		if (dayKey in dailyData) {
-			dailyData[dayKey] = (dailyData[dayKey] || 0) + 1
-		}
-	}
-
-	return Object.entries(dailyData)
-		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([date, count]) => ({
-			date,
-			count,
-		}))
-})
-
-// Release Trends - Releases per week over last 8 weeks (based on actual release date)
 export const getReleaseTrends = createServerFn({ method: 'GET' }).handler(
 	async () => {
-		const prisma = await getPrisma()
-
+		const prisma = getPrisma()
 		const eightWeeksAgo = new Date()
 		eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56)
 
-		const releases = await prisma.release.findMany({
-			where: {
-				releaseDate: {
-					gte: eightWeeksAgo,
-					not: null,
-				},
-			},
-			select: {
-				releaseDate: true,
-			},
-			orderBy: { releaseDate: 'asc' },
-		})
+		// Use publishedAt instead of releaseDate since releaseDate is nullable
+		// Use raw query for date truncation
+		const trends = (await prisma.$queryRaw`
+			SELECT DATE(published_at) as date, COUNT(*)::int as count
+			FROM release
+			WHERE published_at >= ${eightWeeksAgo}
+			GROUP BY DATE(published_at)
+			ORDER BY DATE(published_at) ASC
+		`) as Array<{ date: Date; count: number }>
 
-		// Group by week
-		const weeklyData: Record<string, number> = {}
-		for (const release of releases) {
-			if (!release.releaseDate) continue
-
-			const weekStart = new Date(release.releaseDate)
-			weekStart.setDate(weekStart.getDate() - weekStart.getDay())
-			const weekKey = weekStart.toISOString().split('T')[0]
-			weeklyData[weekKey] = (weeklyData[weekKey] || 0) + 1
+		// Handle empty data
+		if (trends.length === 0) {
+			return []
 		}
 
-		return Object.entries(weeklyData).map(([week, count]) => ({
-			week,
-			count,
-		}))
+		// Aggregate by week in JS
+		const weeklyData: Record<string, number> = {}
+		trends.forEach((item) => {
+			const date = new Date(item.date)
+			const weekStart = new Date(date)
+			weekStart.setDate(date.getDate() - date.getDay())
+			const weekKey = weekStart.toISOString().split('T')[0]
+			weeklyData[weekKey] = (weeklyData[weekKey] || 0) + item.count
+		})
+
+		return Object.entries(weeklyData)
+			.map(([week, count]) => ({
+				week,
+				count,
+			}))
+			.sort((a, b) => a.week.localeCompare(b.week))
+	},
+)
+
+// Admin route server functions (to prevent client-side bundling of getPrisma)
+export const getAdminDashboardStats = createServerFn({ method: 'GET' }).handler(
+	async () => {
+		const prisma = getPrisma()
+		const [userCount, toolCount, releaseCount] = await Promise.all([
+			prisma.user.count(),
+			prisma.tool.count(),
+			prisma.release.count(),
+		])
+		return { userCount, toolCount, releaseCount }
+	},
+)
+
+export const getAdminTools = createServerFn({ method: 'GET' }).handler(
+	async () => {
+		const prisma = getPrisma()
+		const tools = await prisma.tool.findMany({
+			orderBy: { name: 'asc' },
+		})
+		return { tools }
+	},
+)
+
+export const getAdminIngestionLogs = createServerFn({ method: 'GET' }).handler(
+	async () => {
+		const prisma = getPrisma()
+		const logs = await prisma.fetchLog.findMany({
+			take: 20,
+			orderBy: { startedAt: 'desc' },
+			include: { tool: true },
+		})
+		return { logs }
 	},
 )

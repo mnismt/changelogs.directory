@@ -198,6 +198,66 @@ function ReleaseDetailPage() {
 - No loading spinners on first render
 - Type-safe data access via `Route.useLoaderData()`
 
+### Database Access Patterns
+**CRITICAL**: Never import `getPrisma()` or any database code directly in route files. This causes client-side bundling issues.
+
+#### ❌ WRONG: Direct Database Import in Routes
+```tsx
+// BAD - Causes "DATABASE_URL environment variable is not set" on client navigation
+import { getPrisma } from '@/server/db'
+
+export const Route = createFileRoute('/admin/')({
+  loader: async () => {
+    const prisma = getPrisma() // ⚠️ Gets bundled into client code
+    return await prisma.user.count()
+  }
+})
+```
+
+**Problem**: On client-side navigation, the loader code is bundled into the client JavaScript. When it tries to execute `getPrisma()`, `process.env.DATABASE_URL` doesn't exist in the browser.
+
+#### ✅ CORRECT: Server Functions for Database Access
+```tsx
+// GOOD - Database code stays on server
+import { getAdminDashboardStats } from '@/server/admin'
+
+export const Route = createFileRoute('/admin/')({
+  loader: async () => {
+    return await getAdminDashboardStats() // Server function always runs server-side
+  }
+})
+```
+
+**In `src/server/admin.ts`:**
+```tsx
+import { createServerFn } from '@tanstack/react-start'
+import { getPrisma } from './db'
+
+export const getAdminDashboardStats = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const prisma = getPrisma() // Safe - server functions never bundle to client
+    const [userCount, toolCount, releaseCount] = await Promise.all([
+      prisma.user.count(),
+      prisma.tool.count(),
+      prisma.release.count(),
+    ])
+    return { userCount, toolCount, releaseCount }
+  }
+)
+```
+
+#### Rules
+- ✅ **ALWAYS** use `createServerFn()` for database queries
+- ✅ **ALWAYS** import server functions (not `getPrisma`) in route loaders
+- ✅ **ONLY** import `getPrisma` in `src/server/*` or `src/lib/auth/*` files
+- ❌ **NEVER** import `getPrisma` directly in route files (`src/routes/*`)
+- ❌ **NEVER** import `getPrisma` in component files (`src/components/*`)
+
+#### Why This Matters
+- **F5 (full reload)**: Loader runs on server → works ✅
+- **Client navigation**: Loader code bundled to client → `process.env` undefined → error ❌
+- **Server functions**: TanStack Start ensures they always execute server-side, even during client navigation ✅
+
 ### Component Structure Example
 ```tsx
 import { createFileRoute } from '@tanstack/react-router'

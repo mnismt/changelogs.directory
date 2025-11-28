@@ -10,11 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
+import { Route as AdminToolsRouteImport } from './routes/admin/tools'
+import { Route as AdminIngestionRouteImport } from './routes/admin/ingestion'
+import { Route as AdminEmailsRouteImport } from './routes/admin/emails'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -22,9 +29,19 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
   path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,15 +54,40 @@ const ToolsIndexRoute = ToolsIndexRouteImport.update({
   path: '/tools/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ToolsSlugRoute = ToolsSlugRouteImport.update({
   id: '/tools/$slug',
   path: '/tools/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminToolsRoute = AdminToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminIngestionRoute = AdminIngestionRouteImport.update({
+  id: '/ingestion',
+  path: '/ingestion',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEmailsRoute = AdminEmailsRouteImport.update({
+  id: '/emails',
+  path: '/emails',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ToolsSlugIndexRoute = ToolsSlugIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ToolsSlugRoute,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsSlugReleasesVersionRoute =
   ToolsSlugReleasesVersionRouteImport.update({
@@ -56,28 +98,48 @@ const ToolsSlugReleasesVersionRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
+  '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/emails': typeof AdminEmailsRoute
+  '/admin/ingestion': typeof AdminIngestionRoute
+  '/admin/tools': typeof AdminToolsRoute
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
+  '/admin/': typeof AdminIndexRoute
   '/tools': typeof ToolsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/emails': typeof AdminEmailsRoute
+  '/admin/ingestion': typeof AdminIngestionRoute
+  '/admin/tools': typeof AdminToolsRoute
+  '/admin': typeof AdminIndexRoute
   '/tools': typeof ToolsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
+  '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/emails': typeof AdminEmailsRoute
+  '/admin/ingestion': typeof AdminIngestionRoute
+  '/admin/tools': typeof AdminToolsRoute
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
+  '/admin/': typeof AdminIndexRoute
   '/tools/': typeof ToolsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
 }
@@ -85,37 +147,60 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/analytics'
+    | '/login'
     | '/unsubscribe'
+    | '/admin/emails'
+    | '/admin/ingestion'
+    | '/admin/tools'
     | '/tools/$slug'
+    | '/admin/'
     | '/tools'
+    | '/api/auth/$'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/analytics'
+    | '/login'
     | '/unsubscribe'
+    | '/admin/emails'
+    | '/admin/ingestion'
+    | '/admin/tools'
+    | '/admin'
     | '/tools'
+    | '/api/auth/$'
     | '/tools/$slug'
     | '/tools/$slug/releases/$version'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/analytics'
+    | '/login'
     | '/unsubscribe'
+    | '/admin/emails'
+    | '/admin/ingestion'
+    | '/admin/tools'
     | '/tools/$slug'
+    | '/admin/'
     | '/tools/'
+    | '/api/auth/$'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
+  LoginRoute: typeof LoginRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
   ToolsIndexRoute: typeof ToolsIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -127,11 +212,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analytics': {
       id: '/analytics'
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -148,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/tools/$slug': {
       id: '/tools/$slug'
       path: '/tools/$slug'
@@ -155,12 +261,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/tools': {
+      id: '/admin/tools'
+      path: '/tools'
+      fullPath: '/admin/tools'
+      preLoaderRoute: typeof AdminToolsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/ingestion': {
+      id: '/admin/ingestion'
+      path: '/ingestion'
+      fullPath: '/admin/ingestion'
+      preLoaderRoute: typeof AdminIngestionRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/emails': {
+      id: '/admin/emails'
+      path: '/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/tools/$slug/': {
       id: '/tools/$slug/'
       path: '/'
       fullPath: '/tools/$slug/'
       preLoaderRoute: typeof ToolsSlugIndexRouteImport
       parentRoute: typeof ToolsSlugRoute
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/tools/$slug/releases/$version': {
       id: '/tools/$slug/releases/$version'
@@ -171,6 +305,22 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminRouteChildren {
+  AdminEmailsRoute: typeof AdminEmailsRoute
+  AdminIngestionRoute: typeof AdminIngestionRoute
+  AdminToolsRoute: typeof AdminToolsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminEmailsRoute: AdminEmailsRoute,
+  AdminIngestionRoute: AdminIngestionRoute,
+  AdminToolsRoute: AdminToolsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface ToolsSlugRouteChildren {
   ToolsSlugIndexRoute: typeof ToolsSlugIndexRoute
@@ -188,10 +338,13 @@ const ToolsSlugRouteWithChildren = ToolsSlugRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
+  LoginRoute: LoginRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   ToolsSlugRoute: ToolsSlugRouteWithChildren,
   ToolsIndexRoute: ToolsIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
