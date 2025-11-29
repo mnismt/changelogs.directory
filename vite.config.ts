@@ -30,6 +30,9 @@ const config = defineConfig({
       'tests': resolve(__dirname, './tests'),
     },
   },
+  optimizeDeps: {
+    exclude: ['@tanstack/react-start', '@tanstack/start-server-core'],
+  },
 })
 
 export default config

@@ -1,4 +1,5 @@
 import { syncVercelEnvVars } from '@trigger.dev/build/extensions/core'
+import { prismaExtension } from '@trigger.dev/build/extensions/prisma'
 import { defineConfig } from '@trigger.dev/sdk/v3'
 
 export default defineConfig({
@@ -30,10 +31,10 @@ export default defineConfig({
 				// The unique identifier of your Vercel project
 				// Found in Project Settings > General > Project ID
 				projectId: process.env.VERCEL_PROJECT_ID,
-				// Optional: The ID of your Vercel team
-				// Only required for team projects
-				// Found in Team Settings > General > Team ID
-				vercelTeamId: process.env.VERCEL_TEAM_ID,
+			}),
+			prismaExtension({
+				schema: 'prisma/schema.prisma',
+				mode: 'legacy',
 			}),
 		],
 	},
