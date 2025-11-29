@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/chart'
 import { EncryptedText } from '@/components/ui/encrypted-text'
 import { Input } from '@/components/ui/input'
+import { maskEmail } from '@/lib/utils'
 import { getWaitlistDailySignups, getWaitlistStats } from '@/server/admin'
 
 interface SubscribeCtaProps {
@@ -325,7 +326,7 @@ export function SubscribeCta({ showStats = false }: SubscribeCtaProps) {
 														<div className="flex items-center gap-2">
 															<div className="h-1.5 w-1.5 rounded-full bg-green-500/50 group-hover:bg-green-500 transition-colors" />
 															<EncryptedText
-																text={signup.email}
+																text={maskEmail(signup.email)}
 																className="font-mono text-xs text-foreground/80 group-hover:text-foreground transition-colors"
 																revealDelayMs={80 + index * 50}
 																flipDelayMs={60}
