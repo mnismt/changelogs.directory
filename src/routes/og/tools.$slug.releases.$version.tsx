@@ -2,9 +2,11 @@ import type { ChangeType } from '@prisma/client'
 import { createFileRoute } from '@tanstack/react-router'
 import { ImageResponse } from '@vercel/og'
 import { formatDistanceToNow } from 'date-fns'
-import { OGBackground } from '@/components/og/og-background'
-import { TerminalChrome } from '@/components/og/terminal-chrome'
+import { CommandPrompt } from '@/components/og/command-prompt'
+import { LogoBox } from '@/components/og/logo-box'
+import { OGLayout } from '@/components/og/og-layout'
 import { loadOGFonts } from '@/lib/og-fonts'
+import { createOGErrorResponse, createOGImageResponse } from '@/lib/og-response'
 import { getToolLogoSVG } from '@/lib/og-utils'
 import { formatVersionForDisplay } from '@/lib/version-formatter'
 import { getReleaseWithChanges } from '@/server/tools'
@@ -62,285 +64,221 @@ export const Route = createFileRoute('/og/tools/$slug/releases/$version')({
 					const totalChanges = release.changes.length
 
 					const image = new ImageResponse(
-						<div
-							style={{
-								height: '100%',
-								width: '100%',
-								display: 'flex',
-								flexDirection: 'column',
-								backgroundColor: '#0A0A0A',
-								position: 'relative',
-								fontFamily: 'Fira Code',
-							}}
+						<OGLayout
+							title={`~/tools/${params.slug}/releases/${formattedVersion}`}
+							breadcrumbs={[
+								'changelogs.directory',
+								params.slug,
+								formattedVersion,
+							]}
+							indicator="Release Details"
 						>
-							<OGBackground />
+							{/* Command Input */}
+							<CommandPrompt
+								command={`view release --tool ${params.slug} --version ${formattedVersion}`}
+							/>
 
-							{/* Radial Glow Effect */}
+							{/* Main Content Area */}
 							<div
 								style={{
 									display: 'flex',
-									position: 'absolute',
-									top: '50%',
-									left: '50%',
-									transform: 'translate(-50%, -50%)',
-									width: '800px',
-									height: '800px',
-									background:
-										'radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%)',
-								}}
-							/>
-
-							<TerminalChrome
-								title={`~/tools/${params.slug}/releases/${formattedVersion}`}
-							/>
-
-							{/* Command Line Interface */}
-							<div
-								style={{
-									display: 'flex',
-									flexDirection: 'column',
-									padding: '32px 48px',
 									flex: 1,
-									position: 'relative',
+									alignItems: 'center',
+									justifyContent: 'center',
+									gap: '64px',
 								}}
 							>
-								{/* Command Input */}
-								<div
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: '12px',
-										fontSize: '24px',
-										color: '#AAAAAA',
-										marginBottom: '48px',
-									}}
-								>
-									<span style={{ color: '#CCCCCC' }}>&gt;</span>
-									<span style={{ color: '#999999' }}>~</span>
-									<span>
-										view release --tool {params.slug} --version{' '}
-										{formattedVersion}
-									</span>
-									<div
-										style={{
-											display: 'flex',
-											width: '12px',
-											height: '24px',
-											backgroundColor: '#AAAAAA',
-											opacity: 0.8,
-										}}
-									/>
-								</div>
+								{/* Left: Logo */}
+								<LogoBox>{logoSVG && logoSVG}</LogoBox>
 
-								{/* Main Content Area */}
+								{/* Right: Info */}
 								<div
 									style={{
 										display: 'flex',
-										flex: 1,
-										alignItems: 'center',
+										flexDirection: 'column',
 										justifyContent: 'center',
-										gap: '64px',
+										flex: 1,
+										maxWidth: '700px',
 									}}
 								>
-									{/* Left: Logo */}
-									<div
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											justifyContent: 'center',
-											width: '200px',
-											height: '200px',
-											background:
-												'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
-											border: '1px solid rgba(255,255,255,0.1)',
-											borderRadius: '24px',
-											padding: '40px',
-										}}
-									>
-										{logoSVG && logoSVG}
-									</div>
-
-									{/* Right: Info */}
+									{/* Header: Tool Name + Version */}
 									<div
 										style={{
 											display: 'flex',
 											flexDirection: 'column',
-											justifyContent: 'center',
-											flex: 1,
-											maxWidth: '700px',
+											marginBottom: '24px',
 										}}
 									>
-										{/* Header: Tool Name + Version */}
 										<div
 											style={{
 												display: 'flex',
-												flexDirection: 'column',
-												marginBottom: '24px',
+												fontSize: '32px',
+												color: '#888888',
+												marginBottom: '8px',
 											}}
 										>
-											<div
-												style={{
-													display: 'flex',
-													fontSize: '32px',
-													color: '#888888',
-													marginBottom: '8px',
-												}}
-											>
-												{release.tool.name}
-											</div>
-											<div
-												style={{
-													display: 'flex',
-													fontSize: '64px',
-													color: '#FFFFFF',
-													fontWeight: 700,
-													letterSpacing: '-0.02em',
-													textShadow: '0 0 40px rgba(255,255,255,0.2)',
-													alignItems: 'center',
-													gap: '24px',
-												}}
-											>
-												{formattedVersion}
-												<div
-													style={{
-														display: 'flex',
-														fontSize: '20px',
-														color: '#666666',
-														fontWeight: 400,
-														letterSpacing: 'normal',
-														textShadow: 'none',
-														marginTop: '12px',
-													}}
-												>
-													{'//'} {timeAgo}
-												</div>
-											</div>
+											{release.tool.name}
 										</div>
-
-										{/* Headline */}
-										{release.headline && (
-											<div
-												style={{
-													display: 'flex',
-													fontFamily: 'Inter',
-													fontSize: '24px',
-													fontStyle: 'italic',
-													color: '#CCCCCC',
-													marginBottom: '32px',
-													lineHeight: '1.4',
-												}}
-											>
-												"{release.headline}"
-											</div>
-										)}
-
-										{/* Stats & Badges */}
 										<div
 											style={{
 												display: 'flex',
-												flexDirection: 'column',
+												fontSize: '64px',
+												color: '#FFFFFF',
+												fontWeight: 700,
+												letterSpacing: '-0.02em',
+												textShadow: '0 0 40px rgba(255,255,255,0.2)',
+												alignItems: 'center',
 												gap: '24px',
 											}}
 										>
-											{/* Badges Row */}
-											{(hasBreaking || hasSecurity || hasDeprecation) && (
-												<div style={{ display: 'flex', gap: '12px' }}>
-													{hasBreaking && (
-														<div
-															style={{
-																display: 'flex',
-																alignItems: 'center',
-																gap: '8px',
-																backgroundColor: 'rgba(220, 38, 38, 0.2)',
-																border: '1px solid rgba(220, 38, 38, 0.5)',
-																color: '#F87171',
-																padding: '6px 12px',
-																borderRadius: '4px',
-																fontSize: '16px',
-																fontWeight: 700,
-															}}
-														>
-															⚠️ BREAKING
-														</div>
-													)}
-													{hasSecurity && (
-														<div
-															style={{
-																display: 'flex',
-																alignItems: 'center',
-																gap: '8px',
-																backgroundColor: 'rgba(220, 38, 38, 0.2)',
-																border: '1px solid rgba(220, 38, 38, 0.5)',
-																color: '#F87171',
-																padding: '6px 12px',
-																borderRadius: '4px',
-																fontSize: '16px',
-																fontWeight: 700,
-															}}
-														>
-															🔒 SECURITY
-														</div>
-													)}
-													{hasDeprecation && (
-														<div
-															style={{
-																display: 'flex',
-																alignItems: 'center',
-																gap: '8px',
-																backgroundColor: 'rgba(245, 158, 11, 0.2)',
-																border: '1px solid rgba(245, 158, 11, 0.5)',
-																color: '#FBBF24',
-																padding: '6px 12px',
-																borderRadius: '4px',
-																fontSize: '16px',
-																fontWeight: 700,
-															}}
-														>
-															📛 DEPRECATION
-														</div>
-													)}
-												</div>
-											)}
-
-											{/* Changes Stats */}
+											{formattedVersion}
 											<div
 												style={{
 													display: 'flex',
-													alignItems: 'center',
-													gap: '24px',
-													color: '#888888',
 													fontSize: '20px',
+													color: '#666666',
+													fontWeight: 400,
+													letterSpacing: 'normal',
+													textShadow: 'none',
+													marginTop: '12px',
 												}}
 											>
-												<div style={{ display: 'flex', color: '#FFFFFF' }}>
-													{totalChanges} total{' '}
-													{totalChanges === 1 ? 'change' : 'changes'}
-												</div>
-												<div
-													style={{
-														display: 'flex',
-														width: '1px',
-														height: '20px',
-														backgroundColor: '#333333',
-													}}
-												/>
-												<div style={{ display: 'flex', gap: '16px' }}>
-													{topChangeTypes.map(([type, count]) => (
-														<span key={type}>
-															{count}{' '}
-															{type.charAt(0) + type.slice(1).toLowerCase()}
-															{count !== 1 && type !== 'BUGFIX'
-																? 's'
-																: type === 'BUGFIX' && count !== 1
-																	? 'es'
-																	: ''}
-														</span>
-													))}
-												</div>
+												{'//'} {timeAgo}
 											</div>
 										</div>
+									</div>
 
-										{/* Call to Action - Dev Style */}
+									{/* Headline */}
+									{release.headline && (
+										<div
+											style={{
+												display: 'flex',
+												fontFamily: 'Inter',
+												fontSize: '24px',
+												fontStyle: 'italic',
+												color: '#CCCCCC',
+												marginBottom: '32px',
+												lineHeight: '1.4',
+											}}
+										>
+											"{release.headline}"
+										</div>
+									)}
+
+									{/* Stats & Badges */}
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'column',
+											gap: '24px',
+										}}
+									>
+										{/* Badges Row */}
+										{(hasBreaking || hasSecurity || hasDeprecation) && (
+											<div style={{ display: 'flex', gap: '12px' }}>
+												{hasBreaking && (
+													<div
+														style={{
+															display: 'flex',
+															alignItems: 'center',
+															gap: '8px',
+															backgroundColor: 'rgba(220, 38, 38, 0.2)',
+															border: '1px solid rgba(220, 38, 38, 0.5)',
+															color: '#F87171',
+															padding: '6px 12px',
+															borderRadius: '4px',
+															fontSize: '16px',
+															fontWeight: 700,
+														}}
+													>
+														⚠️ BREAKING
+													</div>
+												)}
+												{hasSecurity && (
+													<div
+														style={{
+															display: 'flex',
+															alignItems: 'center',
+															gap: '8px',
+															backgroundColor: 'rgba(220, 38, 38, 0.2)',
+															border: '1px solid rgba(220, 38, 38, 0.5)',
+															color: '#F87171',
+															padding: '6px 12px',
+															borderRadius: '4px',
+															fontSize: '16px',
+															fontWeight: 700,
+														}}
+													>
+														🔒 SECURITY
+													</div>
+												)}
+												{hasDeprecation && (
+													<div
+														style={{
+															display: 'flex',
+															alignItems: 'center',
+															gap: '8px',
+															backgroundColor: 'rgba(245, 158, 11, 0.2)',
+															border: '1px solid rgba(245, 158, 11, 0.5)',
+															color: '#FBBF24',
+															padding: '6px 12px',
+															borderRadius: '4px',
+															fontSize: '16px',
+															fontWeight: 700,
+														}}
+													>
+														📛 DEPRECATION
+													</div>
+												)}
+											</div>
+										)}
+
+										{/* Changes Stats */}
+										<div
+											style={{
+												display: 'flex',
+												alignItems: 'center',
+												gap: '24px',
+												color: '#888888',
+												fontSize: '20px',
+											}}
+										>
+											<div style={{ display: 'flex', color: '#FFFFFF' }}>
+												{totalChanges} total{' '}
+												{totalChanges === 1 ? 'change' : 'changes'}
+											</div>
+											<div
+												style={{
+													display: 'flex',
+													width: '1px',
+													height: '20px',
+													backgroundColor: '#333333',
+												}}
+											/>
+											<div style={{ display: 'flex', gap: '16px' }}>
+												{topChangeTypes.map(([type, count]) => (
+													<span key={type}>
+														{count}{' '}
+														{type.charAt(0) + type.slice(1).toLowerCase()}
+														{count !== 1 && type !== 'BUGFIX'
+															? 's'
+															: type === 'BUGFIX' && count !== 1
+																? 'es'
+																: ''}
+													</span>
+												))}
+											</div>
+										</div>
+									</div>
+
+									{/* Call to Action */}
+									<div
+										style={{
+											display: 'flex',
+											marginTop: '32px',
+											width: 'fit-content',
+										}}
+									>
 										<div
 											style={{
 												display: 'flex',
@@ -353,8 +291,6 @@ export const Route = createFileRoute('/og/tools/$slug/releases/$version')({
 												fontFamily: 'Fira Code',
 												fontSize: '14px',
 												color: '#666666',
-												marginTop: '32px',
-												width: 'fit-content',
 											}}
 										>
 											<span style={{ color: '#888888' }}>$</span>
@@ -375,44 +311,7 @@ export const Route = createFileRoute('/og/tools/$slug/releases/$version')({
 									</div>
 								</div>
 							</div>
-
-							{/* Status Bar */}
-							<div
-								style={{
-									height: '32px',
-									backgroundColor: '#1A1A1A',
-									borderTop: '1px solid #333333',
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'space-between',
-									padding: '0 16px',
-									fontSize: '13px',
-									color: '#666666',
-									fontWeight: 500,
-								}}
-							>
-								<div style={{ display: 'flex', gap: '20px' }}>
-									<span style={{ color: '#888888' }}>changelogs.directory</span>
-									<span style={{ color: '#444444' }}>/</span>
-									<span style={{ color: '#888888' }}>{params.slug}</span>
-									<span style={{ color: '#444444' }}>/</span>
-									<span style={{ color: '#888888' }}>{formattedVersion}</span>
-								</div>
-								<div
-									style={{
-										display: 'flex',
-										gap: '8px',
-										alignItems: 'center',
-										color: '#555555',
-									}}
-								>
-									<span>●</span>
-									<span style={{ fontSize: '12px', fontFamily: 'Inter' }}>
-										Release Details
-									</span>
-								</div>
-							</div>
-						</div>,
+						</OGLayout>,
 						{
 							width: 1200,
 							height: 630,
@@ -420,16 +319,9 @@ export const Route = createFileRoute('/og/tools/$slug/releases/$version')({
 						},
 					)
 
-					return new Response(image.body, {
-						headers: {
-							'Content-Type': 'image/png',
-							'Cache-Control':
-								'public, max-age=3600, s-maxage=86400, stale-while-revalidate=31536000',
-						},
-					})
+					return createOGImageResponse(image.body)
 				} catch (error) {
-					console.error('Error generating release OG image:', error)
-					return new Response('Failed to generate OG image', { status: 500 })
+					return createOGErrorResponse(error, 'release')
 				}
 			},
 		},
