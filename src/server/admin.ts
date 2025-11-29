@@ -152,6 +152,8 @@ export const getIngestionStats = createServerFn({ method: 'GET' }).handler(
 export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 	async () => {
 		const prisma = getPrisma()
+
+		// Fetch basic tool data with release count and last fetch status
 		const tools = await prisma.tool.findMany({
 			include: {
 				_count: {
@@ -164,28 +166,40 @@ export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 					orderBy: { startedAt: 'desc' },
 					select: { status: true, startedAt: true },
 				},
-				releases: {
-					select: {
-						changes: {
-							select: {
-								isBreaking: true,
-								isSecurity: true,
-								isDeprecation: true,
-							},
-						},
-					},
-				},
 			},
 			orderBy: { name: 'asc' },
 		})
 
+		// Use raw query to efficiently aggregate change statistics per tool
+		const changeStats = (await prisma.$queryRaw`
+			SELECT 
+				t.id as "toolId",
+				COUNT(c.id)::int as "changeCount",
+				COUNT(CASE WHEN c."isBreaking" THEN 1 END)::int as "breakingCount",
+				COUNT(CASE WHEN c."isSecurity" THEN 1 END)::int as "securityCount",
+				COUNT(CASE WHEN c."isDeprecation" THEN 1 END)::int as "deprecationCount"
+			FROM tool t
+			LEFT JOIN release r ON r."toolId" = t.id
+			LEFT JOIN change c ON c."releaseId" = r.id
+			GROUP BY t.id
+		`) as Array<{
+			toolId: string
+			changeCount: number
+			breakingCount: number
+			securityCount: number
+			deprecationCount: number
+		}>
+
+		// Create a lookup map for O(1) access
+		const statsMap = new Map(changeStats.map((stat) => [stat.toolId, stat]))
+
 		return tools.map((tool) => {
-			// Count all changes across all releases
-			const allChanges = tool.releases.flatMap((r) => r.changes)
-			const changeCount = allChanges.length
-			const breakingCount = allChanges.filter((c) => c.isBreaking).length
-			const securityCount = allChanges.filter((c) => c.isSecurity).length
-			const deprecationCount = allChanges.filter((c) => c.isDeprecation).length
+			const stats = statsMap.get(tool.id) || {
+				changeCount: 0,
+				breakingCount: 0,
+				securityCount: 0,
+				deprecationCount: 0,
+			}
 
 			return {
 				id: tool.id,
@@ -194,10 +208,10 @@ export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 				isActive: tool.isActive,
 				lastFetchedAt: tool.lastFetchedAt,
 				releaseCount: tool._count.releases,
-				changeCount,
-				breakingCount,
-				securityCount,
-				deprecationCount,
+				changeCount: stats.changeCount,
+				breakingCount: stats.breakingCount,
+				securityCount: stats.securityCount,
+				deprecationCount: stats.deprecationCount,
 				lastFetchStatus: tool.fetchLogs[0]?.status || null,
 				lastFetchStartedAt: tool.fetchLogs[0]?.startedAt || null,
 			}
