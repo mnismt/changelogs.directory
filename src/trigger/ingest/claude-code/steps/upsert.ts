@@ -12,8 +12,9 @@ import type { EnrichResult, IngestionContext, UpsertResult } from '../types'
 export async function upsertStep(
 	ctx: IngestionContext,
 	enrichResult: EnrichResult,
+	retryVersions: string[] = [],
 ): Promise<UpsertResult> {
-	logger.info('Phase 6: Upsert releases and changes')
+	logger.info('Phase 6: Upsert releases and changes', { retryVersions })
 
 	let releasesNew = 0
 	let releasesUpdated = 0
@@ -32,7 +33,10 @@ export async function upsertStep(
 
 		if (existingRelease) {
 			// Check if content has changed
-			if (existingRelease.contentHash === parsedRelease.contentHash) {
+			if (
+				existingRelease.contentHash === parsedRelease.contentHash &&
+				!retryVersions.includes(parsedRelease.version)
+			) {
 				// No changes, skip
 				logger.debug('Release unchanged, skipping', {
 					version: parsedRelease.version,
