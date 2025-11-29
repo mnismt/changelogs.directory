@@ -42,6 +42,18 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content:
 					'Stay updated with the latest changes in your favorite CLI developer tools. Track releases, features, and breaking changes all in one place.',
 			},
+			{
+				property: 'og:image',
+				content: `${import.meta.env.VITE_BASE_URL || 'https://changelogs.directory'}/og`,
+			},
+			{
+				name: 'twitter:image',
+				content: `${import.meta.env.VITE_BASE_URL || 'https://changelogs.directory'}/og`,
+			},
+			{
+				name: 'twitter:card',
+				content: 'summary_large_image',
+			},
 		],
 		links: [
 			{
