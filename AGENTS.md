@@ -12,7 +12,7 @@ This project uses **TanStack Start** - a full-stack React framework built on Tan
 
 ### Development
 ```bash
-pnpm dev              # Start development server on port 3000
+pnpm dev              # Start development server on port 5173
 ```
 
 ### Building
