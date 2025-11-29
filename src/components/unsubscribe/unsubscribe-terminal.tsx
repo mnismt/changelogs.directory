@@ -59,7 +59,7 @@ export function UnsubscribeTerminal({ email }: UnsubscribeTerminalProps) {
 
 		const bootLines = [
 			'changelogs --zsh -- 80x24',
-			'Last login: ' + new Date().toUTCString(),
+			`Last login: ${new Date().toUTCString()}`,
 		]
 
 		let delay = 0
@@ -257,7 +257,7 @@ export function UnsubscribeTerminal({ email }: UnsubscribeTerminalProps) {
 							<p className="text-muted-foreground mb-8 text-sm">
 								{finalMessage.type === 'success'
 									? '// Your email has been removed from our notification queue'
-									: '// ' + finalMessage.text}
+									: `// ${finalMessage.text}`}
 							</p>
 
 							{finalMessage.type === 'success' && (

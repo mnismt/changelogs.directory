@@ -54,6 +54,7 @@
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.9.1",
     "@upstash/redis": "^1.35.6",
+    "@vercel/og": "^0.8.5",
     "@vercel/otel": "^2.1.0",
     "ai": "^5.0.86",
     "bcrypt": "^6.0.0",

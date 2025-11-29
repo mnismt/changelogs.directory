@@ -17,13 +17,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
+import { Route as OgToolsRouteImport } from './routes/og/tools'
 import { Route as AdminToolsRouteImport } from './routes/admin/tools'
 import { Route as AdminIngestionRouteImport } from './routes/admin/ingestion'
 import { Route as AdminEmailsRouteImport } from './routes/admin/emails'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
+import { Route as OgToolsSlugRouteImport } from './routes/og/tools.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminToolsSlugRouteImport } from './routes/admin/tools_.$slug'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
+import { Route as OgToolsSlugReleasesVersionRouteImport } from './routes/og/tools.$slug.releases.$version'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -65,6 +68,11 @@ const ToolsSlugRoute = ToolsSlugRouteImport.update({
   path: '/tools/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OgToolsRoute = OgToolsRouteImport.update({
+  id: '/og/tools',
+  path: '/og/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminToolsRoute = AdminToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -85,6 +93,11 @@ const ToolsSlugIndexRoute = ToolsSlugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ToolsSlugRoute,
 } as any)
+const OgToolsSlugRoute = OgToolsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => OgToolsRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -101,6 +114,12 @@ const ToolsSlugReleasesVersionRoute =
     path: '/releases/$version',
     getParentRoute: () => ToolsSlugRoute,
   } as any)
+const OgToolsSlugReleasesVersionRoute =
+  OgToolsSlugReleasesVersionRouteImport.update({
+    id: '/releases/$version',
+    path: '/releases/$version',
+    getParentRoute: () => OgToolsSlugRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -111,13 +130,16 @@ export interface FileRoutesByFullPath {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/admin/tools/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/og/tools/$slug': typeof OgToolsSlugRouteWithChildren
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
+  '/og/tools/$slug/releases/$version': typeof OgToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -127,12 +149,15 @@ export interface FileRoutesByTo {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/og/tools': typeof OgToolsRouteWithChildren
   '/admin': typeof AdminIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/admin/tools/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/og/tools/$slug': typeof OgToolsSlugRouteWithChildren
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
+  '/og/tools/$slug/releases/$version': typeof OgToolsSlugReleasesVersionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -144,13 +169,16 @@ export interface FileRoutesById {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/tools/': typeof ToolsIndexRoute
   '/admin/tools_/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/og/tools/$slug': typeof OgToolsSlugRouteWithChildren
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
+  '/og/tools/$slug/releases/$version': typeof OgToolsSlugReleasesVersionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -163,13 +191,16 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/tools'
+    | '/og/tools'
     | '/tools/$slug'
     | '/admin/'
     | '/tools'
     | '/admin/tools/$slug'
     | '/api/auth/$'
+    | '/og/tools/$slug'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
+    | '/og/tools/$slug/releases/$version'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -179,12 +210,15 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/tools'
+    | '/og/tools'
     | '/admin'
     | '/tools'
     | '/admin/tools/$slug'
     | '/api/auth/$'
+    | '/og/tools/$slug'
     | '/tools/$slug'
     | '/tools/$slug/releases/$version'
+    | '/og/tools/$slug/releases/$version'
   id:
     | '__root__'
     | '/'
@@ -195,13 +229,16 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/tools'
+    | '/og/tools'
     | '/tools/$slug'
     | '/admin/'
     | '/tools/'
     | '/admin/tools_/$slug'
     | '/api/auth/$'
+    | '/og/tools/$slug'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
+    | '/og/tools/$slug/releases/$version'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -210,6 +247,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   LoginRoute: typeof LoginRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  OgToolsRoute: typeof OgToolsRouteWithChildren
   ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
   ToolsIndexRoute: typeof ToolsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -273,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/og/tools': {
+      id: '/og/tools'
+      path: '/og/tools'
+      fullPath: '/og/tools'
+      preLoaderRoute: typeof OgToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/tools': {
       id: '/admin/tools'
       path: '/tools'
@@ -301,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsSlugIndexRouteImport
       parentRoute: typeof ToolsSlugRoute
     }
+    '/og/tools/$slug': {
+      id: '/og/tools/$slug'
+      path: '/$slug'
+      fullPath: '/og/tools/$slug'
+      preLoaderRoute: typeof OgToolsSlugRouteImport
+      parentRoute: typeof OgToolsRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -321,6 +373,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tools/$slug/releases/$version'
       preLoaderRoute: typeof ToolsSlugReleasesVersionRouteImport
       parentRoute: typeof ToolsSlugRoute
+    }
+    '/og/tools/$slug/releases/$version': {
+      id: '/og/tools/$slug/releases/$version'
+      path: '/releases/$version'
+      fullPath: '/og/tools/$slug/releases/$version'
+      preLoaderRoute: typeof OgToolsSlugReleasesVersionRouteImport
+      parentRoute: typeof OgToolsSlugRoute
     }
   }
 }
@@ -343,6 +402,29 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface OgToolsSlugRouteChildren {
+  OgToolsSlugReleasesVersionRoute: typeof OgToolsSlugReleasesVersionRoute
+}
+
+const OgToolsSlugRouteChildren: OgToolsSlugRouteChildren = {
+  OgToolsSlugReleasesVersionRoute: OgToolsSlugReleasesVersionRoute,
+}
+
+const OgToolsSlugRouteWithChildren = OgToolsSlugRoute._addFileChildren(
+  OgToolsSlugRouteChildren,
+)
+
+interface OgToolsRouteChildren {
+  OgToolsSlugRoute: typeof OgToolsSlugRouteWithChildren
+}
+
+const OgToolsRouteChildren: OgToolsRouteChildren = {
+  OgToolsSlugRoute: OgToolsSlugRouteWithChildren,
+}
+
+const OgToolsRouteWithChildren =
+  OgToolsRoute._addFileChildren(OgToolsRouteChildren)
+
 interface ToolsSlugRouteChildren {
   ToolsSlugIndexRoute: typeof ToolsSlugIndexRoute
   ToolsSlugReleasesVersionRoute: typeof ToolsSlugReleasesVersionRoute
@@ -363,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   LoginRoute: LoginRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  OgToolsRoute: OgToolsRouteWithChildren,
   ToolsSlugRoute: ToolsSlugRouteWithChildren,
   ToolsIndexRoute: ToolsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

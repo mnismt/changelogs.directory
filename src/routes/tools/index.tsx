@@ -24,6 +24,37 @@ export const Route = createFileRoute('/tools/')({
 				content:
 					'Browse changelogs for popular CLI developer tools. Track updates, features, and breaking changes for Claude Code, Codex, and more.',
 			},
+			// Open Graph tags
+			{ property: 'og:type', content: 'website' },
+			{
+				property: 'og:title',
+				content: 'Developer Tools Directory - changelogs.directory',
+			},
+			{
+				property: 'og:description',
+				content:
+					'Browse changelogs for popular CLI developer tools. Track updates, features, and breaking changes.',
+			},
+			{
+				property: 'og:image',
+				content: 'https://changelogs.directory/og/tools',
+			},
+			{ property: 'og:url', content: 'https://changelogs.directory/tools' },
+			// Twitter Card tags
+			{ name: 'twitter:card', content: 'summary_large_image' },
+			{
+				name: 'twitter:title',
+				content: 'Developer Tools Directory - changelogs.directory',
+			},
+			{
+				name: 'twitter:description',
+				content:
+					'Browse changelogs for popular CLI developer tools. Track updates, features, and breaking changes.',
+			},
+			{
+				name: 'twitter:image',
+				content: 'https://changelogs.directory/og/tools',
+			},
 		],
 	}),
 })
