@@ -64,66 +64,70 @@ const MAX_FEED_RELEASES = 9
 const INITIAL_RELEASE_LIMIT = MAX_FEED_RELEASES + 1
 
 export const Route = createFileRoute('/')({
-	head: () => ({
-		meta: [
-			{
-				title: 'changelogs.directory - Latest Developer Tool Updates',
-			},
-			{
-				name: 'description',
-				content:
-					'Track the latest releases, features, and breaking changes for Claude Code, Codex, and other CLI developer tools. All updates in one place.',
-			},
-			{
-				property: 'og:type',
-				content: 'website',
-			},
-			{
-				property: 'og:title',
-				content: 'changelogs.directory - Latest Developer Tool Updates',
-			},
-			{
-				property: 'og:description',
-				content:
-					'Track changelogs, releases, and updates for your favorite developer tools with a single, searchable hub.',
-			},
-			{
-				property: 'og:url',
-				content: 'https://changelogs.directory/',
-			},
-			{
-				property: 'og:image',
-				content: 'https://changelogs.directory/og-image.png',
-			},
-			{
-				name: 'twitter:card',
-				content: 'summary_large_image',
-			},
-			{
-				name: 'twitter:creator',
-				content: '@leodoan_',
-			},
-			{
-				name: 'twitter:title',
-				content: 'changelogs.directory - Latest Developer Tool Updates',
-			},
-			{
-				name: 'twitter:description',
-				content:
-					'Track the latest releases, features, and breaking changes for your favorite developer tools.',
-			},
-			{
-				name: 'twitter:image',
-				content: 'https://changelogs.directory/og-image.png',
-			},
-		],
-		links: [
-			{
-				rel: 'canonical',
-				href: 'https://changelogs.directory/',
-			},
-		],
-	}),
+	head: () => {
+		const baseUrl =
+			import.meta.env.VITE_BASE_URL || 'https://changelogs.directory'
+		return {
+			meta: [
+				{
+					title: 'changelogs.directory - Latest Developer Tool Updates',
+				},
+				{
+					name: 'description',
+					content:
+						'Track the latest releases, features, and breaking changes for Claude Code, Codex, and other CLI developer tools. All updates in one place.',
+				},
+				{
+					property: 'og:type',
+					content: 'website',
+				},
+				{
+					property: 'og:title',
+					content: 'changelogs.directory - Latest Developer Tool Updates',
+				},
+				{
+					property: 'og:description',
+					content:
+						'Track changelogs, releases, and updates for your favorite developer tools with a single, searchable hub.',
+				},
+				{
+					property: 'og:url',
+					content: `${baseUrl}/`,
+				},
+				{
+					property: 'og:image',
+					content: `${baseUrl}/og-image.png`,
+				},
+				{
+					name: 'twitter:card',
+					content: 'summary_large_image',
+				},
+				{
+					name: 'twitter:creator',
+					content: '@leodoan_',
+				},
+				{
+					name: 'twitter:title',
+					content: 'changelogs.directory - Latest Developer Tool Updates',
+				},
+				{
+					name: 'twitter:description',
+					content:
+						'Track the latest releases, features, and breaking changes for your favorite developer tools.',
+				},
+				{
+					name: 'twitter:image',
+					content: `${baseUrl}/og-image.png`,
+				},
+			],
+			links: [
+				{
+					rel: 'canonical',
+					href: `${baseUrl}/`,
+				},
+			],
+		}
+	},
 	loader: async () => {
 		const data = await getLatestReleasesAcrossTools({
 			data: { limit: INITIAL_RELEASE_LIMIT, offset: 0 },
