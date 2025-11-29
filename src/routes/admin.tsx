@@ -22,7 +22,7 @@ function AdminLayout() {
 			<AdminSidebar />
 
 			{/* Main Content */}
-			<main className="pl-64">
+			<main className="pl-64 mt-12">
 				<div className="mx-auto max-w-5xl p-8">
 					{/* Breadcrumb / Header Area */}
 					<header className="mb-8 flex items-center justify-between">

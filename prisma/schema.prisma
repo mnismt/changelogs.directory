@@ -271,3 +271,18 @@ enum FetchStatus {
   FAILED // Failed (all releases)
   PARTIAL // Some releases succeeded, some failed
 }
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  status    String // "success", "failed"
+  provider  String // "resend", "zeptomail"
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([to])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("email_log")
+}
