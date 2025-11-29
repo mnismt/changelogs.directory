@@ -13,6 +13,8 @@ export const Route = createFileRoute('/tools/$slug')({
 	errorComponent: ToolLayoutError,
 	component: ToolLayout,
 	head: ({ params, loaderData }) => {
+		const baseUrl =
+			import.meta.env.VITE_BASE_URL || 'https://changelogs.directory'
 		const toolName = loaderData?.tool?.name ?? params.slug
 		return {
 			meta: [
@@ -35,11 +37,11 @@ export const Route = createFileRoute('/tools/$slug')({
 				},
 				{
 					property: 'og:image',
-					content: `https://changelogs.directory/og/tools/${params.slug}`,
+					content: `${baseUrl}/og/tools/${params.slug}`,
 				},
 				{
 					property: 'og:url',
-					content: `https://changelogs.directory/tools/${params.slug}`,
+					content: `${baseUrl}/tools/${params.slug}`,
 				},
 				// Twitter Card tags
 				{ name: 'twitter:card', content: 'summary_large_image' },
@@ -53,7 +55,7 @@ export const Route = createFileRoute('/tools/$slug')({
 				},
 				{
 					name: 'twitter:image',
-					content: `https://changelogs.directory/og/tools/${params.slug}`,
+					content: `${baseUrl}/og/tools/${params.slug}`,
 				},
 			],
 		}

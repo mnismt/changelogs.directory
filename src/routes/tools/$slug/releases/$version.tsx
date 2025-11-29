@@ -38,6 +38,8 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 	errorComponent: ReleaseDetailError,
 	component: ReleaseDetailPage,
 	head: ({ params, loaderData }) => {
+		const baseUrl =
+			import.meta.env.VITE_BASE_URL || 'https://changelogs.directory'
 		const formattedVersion = formatVersionForDisplay(
 			params.version,
 			params.slug,
@@ -67,11 +69,11 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 				},
 				{
 					property: 'og:image',
-					content: `https://changelogs.directory/og/tools/${params.slug}/releases/${params.version}`,
+					content: `${baseUrl}/og/tools/${params.slug}/releases/${params.version}`,
 				},
 				{
 					property: 'og:url',
-					content: `https://changelogs.directory/tools/${params.slug}/releases/${params.version}`,
+					content: `${baseUrl}/tools/${params.slug}/releases/${params.version}`,
 				},
 				// Twitter Card tags
 				{ name: 'twitter:card', content: 'summary_large_image' },
@@ -85,7 +87,7 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 				},
 				{
 					name: 'twitter:image',
-					content: `https://changelogs.directory/og/tools/${params.slug}/releases/${params.version}`,
+					content: `${baseUrl}/og/tools/${params.slug}/releases/${params.version}`,
 				},
 			],
 		}
