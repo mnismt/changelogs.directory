@@ -22,6 +22,7 @@ import { Route as AdminIngestionRouteImport } from './routes/admin/ingestion'
 import { Route as AdminEmailsRouteImport } from './routes/admin/emails'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AdminToolsSlugRouteImport } from './routes/admin/tools_.$slug'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -89,6 +90,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminToolsSlugRoute = AdminToolsSlugRouteImport.update({
+  id: '/tools_/$slug',
+  path: '/tools/$slug',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ToolsSlugReleasesVersionRoute =
   ToolsSlugReleasesVersionRouteImport.update({
     id: '/releases/$version',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/tools': typeof ToolsIndexRoute
+  '/admin/tools/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/admin/tools': typeof AdminToolsRoute
   '/admin': typeof AdminIndexRoute
   '/tools': typeof ToolsIndexRoute
+  '/admin/tools/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/tools/': typeof ToolsIndexRoute
+  '/admin/tools_/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/tools/$slug'
     | '/admin/'
     | '/tools'
+    | '/admin/tools/$slug'
     | '/api/auth/$'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/admin/tools'
     | '/admin'
     | '/tools'
+    | '/admin/tools/$slug'
     | '/api/auth/$'
     | '/tools/$slug'
     | '/tools/$slug/releases/$version'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/tools/$slug'
     | '/admin/'
     | '/tools/'
+    | '/admin/tools_/$slug'
     | '/api/auth/$'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
@@ -296,6 +308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/tools_/$slug': {
+      id: '/admin/tools_/$slug'
+      path: '/tools/$slug'
+      fullPath: '/admin/tools/$slug'
+      preLoaderRoute: typeof AdminToolsSlugRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/tools/$slug/releases/$version': {
       id: '/tools/$slug/releases/$version'
       path: '/releases/$version'
@@ -311,6 +330,7 @@ interface AdminRouteChildren {
   AdminIngestionRoute: typeof AdminIngestionRoute
   AdminToolsRoute: typeof AdminToolsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminToolsSlugRoute: typeof AdminToolsSlugRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -318,6 +338,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIngestionRoute: AdminIngestionRoute,
   AdminToolsRoute: AdminToolsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminToolsSlugRoute: AdminToolsSlugRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

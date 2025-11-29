@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getAdminTools, updateTool } from '@/server/admin'
 
@@ -49,14 +49,23 @@ function AdminTools() {
 									)}
 								</td>
 								<td className="px-4 py-3">
-									{editingId !== tool.id && (
-										<button
-											onClick={() => setEditingId(tool.id)}
-											className="text-blue-500 hover:text-blue-400"
+									<div className="flex items-center gap-3">
+										{editingId !== tool.id && (
+											<button
+												onClick={() => setEditingId(tool.id)}
+												className="text-blue-500 hover:text-blue-400"
+											>
+												Edit
+											</button>
+										)}
+										<Link
+											to="/admin/tools/$slug"
+											params={{ slug: tool.slug }}
+											className="text-neutral-400 hover:text-white"
 										>
-											Edit
-										</button>
-									)}
+											Releases
+										</Link>
+									</div>
 								</td>
 							</tr>
 						))}

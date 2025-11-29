@@ -10,9 +10,11 @@ import type { FilterResult, IngestionContext, ParseResult } from '../types'
 export async function filterStep(
 	ctx: IngestionContext,
 	parseResult: ParseResult,
+	retryVersions: string[] = [],
 ): Promise<FilterResult> {
 	logger.info('Phase 4: Filter unchanged releases', {
 		totalReleases: parseResult.releases.length,
+		retryVersions,
 	})
 
 	if (parseResult.releases.length === 0) {
@@ -42,6 +44,11 @@ export async function filterStep(
 
 	// Filter releases: keep only new ones or ones with changed contentHash
 	const releasesToEnrich = parseResult.releases.filter((release) => {
+		// Force retry if version is in retryVersions
+		if (retryVersions.includes(release.version)) {
+			return true
+		}
+
 		const existingHash = existingMap.get(release.version)
 
 		// New release (not in database)

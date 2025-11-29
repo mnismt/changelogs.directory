@@ -21,8 +21,11 @@ export const ingestClaudeCode = task({
 		concurrencyLimit: 1, // Prevent duplicate jobs
 	},
 	maxDuration: 300, // 5 minutes max
-	run: async (payload: { toolSlug?: string } = {}) => {
+	run: async (
+		payload: { toolSlug?: string; retryVersions?: string[] } = {},
+	) => {
 		const toolSlug = payload.toolSlug || 'claude-code'
+		const retryVersions = payload.retryVersions || []
 		const startTime = Date.now()
 
 		logger.info('Starting Claude Code changelog ingestion', { toolSlug })
@@ -58,7 +61,7 @@ export const ingestClaudeCode = task({
 			// ============================================================================
 			// Phase 4: Filter unchanged releases
 			// ============================================================================
-			const filterResult = await filterStep(ctx, parseResult)
+			const filterResult = await filterStep(ctx, parseResult, retryVersions)
 
 			// ============================================================================
 			// Phase 5: Enrich with LLM
@@ -68,7 +71,7 @@ export const ingestClaudeCode = task({
 			// ============================================================================
 			// Phase 6: Upsert
 			// ============================================================================
-			const upsertResult = await upsertStep(ctx, enrichResult)
+			const upsertResult = await upsertStep(ctx, enrichResult, retryVersions)
 
 			// ============================================================================
 			// Phase 7: Finalize

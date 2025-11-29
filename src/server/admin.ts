@@ -1,24 +1,23 @@
-import { createServerFn } from '@tanstack/react-start'
+import { createMiddleware, createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { auth } from '../lib/auth/server'
 import { UserRole } from '../lib/auth/types'
+import { getSessionFn } from './auth'
 import { getPrisma } from './db'
 
-const adminMiddleware = async () => {
-	const request = getRequest()
-	const session = await auth.api.getSession({
-		headers: request?.headers,
-	})
-
+const adminMiddleware = createMiddleware({
+	type: 'function',
+}).server(async ({ next }) => {
+	const session = await getSessionFn()
 	if (!session?.user || session.user.role !== UserRole.ADMIN) {
 		throw new Error('Unauthorized')
 	}
-
-	return { session }
-}
+	return next({ context: { session } })
+})
 
 export const updateTool = createServerFn({ method: 'POST' })
+	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
 			id: z.string(),
@@ -26,7 +25,6 @@ export const updateTool = createServerFn({ method: 'POST' })
 		}),
 	)
 	.handler(async ({ data }) => {
-		await adminMiddleware()
 		const prisma = getPrisma()
 		await prisma.tool.update({
 			where: { id: data.id },
@@ -37,8 +35,9 @@ export const updateTool = createServerFn({ method: 'POST' })
 		return { success: true }
 	})
 
-export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getWaitlistStats = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const now = new Date()
 		const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
@@ -65,24 +64,25 @@ export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
 			last24h,
 			last7d,
 		}
-	},
-)
+	})
 
 export const getWaitlistDailySignups = createServerFn({
 	method: 'GET',
-}).handler(async () => {
-	const prisma = getPrisma()
-	// Get signups for the last 30 days
-	const thirtyDaysAgo = new Date()
-	thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+})
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		const prisma = getPrisma()
+		// Get signups for the last 30 days
+		const thirtyDaysAgo = new Date()
+		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-	// Group by day manually since Prisma groupBy with date truncation is tricky across DBs
-	// or requires raw query. For simplicity/portability, we'll fetch and aggregate in JS
-	// if the volume is low. But waitlist might be large.
-	// Let's use a raw query for better performance or just fetch all and aggregate if MVP.
-	// Given it's an MVP, let's try raw query for postgres.
+		// Group by day manually since Prisma groupBy with date truncation is tricky across DBs
+		// or requires raw query. For simplicity/portability, we'll fetch and aggregate in JS
+		// if the volume is low. But waitlist might be large.
+		// Let's use a raw query for better performance or just fetch all and aggregate if MVP.
+		// Given it's an MVP, let's try raw query for postgres.
 
-	const dailySignups = (await prisma.$queryRaw`
+		const dailySignups = (await prisma.$queryRaw`
 			SELECT DATE(created_at) as date, COUNT(*)::int as count
 			FROM waitlist
 			WHERE created_at >= ${thirtyDaysAgo}
@@ -90,14 +90,15 @@ export const getWaitlistDailySignups = createServerFn({
 			ORDER BY DATE(created_at) ASC
 		`) as Array<{ date: Date; count: number }>
 
-	return dailySignups.map((item) => ({
-		date: item.date.toISOString(),
-		count: Number(item.count),
-	}))
-})
+		return dailySignups.map((item) => ({
+			date: item.date.toISOString(),
+			count: Number(item.count),
+		}))
+	})
 
-export const getIngestionOverview = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getIngestionOverview = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const logs = await prisma.fetchLog.findMany({
 			take: 10,
@@ -105,11 +106,11 @@ export const getIngestionOverview = createServerFn({ method: 'GET' }).handler(
 			include: { tool: true },
 		})
 		return logs
-	},
-)
+	})
 
-export const getIngestionStats = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getIngestionStats = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const sevenDaysAgo = new Date()
 		sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
@@ -150,11 +151,11 @@ export const getIngestionStats = createServerFn({ method: 'GET' }).handler(
 			successRate,
 			avgDuration: avgDurationAgg._avg.duration || 0,
 		}
-	},
-)
+	})
 
-export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getToolsOverview = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const tools = await prisma.tool.findMany({
 			include: {
@@ -206,27 +207,29 @@ export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 				lastFetchStartedAt: tool.fetchLogs[0]?.startedAt || null,
 			}
 		})
-	},
-)
+	})
 
 export const getChangeTypeDistribution = createServerFn({
 	method: 'GET',
-}).handler(async () => {
-	const prisma = getPrisma()
-	const distribution = await prisma.change.groupBy({
-		by: ['type'],
-		_count: { id: true },
+})
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		const prisma = getPrisma()
+		const distribution = await prisma.change.groupBy({
+			by: ['type'],
+			_count: { id: true },
+		})
+
+		// Return as array of objects with type and count
+		return distribution.map((item) => ({
+			type: item.type,
+			count: item._count.id,
+		}))
 	})
 
-	// Return as array of objects with type and count
-	return distribution.map((item) => ({
-		type: item.type,
-		count: item._count.id,
-	}))
-})
-
-export const getContentSummary = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getContentSummary = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const [
 			totalReleases,
@@ -252,11 +255,11 @@ export const getContentSummary = createServerFn({ method: 'GET' }).handler(
 			securityCount,
 			deprecationCount,
 		}
-	},
-)
+	})
 
-export const getReleaseTrends = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getReleaseTrends = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const eightWeeksAgo = new Date()
 		eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56)
@@ -292,12 +295,12 @@ export const getReleaseTrends = createServerFn({ method: 'GET' }).handler(
 				count,
 			}))
 			.sort((a, b) => a.week.localeCompare(b.week))
-	},
-)
+	})
 
 // Admin route server functions (to prevent client-side bundling of getPrisma)
-export const getAdminDashboardStats = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getAdminDashboardStats = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const [userCount, toolCount, releaseCount] = await Promise.all([
 			prisma.user.count(),
@@ -305,21 +308,21 @@ export const getAdminDashboardStats = createServerFn({ method: 'GET' }).handler(
 			prisma.release.count(),
 		])
 		return { userCount, toolCount, releaseCount }
-	},
-)
+	})
 
-export const getAdminTools = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getAdminTools = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const tools = await prisma.tool.findMany({
 			orderBy: { name: 'asc' },
 		})
 		return { tools }
-	},
-)
+	})
 
-export const getAdminIngestionLogs = createServerFn({ method: 'GET' }).handler(
-	async () => {
+export const getAdminIngestionLogs = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.handler(async () => {
 		const prisma = getPrisma()
 		const logs = await prisma.fetchLog.findMany({
 			take: 20,
@@ -327,5 +330,61 @@ export const getAdminIngestionLogs = createServerFn({ method: 'GET' }).handler(
 			include: { tool: true },
 		})
 		return { logs }
-	},
-)
+	})
+
+export const triggerToolIngestion = createServerFn({ method: 'POST' })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			toolSlug: z.string(),
+			version: z.string().optional(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const { ingestClaudeCode } = await import(
+			'../trigger/ingest/claude-code/index'
+		)
+
+		await ingestClaudeCode.trigger({
+			toolSlug: data.toolSlug,
+			retryVersions: data.version ? [data.version] : undefined,
+		})
+
+		return { success: true }
+	})
+
+export const getAdminToolReleases = createServerFn({ method: 'GET' })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			slug: z.string(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const prisma = getPrisma()
+		const tool = await prisma.tool.findUnique({
+			where: { slug: data.slug },
+			include: {
+				releases: {
+					orderBy: { versionSort: 'desc' },
+					select: {
+						id: true,
+						version: true,
+						releaseDate: true,
+						createdAt: true,
+						updatedAt: true,
+						contentHash: true,
+						_count: {
+							select: { changes: true },
+						},
+					},
+				},
+			},
+		})
+
+		if (!tool) {
+			throw new Error('Tool not found')
+		}
+
+		return { tool }
+	})
