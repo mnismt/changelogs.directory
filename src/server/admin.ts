@@ -79,11 +79,11 @@ export const getWaitlistDailySignups = createServerFn({
 	// Given it's an MVP, let's try raw query for postgres.
 
 	const dailySignups = (await prisma.$queryRaw`
-			SELECT DATE(created_at) as date, COUNT(*)::int as count
+			SELECT "created_at"::date as date, COUNT(*)::int as count
 			FROM waitlist
-			WHERE created_at >= ${thirtyDaysAgo}
-			GROUP BY DATE(created_at)
-			ORDER BY DATE(created_at) ASC
+			WHERE "created_at" >= ${thirtyDaysAgo}
+			GROUP BY "created_at"::date
+			ORDER BY "created_at"::date ASC
 		`) as Array<{ date: Date; count: number }>
 
 	return dailySignups.map((item) => ({
@@ -260,11 +260,11 @@ export const getReleaseTrends = createServerFn({ method: 'GET' }).handler(
 		// Use publishedAt instead of releaseDate since releaseDate is nullable
 		// Use raw query for date truncation
 		const trends = (await prisma.$queryRaw`
-			SELECT DATE(published_at) as date, COUNT(*)::int as count
+			SELECT "publishedAt"::date as date, COUNT(*)::int as count
 			FROM release
-			WHERE published_at >= ${eightWeeksAgo}
-			GROUP BY DATE(published_at)
-			ORDER BY DATE(published_at) ASC
+			WHERE "publishedAt" >= ${eightWeeksAgo}
+			GROUP BY "publishedAt"::date
+			ORDER BY "publishedAt"::date ASC
 		`) as Array<{ date: Date; count: number }>
 
 		// Handle empty data
