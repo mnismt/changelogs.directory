@@ -42,14 +42,50 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 			params.version,
 			params.slug,
 		)
+		const toolName = loaderData?.release?.tool?.name ?? 'Release'
+		const pageTitle = `${toolName} ${formattedVersion} Changelog - changelogs.directory`
+		const description = `View all changes, features, and bugfixes in ${toolName} version ${formattedVersion}.`
+
 		return {
 			meta: [
 				{
-					title: `${loaderData?.release?.tool?.name ?? 'Release'} ${formattedVersion} Changelog - changelogs.directory`,
+					title: pageTitle,
 				},
 				{
 					name: 'description',
-					content: `View all changes, features, and bugfixes in ${loaderData?.release?.tool?.name ?? 'the tool'} version ${formattedVersion}.`,
+					content: description,
+				},
+				// Open Graph tags
+				{ property: 'og:type', content: 'website' },
+				{
+					property: 'og:title',
+					content: `${toolName} ${formattedVersion} Changelog`,
+				},
+				{
+					property: 'og:description',
+					content: description,
+				},
+				{
+					property: 'og:image',
+					content: `https://changelogs.directory/og/tools/${params.slug}/releases/${params.version}`,
+				},
+				{
+					property: 'og:url',
+					content: `https://changelogs.directory/tools/${params.slug}/releases/${params.version}`,
+				},
+				// Twitter Card tags
+				{ name: 'twitter:card', content: 'summary_large_image' },
+				{
+					name: 'twitter:title',
+					content: `${toolName} ${formattedVersion} Changelog`,
+				},
+				{
+					name: 'twitter:description',
+					content: description,
+				},
+				{
+					name: 'twitter:image',
+					content: `https://changelogs.directory/og/tools/${params.slug}/releases/${params.version}`,
 				},
 			],
 		}

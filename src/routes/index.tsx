@@ -272,7 +272,7 @@ function HomePage() {
 	}, [animationStep])
 
 	const showFeed = animationStep === 'expanding' || animationStep === 'done'
-	const showPrompt = animationStep !== 'hero' && animationStep !== 'connector'
+	const _showPrompt = animationStep !== 'hero' && animationStep !== 'connector'
 
 	// Stable callback to prevent infinite loops in HeroSection effect
 	const handleHeroAnimationComplete = useCallback(() => {

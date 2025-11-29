@@ -12,6 +12,52 @@ export const Route = createFileRoute('/tools/$slug')({
 	},
 	errorComponent: ToolLayoutError,
 	component: ToolLayout,
+	head: ({ params, loaderData }) => {
+		const toolName = loaderData?.tool?.name ?? params.slug
+		return {
+			meta: [
+				{
+					title: `${toolName} Changelog - changelogs.directory`,
+				},
+				{
+					name: 'description',
+					content: `Track all releases and changes for ${toolName}. View detailed changelogs, breaking changes, and feature updates.`,
+				},
+				// Open Graph tags
+				{ property: 'og:type', content: 'website' },
+				{
+					property: 'og:title',
+					content: `${toolName} Changelog`,
+				},
+				{
+					property: 'og:description',
+					content: `Track all releases and changes for ${toolName}`,
+				},
+				{
+					property: 'og:image',
+					content: `https://changelogs.directory/og/tools/${params.slug}`,
+				},
+				{
+					property: 'og:url',
+					content: `https://changelogs.directory/tools/${params.slug}`,
+				},
+				// Twitter Card tags
+				{ name: 'twitter:card', content: 'summary_large_image' },
+				{
+					name: 'twitter:title',
+					content: `${toolName} Changelog`,
+				},
+				{
+					name: 'twitter:description',
+					content: `Track all releases and changes for ${toolName}`,
+				},
+				{
+					name: 'twitter:image',
+					content: `https://changelogs.directory/og/tools/${params.slug}`,
+				},
+			],
+		}
+	},
 })
 
 function ToolLayout() {

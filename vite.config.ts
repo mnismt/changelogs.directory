@@ -33,6 +33,9 @@ const config = defineConfig({
   optimizeDeps: {
     exclude: ['@tanstack/react-start', '@tanstack/start-server-core'],
   },
+  server: {
+    allowedHosts: ['eyeset.mnismt.com']
+  }
 })
 
 export default config
