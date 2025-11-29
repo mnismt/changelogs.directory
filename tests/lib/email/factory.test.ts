@@ -15,7 +15,8 @@ describe("createEmailProvider", () => {
 		const { createEmailProvider } = await import("@/lib/email")
 		const provider = createEmailProvider()
 
-		expect(provider.constructor.name).toBe("ResendProvider")
+		expect(provider.constructor.name).toBe("LoggingEmailProvider")
+		expect((provider as any).provider.constructor.name).toBe("ResendProvider")
 	})
 
 	it("should create ResendProvider when EMAIL_PROVIDER=resend", async () => {
@@ -25,7 +26,8 @@ describe("createEmailProvider", () => {
 		const { createEmailProvider } = await import("@/lib/email")
 		const provider = createEmailProvider()
 
-		expect(provider.constructor.name).toBe("ResendProvider")
+		expect(provider.constructor.name).toBe("LoggingEmailProvider")
+		expect((provider as any).provider.constructor.name).toBe("ResendProvider")
 	})
 
 	it("should create ZeptoMailProvider when EMAIL_PROVIDER=zeptomail", async () => {
@@ -35,7 +37,8 @@ describe("createEmailProvider", () => {
 		const { createEmailProvider } = await import("@/lib/email")
 		const provider = createEmailProvider()
 
-		expect(provider.constructor.name).toBe("ZeptoMailProvider")
+		expect(provider.constructor.name).toBe("LoggingEmailProvider")
+		expect((provider as any).provider.constructor.name).toBe("ZeptoMailProvider")
 	})
 
 	it("should throw when RESEND_API_KEY is missing for resend provider", async () => {
