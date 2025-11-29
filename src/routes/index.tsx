@@ -96,7 +96,7 @@ export const Route = createFileRoute('/')({
 				},
 				{
 					property: 'og:image',
-					content: `${baseUrl}/og-image.png`,
+					content: `${baseUrl}/og`,
 				},
 				{
 					name: 'twitter:card',
@@ -117,7 +117,7 @@ export const Route = createFileRoute('/')({
 				},
 				{
 					name: 'twitter:image',
-					content: `${baseUrl}/og-image.png`,
+					content: `${baseUrl}/og`,
 				},
 			],
 			links: [

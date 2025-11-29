@@ -27,6 +27,8 @@ find src/routes/og src/components/og -name "*.tsx" -exec sed -i '' "s/display: '
 
 The application generates dynamic OG images at runtime for all pages (except homepage) using **@vercel/og**. Each image features a terminal-themed design that perfectly matches our monochrome dev-vibe aesthetic.
 
+The system has been refactored to use a **component-based architecture**, maximizing code reuse and consistency across all image types.
+
 ## Technology Stack
 
 ### @vercel/og (Satori-based)
@@ -61,39 +63,6 @@ Satori **ONLY** supports these display values:
 
 **Rule:** ALL `<div>` elements MUST have an explicit display property. Even divs with single text children need `display: 'flex'`.
 
-**Examples:**
-```typescript
-// ✅ CORRECT - Text-only div
-<div style={{ display: 'flex', fontSize: '64px', color: '#FFF' }}>
-  {tool.name}
-</div>
-
-// ✅ CORRECT - Multiple children
-<div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-  <span>Item 1</span>
-  <span>Item 2</span>
-</div>
-
-// ✅ CORRECT - Self-closing div
-<div
-  style={{
-    display: 'flex',
-    position: 'absolute',
-    inset: 0,
-  }}
-/>
-
-// ❌ WRONG - Missing display
-<div style={{ fontSize: '64px' }}>
-  {tool.name}
-</div>
-
-// ❌ WRONG - Using block
-<div style={{ display: 'block', fontSize: '64px' }}>
-  {tool.name}
-</div>
-```
-
 #### 2. **Glassmorphism Limitation**
 
 Satori doesn't support `backdrop-filter: blur()`.
@@ -119,25 +88,41 @@ Three dynamic OG image endpoints in `/src/routes/og/`:
 
 ```
 /src/routes/og/
+├── index.tsx                          # GET /og → Homepage
 ├── tools.tsx                          # GET /og/tools → Tools directory page
-├── $slug.tsx                          # GET /og/{slug} → Tool detail page
-└── $slug.releases.$version.tsx        # GET /og/{slug}/releases/{version} → Release version page
+├── tools.$slug.tsx                    # GET /og/tools/{slug} → Tool detail page
+└── tools.$slug.releases.$version.tsx  # GET /og/tools/{slug}/releases/{version} → Release version page
 ```
 
-**Homepage exception:** The homepage (`/`) keeps its static `/og-image.png` file.
+**Homepage:** The homepage (`/`) uses the dynamic `/og` endpoint.
+
+**Default Fallback:** The `/og` endpoint is also used as the default fallback for any page that doesn't define a specific OG image (configured in `src/routes/__root.tsx`).
+
+### Component Structure
+
+We use a set of shared components to ensure consistency and DRY code:
+
+```
+src/components/og/
+├── og-layout.tsx       # Main wrapper component (Background + Chrome + Status Bar)
+├── og-background.tsx   # Background texture/grid
+├── radial-glow.tsx     # Radial gradient glow effect
+├── terminal-chrome.tsx # Top bar with traffic lights and title
+├── status-bar.tsx      # Bottom bar with breadcrumbs
+├── command-prompt.tsx  # Terminal command input simulation
+├── cta-button.tsx      # Standard Call-to-Action button
+└── logo-box.tsx        # Glassmorphism container for logos
+```
 
 ### URL Examples
 
-After implementation, these URLs will return PNG images:
-
 - `https://changelogs.directory/og/tools`
-- `https://changelogs.directory/og/claude-code`
-- `https://changelogs.directory/og/codex`
-- `https://changelogs.directory/og/claude-code/releases/2.0.55`
+- `https://changelogs.directory/og/tools/claude-code`
+- `https://changelogs.directory/og/tools/claude-code/releases/2.0.55`
 
 ### Caching Strategy
 
-**Aggressive HTTP caching** to minimize runtime generation overhead:
+**Aggressive HTTP caching** to minimize runtime generation overhead. This is handled centrally by `createOGImageResponse`.
 
 ```typescript
 headers: {
@@ -151,47 +136,61 @@ headers: {
 - **CDN cache:** 24 hours (86400s)
 - **Stale-while-revalidate:** 1 year (31536000s) - releases are immutable
 
-**Performance targets:**
-- First generation: ~100-300ms
-- Cached requests: <10ms (served from CDN)
-- Image size: <200KB PNG
+## Implementation Details
 
-## Visual Design System
+### 1. The `OGLayout` Component
 
-### Dimensions
+This is the core component that wraps all OG images. It handles the common structure:
 
-All OG images are **1200×630 pixels** (standard OG image size).
+```typescript
+<OGLayout
+  title="~/path/to/resource"
+  breadcrumbs={['changelogs.directory', 'section']}
+  indicator="Status Text"
+>
+  {/* Unique content goes here */}
+</OGLayout>
+```
 
-### Design Philosophy
+It automatically includes:
+- `OGBackground`
+- `RadialGlow`
+- `TerminalChrome`
+- `StatusBar`
+- Flexbox layout structure
 
-Based on `FeedReleaseCard` component (`src/components/home/feed-release-card.tsx:71-96`), our OG images feature:
+### 2. Response Handling
 
-#### Terminal Chrome
-- **macOS traffic lights:** Red `#ff5f56`, Yellow `#ffbd2e`, Green `#27c93f`
-- **Title bar:** Fira Code font, muted gray `#888888`
-- **Path display:** Shows file-like paths (e.g., `~/tools/claude-code`)
+We use utility functions in `src/lib/og-response.ts` to standardize responses:
 
-#### Typography
-- **Technical data:** Fira Code (monospace) for versions, stats, tool names
-- **UI text:** Inter for descriptions and call-to-actions
-- **Color hierarchy:** White `#FFFFFF` for primary, grays for secondary
+```typescript
+import { createOGImageResponse, createOGErrorResponse } from '@/lib/og-response'
 
-#### Visual Elements
-- **Background:** Deep black `#0A0A0A` with subtle texture
-- **Glassmorphism:** Semi-transparent overlays with `rgba(255,255,255,0.05)` gradients
-- **Borders:** Thin `rgba(255,255,255,0.1)` for structure
-- **Tool logos:** Actual SVG components from `src/components/logo/`, rendered as grayscale
+// Success
+return createOGImageResponse(image.body)
 
-### Design Alignment
+// Error
+return createOGErrorResponse(error, 'context-name')
+```
 
-Follows all design rules from `docs/DESIGN_RULES.md`:
+### 3. Font Loading
 
-✅ **Monochrome Palette:** Deep black backgrounds, white/gray text
-✅ **Typography:** Fira Code for all technical data
-✅ **Terminal Metaphor:** macOS traffic lights, path-style titles
-✅ **Glassmorphism:** Simulated with semi-transparent gradients
-✅ **Structure over Flash:** Dense, organized layouts
-✅ **System Status:** Stats displayed like terminal output
+Fonts are loaded via `src/lib/og-fonts.ts`. We use:
+- **Fira Code**: For all technical/monospace text (versions, stats, paths)
+- **Inter**: For UI text (descriptions, headlines)
+
+### 4. SVG Logo Handling
+
+**Challenge:** `@vercel/og` uses Satori which only supports `<img>` with base64 data URIs, not React components.
+
+**Solution:** Convert SVG React components to base64 data URIs using `src/lib/og-utils.ts`:
+
+```typescript
+import { getToolLogoSVG } from '@/lib/og-utils'
+
+// Get logo as base64 string
+const logoSVG = getToolLogoSVG('claude-code')
+```
 
 ## Visual Templates
 
@@ -200,838 +199,102 @@ Follows all design rules from `docs/DESIGN_RULES.md`:
 **Purpose:** OG image for `/tools` page
 
 **Layout:**
-```
-┌─────────────────────────────────────────────────────────┐
-│ ● ● ●  ~/tools                                          │ ← Terminal chrome
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│         changelogs.directory                             │ ← Fira Code 64px white
-│         ~/tools                                          │ ← Fira Code 32px gray-500
-│                                                          │
-│         TOTAL_TOOLS: 3    TOTAL_RELEASES: 571           │ ← Fira Code 18px
-│                                                          │
-│    ┌────────┐  ┌────────┐  ┌────────┐                  │
-│    │ Claude │  │ Codex  │  │ Cursor │                  │ ← Tool logos 80px
-│    │  Code  │  │        │  │        │                  │   grayscale
-│    └────────┘  └────────┘  └────────┘                  │
-│                                                          │
-│         Tracking CLI developer tools,                    │ ← Inter 20px
-│         one changelog at a time.                         │   gray-400
-│                                                          │
-└─────────────────────────────────────────────────────────┘
-```
+- **Chrome:** `~/tools`
+- **Command:** `ls tools/`
+- **Content:**
+  - Large "changelogs.directory" title
+  - Aggregate stats (Total Tools, Total Releases)
+  - Grid of top 3 tool logos in glassmorphism boxes
+- **Status Bar:** `changelogs.directory / tools` | `Live Release Feed`
 
-**Key Elements:**
-- Main heading uses Fira Code (terminal feel)
-- Stats use monospace numbers with uppercase labels
-- Tool logos rendered from actual SVG components with grayscale filter
-- Subtle grid pattern in background
+### Template B: Tool Detail (`/og/tools/{slug}`)
 
-**Data Source:** `getAllTools()` from `src/server/tools.ts`
-
-### Template B: Tool Detail (`/og/{slug}`)
-
-**Purpose:** OG image for individual tool pages (e.g., `/tools/claude-code`)
+**Purpose:** OG image for individual tool pages
 
 **Layout:**
-```
-┌─────────────────────────────────────────────────────────┐
-│ ● ● ●  ~/tools/claude-code                              │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│                                                          │
-│    ┌──────────┐                                         │
-│    │          │     Claude Code                          │ ← Fira Code 48px
-│    │  [LOGO]  │     by Anthropic                         │ ← Inter 20px gray
-│    │  120px   │                                          │
-│    └──────────┘                                         │
-│                                                          │
-│                    v2.0.55                               │ ← Fira Code 56px
-│                    2 hours ago                           │   with glow effect
-│                                                          │ ← Fira Code 18px
-│                    159 releases tracked                  │ ← Fira Code 20px
-│                                                          │
-│    ────────────────────────────────────────             │ ← Decorative line
-│                                                          │
-│             View complete changelog →                   │ ← Inter 18px
-│                                                          │
-└─────────────────────────────────────────────────────────┘
-```
+- **Chrome:** `~/tools/{slug}`
+- **Command:** `info {tool-name}`
+- **Content:**
+  - Left: Large tool logo in `LogoBox`
+  - Right: Tool Name, Version (with glow), Vendor, Release Count
+  - `CTAButton`: `$ click --to-read changelog →`
+- **Status Bar:** `changelogs.directory / v{version}` | `Live Release Feed`
 
-**Key Elements:**
-- Large tool logo (120×120px) as visual anchor
-- Tool name and vendor in separate hierarchy
-- Version number extra large with white glow effect:
-  ```typescript
-  textShadow: '0 0 20px rgba(255,255,255,0.3)'
-  ```
-- Glassmorphism panel behind main content
-- Decorative separator line
-- Call-to-action footer
-
-**Data Source:** `getToolMetadata({ data: { slug } })` from `src/server/tools.ts`
-
-### Template C: Release Version (`/og/{slug}/releases/{version}`)
+### Template C: Release Version (`/og/tools/{slug}/releases/{version}`)
 
 **Purpose:** OG image for individual release pages
 
 **Layout:**
-```
-┌─────────────────────────────────────────────────────────┐
-│ ● ● ●  ~/tools/claude-code/releases/v2.0.55             │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│    Claude Code v2.0.55                                   │ ← Fira Code 44px
-│    Released 2 hours ago                                  │ ← Fira Code 18px gray
-│                                                          │
-│    "Fixes proxy DNS resolution default                   │ ← Headline
-│     and keyboard navigation"                             │   Inter italic 24px
-│                                                          │
-│    ┌─────────────┐  ┌─────────────┐                    │
-│    │ ⚠️ BREAKING │  │ 🔒 SECURITY │                    │ ← Severity badges
-│    └─────────────┘  └─────────────┘                    │
-│                                                          │
-│    ────────────────────────────────────────             │
-│                                                          │
-│    4 total changes                                       │ ← Fira Code 20px
-│                                                          │
-│    2 Bugfix     2 Improvements                           │ ← Change type grid
-│                                                          │   2-column layout
-└─────────────────────────────────────────────────────────┘
-```
+- **Chrome:** `~/tools/{slug}/releases/{version}`
+- **Command:** `view release --tool {slug} --version {version}`
+- **Content:**
+  - Left: Tool logo in `LogoBox`
+  - Right: Tool Name, Large Version Number, Release Headline (italic)
+  - Badges: `⚠️ BREAKING`, `🔒 SECURITY`, `📛 DEPRECATION`
+  - Stats: Total changes, breakdown by type (e.g., "2 Bugfixes")
+  - CTA: `$ click --to-read changelog →`
+- **Status Bar:** `changelogs.directory / {slug} / {version}` | `Release Details`
 
-**Key Elements:**
-- Tool name + version as hero text
-- Release headline in italic Inter (git commit message aesthetic)
-- Severity badges for Breaking/Security/Deprecation:
-  - Red background (`#DC2626`)
-  - White text, uppercase
-  - Emoji indicators (⚠️, 🔒, 📛)
-- Change type breakdown in 2-column grid layout
-- All numbers in Fira Code monospace
+### Template D: Homepage (`/og`)
 
-**Data Source:** `getReleaseWithChanges({ data: { toolSlug, version } })` from `src/server/tools.ts`
+**Purpose:** OG image for the homepage
 
-## Implementation Details
+**Layout:**
+- **Chrome:** `~`
+- **Command:** `changelogs.directory`
+- **Content:**
+  - Large "changelogs.directory_" title
+  - Tagline: "The developer's hub for tracking CLI and editor releases."
+  - Stats: Total Tools, Total Releases
+  - Grid of top 4 tool logos
+- **Status Bar:** `changelogs.directory / home` | `Live Release Feed`
 
-### File Structure
+## Development Workflow
 
-#### New Files to Create
+### Adding a New OG Image
 
-**1. OG Route Handlers (3 files)**
-
-- `/src/routes/og/tools.tsx`
-  - Generates Tools directory OG image
-  - Fetches all tools data
-  - Displays aggregate stats
-
-- `/src/routes/og/$slug.tsx`
-  - Generates Tool detail OG image
-  - Fetches tool metadata
-  - Shows latest version and release count
-
-- `/src/routes/og/$slug.releases.$version.tsx`
-  - Generates Release version OG image
-  - Fetches release with changes
-  - Shows headline and change breakdown
-
-**2. Shared Components (2 files)**
-
-- `/src/components/og/terminal-chrome.tsx`
-  - Reusable terminal title bar
-  - macOS traffic lights
-  - Path display
-
-- `/src/components/og/og-background.tsx`
-  - Background texture/grid component
-  - Subtle visual depth
-
-**3. Utilities (2 files)**
-
-- `/src/lib/og-fonts.ts`
-  - Font loading from `/public/fonts/`
-  - Returns font data for Satori
-
-- `/src/lib/og-utils.ts`
-  - SVG logo to base64 conversion
-  - Helper functions for OG generation
-
-**4. Font Files (download to `/public/fonts/`)**
-
-Download from [Google Fonts](https://fonts.google.com):
-
-- `FiraCode-Regular.ttf` - For all technical/monospace text
-- `Inter-SemiBold.ttf` - For bold UI text
-- `Inter-Regular.ttf` - For regular UI text
-
-#### Files to Modify
-
-**5. Route Metadata Updates (3 files)**
-
-- `/src/routes/tools/index.tsx`
-  - Update `head()` function
-  - Add `og:image` and `twitter:image` meta tags
-
-- `/src/routes/tools/$slug/index.tsx`
-  - Update `head()` function
-  - Add dynamic OG image URL
-
-- `/src/routes/tools/$slug/releases/$version.tsx`
-  - Update `head()` function
-  - Add dynamic OG image URL with version
-
-### Code Patterns
-
-#### Font Loading Pattern
-
-```typescript
-// /src/lib/og-fonts.ts
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
-
-export async function loadOGFonts() {
-  const [firaCode, interBold, inter] = await Promise.all([
-    readFile(join(process.cwd(), 'public/fonts/FiraCode-Regular.ttf')),
-    readFile(join(process.cwd(), 'public/fonts/Inter-SemiBold.ttf')),
-    readFile(join(process.cwd(), 'public/fonts/Inter-Regular.ttf')),
-  ])
-
-  return [
-    {
-      name: 'Fira Code',
-      data: firaCode,
-      weight: 400 as const,
-      style: 'normal' as const
-    },
-    {
-      name: 'Inter',
-      data: interBold,
-      weight: 600 as const,
-      style: 'normal' as const
-    },
-    {
-      name: 'Inter',
-      data: inter,
-      weight: 400 as const,
-      style: 'normal' as const
-    },
-  ]
-}
-```
-
-#### SVG Logo Handling
-
-**Challenge:** `@vercel/og` uses Satori which only supports `<img>` with base64 data URIs, not React components.
-
-**Solution:** Convert SVG React components to base64 data URIs:
-
-```typescript
-// /src/lib/og-utils.ts
-import { renderToStaticMarkup } from 'react-dom/server'
-
-export function svgToBase64DataUri(svgComponent: React.ReactElement): string {
-  const svgString = renderToStaticMarkup(svgComponent)
-  const base64 = Buffer.from(svgString).toString('base64')
-  return `data:image/svg+xml;base64,${base64}`
-}
-```
-
-**Usage in OG route:**
-```typescript
-import { ClaudeAI } from '@/components/logo/claude'
-import { svgToBase64DataUri } from '@/lib/og-utils'
-
-// Convert logo to base64
-const logoDataUri = svgToBase64DataUri(<ClaudeAI />)
-
-// Use in ImageResponse JSX
-<img
-  src={logoDataUri}
-  width="120"
-  height="120"
-  style={{ filter: 'grayscale(100%)' }}
-/>
-```
-
-#### Route Handler Pattern
-
-**Example:** Tool Detail OG (`/src/routes/og/$slug.tsx`)
-
-```typescript
-import { ImageResponse } from '@vercel/og'
-import { createAPIFileRoute } from '@tanstack/react-start/api'
-import { getToolMetadata } from '@/server/tools'
-import { loadOGFonts } from '@/lib/og-fonts'
-import { TerminalChrome } from '@/components/og/terminal-chrome'
-import { OGBackground } from '@/components/og/og-background'
-
-export const Route = createAPIFileRoute('/og/$slug')({
-  GET: async ({ request, params }) => {
-    // 1. Fetch tool data
-    const tool = await getToolMetadata({ data: { slug: params.slug } })
-
-    // 2. Load fonts
-    const fonts = await loadOGFonts()
-
-    // 3. Get logo as base64
-    const logoDataUri = getToolLogoDataUri(params.slug)
-
-    // 4. Generate image
-    return new ImageResponse(
-      (
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: '#0A0A0A',
-            position: 'relative',
-          }}
-        >
-          {/* Background texture */}
-          <OGBackground />
-
-          {/* Terminal chrome */}
-          <TerminalChrome title={`~/tools/${params.slug}`} />
-
-          {/* Main content */}
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '60px',
-            }}
-          >
-            {/* Tool logo */}
-            <img
-              src={logoDataUri}
-              width="120"
-              height="120"
-              style={{ filter: 'grayscale(100%)', marginBottom: '32px' }}
-            />
-
-            {/* Tool name */}
-            <div
-              style={{
-                fontFamily: 'Fira Code',
-                fontSize: '48px',
-                color: '#FFFFFF',
-                marginBottom: '12px',
-              }}
-            >
-              {tool.name}
-            </div>
-
-            {/* Vendor */}
-            {tool.vendor && (
-              <div
-                style={{
-                  fontFamily: 'Inter',
-                  fontSize: '20px',
-                  color: '#888888',
-                  marginBottom: '40px',
-                }}
-              >
-                by {tool.vendor}
-              </div>
-            )}
-
-            {/* Version with glow */}
-            <div
-              style={{
-                fontFamily: 'Fira Code',
-                fontSize: '56px',
-                color: '#FFFFFF',
-                textShadow: '0 0 20px rgba(255,255,255,0.3)',
-                marginBottom: '16px',
-              }}
-            >
-              v{tool.latestVersion}
-            </div>
-
-            {/* Release count */}
-            <div
-              style={{
-                fontFamily: 'Fira Code',
-                fontSize: '20px',
-                color: '#AAAAAA',
-              }}
-            >
-              {tool.releaseCount} releases tracked
-            </div>
-          </div>
-        </div>
-      ),
-      {
-        width: 1200,
-        height: 630,
-        fonts,
-        headers: {
-          'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=31536000',
-        },
-      }
+1.  **Create Route:** Add a new file in `src/routes/og/`.
+2.  **Fetch Data:** Use server functions to get necessary data.
+3.  **Load Fonts:** `const fonts = await loadOGFonts()`
+4.  **Construct Image:**
+    ```typescript
+    const image = new ImageResponse(
+      <OGLayout ...>
+        <CommandPrompt ... />
+        {/* Your Content */}
+      </OGLayout>,
+      { width: 1200, height: 630, fonts }
     )
-  },
-})
-```
-
-#### Terminal Chrome Component
-
-```typescript
-// /src/components/og/terminal-chrome.tsx
-
-export function TerminalChrome({ title }: { title: string }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        height: '44px',
-        backgroundColor: '#1A1A1A',
-        borderBottom: '1px solid #2A2A2A',
-        paddingLeft: '16px',
-        paddingRight: '16px',
-      }}
-    >
-      {/* Traffic lights */}
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <div
-          style={{
-            width: '12px',
-            height: '12px',
-            borderRadius: '50%',
-            backgroundColor: '#ff5f56',
-          }}
-        />
-        <div
-          style={{
-            width: '12px',
-            height: '12px',
-            borderRadius: '50%',
-            backgroundColor: '#ffbd2e',
-          }}
-        />
-        <div
-          style={{
-            width: '12px',
-            height: '12px',
-            borderRadius: '50%',
-            backgroundColor: '#27c93f',
-          }}
-        />
-      </div>
-
-      {/* Title - centered */}
-      <div
-        style={{
-          flex: 1,
-          textAlign: 'center',
-          fontFamily: 'Fira Code',
-          fontSize: '14px',
-          color: '#888888',
-        }}
-      >
-        {title}
-      </div>
-    </div>
-  )
-}
-```
-
-#### Glassmorphism Simulation
-
-Since `backdrop-filter` isn't supported, simulate with gradients and borders:
-
-```typescript
-// Glassmorphism panel
-<div
-  style={{
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: '8px',
-    padding: '40px',
-  }}
->
-  {/* Content */}
-</div>
-```
-
-#### Integrating with Route Metadata
-
-Update route `head()` functions to reference OG image endpoints:
-
-```typescript
-// /src/routes/tools/$slug/index.tsx
-
-export const Route = createFileRoute('/tools/$slug/')({
-  // ... existing loader, component, etc.
-
-  head: ({ params, loaderData }) => ({
-    meta: [
-      {
-        title: `${loaderData?.tool?.name ?? 'Tool'} Changelog - changelogs.directory`
-      },
-      {
-        name: 'description',
-        content: `Track all releases and changes for ${loaderData?.tool?.name ?? 'this tool'}.`
-      },
-      // OG tags
-      { property: 'og:type', content: 'website' },
-      { property: 'og:title', content: `${loaderData?.tool?.name ?? 'Tool'} Changelog` },
-      { property: 'og:image', content: `https://changelogs.directory/og/${params.slug}` },
-      { property: 'og:url', content: `https://changelogs.directory/tools/${params.slug}` },
-      // Twitter tags
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:image', content: `https://changelogs.directory/og/${params.slug}` },
-    ],
-  }),
-})
-```
-
-**For release pages:**
-```typescript
-{ property: 'og:image', content: `https://changelogs.directory/og/${params.slug}/releases/${params.version}` }
-```
-
-## Implementation Checklist
-
-### Phase 1: Infrastructure Setup
-
-- [ ] Install `@vercel/og`: `pnpm add @vercel/og`
-- [ ] Download fonts to `/public/fonts/`:
-  - [ ] `FiraCode-Regular.ttf` from [Google Fonts](https://fonts.google.com/specimen/Fira+Code)
-  - [ ] `Inter-SemiBold.ttf` from [Google Fonts](https://fonts.google.com/specimen/Inter)
-  - [ ] `Inter-Regular.ttf` from [Google Fonts](https://fonts.google.com/specimen/Inter)
-- [ ] Create `/src/lib/og-fonts.ts` (font loader utility)
-- [ ] Create `/src/lib/og-utils.ts` (SVG to base64 converter)
-
-### Phase 2: Shared Components
-
-- [ ] Create `/src/components/og/terminal-chrome.tsx` (title bar with traffic lights)
-- [ ] Create `/src/components/og/og-background.tsx` (background texture/grid)
-
-### Phase 3: OG Route Handlers
-
-- [ ] Create `/src/routes/og/tools.tsx` (tools directory OG endpoint)
-- [ ] Create `/src/routes/og/$slug.tsx` (tool detail OG endpoint)
-- [ ] Create `/src/routes/og/$slug.releases.$version.tsx` (release version OG endpoint)
-
-### Phase 4: Route Integration
-
-- [ ] Update `/src/routes/tools/index.tsx` - Add `og:image` meta tag to `head()`
-- [ ] Update `/src/routes/tools/$slug/index.tsx` - Add `og:image` meta tag to `head()`
-- [ ] Update `/src/routes/tools/$slug/releases/$version.tsx` - Add `og:image` meta tag to `head()`
-
-### Phase 5: Testing & Validation
-
-- [ ] Test OG endpoints locally (visit `/og/tools`, `/og/claude-code`, etc.)
-- [ ] Verify images are 1200×630px
-- [ ] Check file sizes (<300KB for fast loading)
-- [ ] Validate with [Twitter Card Validator](https://cards-dev.twitter.com/validator)
-- [ ] Validate with [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/)
-- [ ] Test different tools (claude-code, codex, cursor)
-- [ ] Test different versions
-- [ ] Verify caching headers in Network tab
-- [ ] Check that fonts render correctly
-- [ ] Verify tool logos appear as grayscale
-
-## Testing
-
-### Local Testing
-
-Visit OG endpoints directly in browser:
-```
-http://localhost:3000/og/tools
-http://localhost:3000/og/claude-code
-http://localhost:3000/og/codex
-http://localhost:3000/og/claude-code/releases/2.0.55
-```
-
-These should return PNG images, not HTML.
-
-### Validation Tools
-
-**Twitter Card Validator:**
-- URL: https://cards-dev.twitter.com/validator
-- Enter your page URL (not the OG image URL)
-- Check that card renders correctly
-
-**Facebook Sharing Debugger:**
-- URL: https://developers.facebook.com/tools/debug/
-- Enter your page URL
-- Click "Scrape Again" to refresh cache
-- Verify image appears in preview
+    ```
+5.  **Return Response:** `return createOGImageResponse(image.body)`
 
 ### Debugging Checklist
 
-If OG images don't appear:
+If OG images don't appear or look wrong:
 
-1. **Check route handler:** Visit `/og/{slug}` directly - should return PNG
-2. **Check meta tags:** View page source - `og:image` should point to `/og/{slug}`
-3. **Check fonts:** Ensure TTF files exist in `/public/fonts/`
-4. **Check logo conversion:** Verify `svgToBase64DataUri()` returns valid data URI
-5. **Check caching:** Clear browser cache and social platform cache
-6. **Check dimensions:** Image should be exactly 1200×630px
+1.  **Check route handler:** Visit `/og/tools/claude-code` directly - should return PNG.
+2.  **Check meta tags:** View page source - `og:image` should point to the correct URL.
+3.  **Check `display: flex`:** Ensure ALL divs have explicit display properties.
+4.  **Check fonts:** Ensure TTF files exist in `/public/fonts/`.
+5.  **Check caching:** Clear browser cache if seeing old versions.
+6.  **Check dimensions:** Image should be exactly 1200×630px.
 
-### Common Errors & Solutions
+## Common Errors & Solutions
 
-#### Error: "Expected <div> to have explicit display: flex, display: contents, or display: none"
+#### Error: "Expected <div> to have explicit display: flex..."
 
-**Cause:** A `<div>` element is missing the `display` property or using an unsupported value like `display: 'block'`.
+**Cause:** A `<div>` is missing `display: 'flex'` or using `display: 'block'`.
 
-**Solution:**
-1. **Find the problematic div:** The error doesn't tell you which div is the issue. Check all divs systematically.
-2. **Add explicit display:** Ensure EVERY `<div>` has `display: 'flex'` (or `contents`/`none`)
-3. **Replace `display: 'block'`:** If you used `display: 'block'`, change to `display: 'flex'`
+**Solution:** Find the div and add `style={{ display: 'flex' }}`.
 
-**Quick fix command:**
-```bash
-# Find all divs without display property in OG files
-grep -n "style={{" src/routes/og/*.tsx src/components/og/*.tsx
+#### Error: Images not loading
 
-# Replace all display: block with display: flex
-find src/routes/og src/components/og -name "*.tsx" -exec sed -i '' "s/display: 'block'/display: 'flex'/g" {} \;
-```
+**Cause:** Satori only supports `<img>` with base64 data URIs or absolute URLs. Relative paths won't work.
 
-**Checklist of divs to verify:**
-- [ ] All container divs with multiple children
-- [ ] Text-only divs (even single text nodes need `display: 'flex'`)
-- [ ] Self-closing divs (decorative elements, separators)
-- [ ] Absolutely positioned divs (backgrounds, overlays)
+**Solution:** Use `getToolLogoSVG` helper or convert images to base64.
 
-#### Error: Server crashes with no specific message
+#### Error: Text not appearing
 
-**Cause:** Usually a missing display property that Satori can't handle.
+**Cause:** Missing font or color matching background.
 
-**Solution:**
-1. Check server logs for stack trace pointing to specific file/line
-2. Verify all `<div>` elements have `display: 'flex'`
-3. Test the route directly: `curl http://localhost:5173/og/tools/claude-code`
-
-#### Error: Image returns HTML instead of PNG
-
-**Cause:** Route handler isn't being invoked (TanStack Router issue) or component is defined instead of server handler.
-
-**Solution:**
-1. Verify route uses `server.handlers.GET` structure
-2. Ensure no `component` function is exported
-3. Check route path matches file structure
-4. Restart dev server
-
-## Error Handling
-
-### Fallback Strategy
-
-If tool/release not found or data fetch fails:
-
-```typescript
-// In route handler
-try {
-  const tool = await getToolMetadata({ data: { slug: params.slug } })
-  // ... generate image
-} catch (error) {
-  // Return default/error OG image
-  return new Response(
-    await readFile(join(process.cwd(), 'public/og-image.png')),
-    {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=60', // Short cache for errors
-      },
-    }
-  )
-}
-```
-
-### Font Loading Failures
-
-If fonts fail to load, Satori will gracefully fall back to system fonts. Images will still generate but may not match design exactly.
-
-## Performance Considerations
-
-### Generation Time
-- **First request:** ~100-300ms (acceptable for runtime)
-- **Cached requests:** <10ms (served from CDN)
-- **Image size target:** <200KB PNG
-
-### Optimization Tips
-- Use aggressive caching headers (already configured)
-- Consider pre-generating images for top tools at build time
-- Monitor image file sizes - compress if >300KB
-
-## Deployment
-
-### Compatibility
-- **Cloudflare Workers:** ✅ Satori is edge-compatible
-- **Vercel Edge:** ✅ Works out of the box
-- **Node.js serverless:** ✅ Compatible
-
-### No Timeout Concerns
-Image generation is fast (~100-300ms), well within serverless function timeout limits.
-
-## SEO & Accessibility
-
-### OG Images Purpose
-OG images are for **social sharing only**:
-- Not exposed to screen readers
-- Not part of page content
-- Used by social platforms (Twitter, Facebook, LinkedIn, Discord, Slack)
-
-### Meta Descriptions
-Ensure pages still have descriptive `description` meta tags for SEO:
-
-```typescript
-{ name: 'description', content: 'Detailed description for SEO...' }
-```
-
-OG images enhance social sharing but don't replace good SEO practices.
-
-## Best Practices
-
-### 1. Always Use Explicit Display Properties
-
-Every `<div>` must have `display: 'flex'` (or `contents`/`none`):
-
-```typescript
-// ✅ DO THIS
-<div style={{ display: 'flex', fontSize: '24px' }}>
-  Hello World
-</div>
-
-// ❌ DON'T DO THIS
-<div style={{ fontSize: '24px' }}>
-  Hello World
-</div>
-```
-
-### 2. Use Flexbox Layout Patterns
-
-Since Satori only supports flexbox, embrace flex properties:
-
-```typescript
-// ✅ Center content
-<div style={{
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexDirection: 'column',
-}}>
-  <div>Item 1</div>
-  <div>Item 2</div>
-</div>
-
-// ✅ Horizontal layout with spacing
-<div style={{
-  display: 'flex',
-  gap: '16px',
-  alignItems: 'center',
-}}>
-  <span>Left</span>
-  <span>Right</span>
-</div>
-```
-
-### 3. Test Locally Before Deploying
-
-Always test OG endpoints directly:
-
-```bash
-# Should return PNG image data
-curl -I http://localhost:5173/og/tools/claude-code
-
-# Should show: content-type: image/png
-# Should NOT show: content-type: text/html
-```
-
-### 4. Monochrome Color Palette
-
-Keep the dev-vibe aesthetic with subtle grays:
-
-```typescript
-// Use subtle gray tones instead of bright colors
-color: '#888888'  // Mid gray for secondary text
-color: '#CCCCCC'  // Light gray for primary text
-color: '#444444'  // Dark gray for labels
-color: '#FFFFFF'  // White for headings
-
-// Avoid bright accent colors in favor of white/gray
-background: 'rgba(255, 255, 255, 0.08)'  // Subtle white overlay
-border: '1px solid rgba(255, 255, 255, 0.15)'  // Subtle border
-```
-
-### 5. Add Subtle Branding
-
-Include changelogs.directory branding without being intrusive:
-
-```typescript
-// Bottom status bar example
-<div style={{
-  display: 'flex',
-  justifyContent: 'space-between',
-  padding: '0 16px',
-  fontSize: '13px',
-  color: '#666666',
-}}>
-  <span>changelogs.directory / v{version}</span>
-  <span>● Live Release Feed</span>
-</div>
-```
-
-## Critical Files Reference
-
-**Files to read before implementation:**
-- `src/components/home/feed-release-card.tsx` - Terminal chrome design pattern (lines 71-96)
-- `src/lib/tool-logos.tsx` - Logo component access
-- `src/components/logo/claude.tsx`, `cursor.tsx`, `openai.tsx` - SVG logo sources
-- `docs/DESIGN_RULES.md` - Design system constraints
-
-**Server functions to leverage:**
-- `getToolMetadata()` from `src/server/tools.ts`
-- `getReleaseWithChanges()` from `src/server/tools.ts`
-- `getAllTools()` from `src/server/tools.ts`
-
-## Maintenance
-
-### Adding New Tools
-
-When adding new tools:
-
-1. Add logo component to `/src/components/logo/{tool}.tsx`
-2. Register in `/src/lib/tool-logos.tsx`
-3. OG images will automatically work for new tools
-
-### Updating Design
-
-To update OG image designs:
-
-1. Modify templates in `/src/routes/og/*.tsx`
-2. Test locally by visiting `/og/{slug}`
-3. Clear CDN cache after deployment (if needed)
-
-### Font Updates
-
-To update fonts:
-
-1. Replace TTF files in `/public/fonts/`
-2. Update `/src/lib/og-fonts.ts` if font names change
-3. Redeploy
-
-## Future Enhancements
-
-Potential improvements for v2:
-
-- [ ] Add subtle animated gradients (if Satori adds animation support)
-- [ ] Pre-generate images at build time for popular tools
-- [ ] A/B test different layouts for engagement
-- [ ] Add custom OG images for special events/announcements
-- [ ] Support dark/light mode variants (if needed)
-
----
-
-**Last Updated:** 2025-01-29
-**Status:** Implementation pending
-**Owner:** Development team
+**Solution:** Ensure fonts are loaded and passed to `ImageResponse`. Check text color contrast.

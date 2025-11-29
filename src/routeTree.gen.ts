@@ -15,6 +15,7 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
+import { Route as OgIndexRouteImport } from './routes/og/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
 import { Route as OgToolsRouteImport } from './routes/og/tools'
@@ -56,6 +57,11 @@ const IndexRoute = IndexRouteImport.update({
 const ToolsIndexRoute = ToolsIndexRouteImport.update({
   id: '/tools/',
   path: '/tools/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OgIndexRoute = OgIndexRouteImport.update({
+  id: '/og/',
+  path: '/og/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
+  '/og': typeof OgIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/admin/tools/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/admin/tools': typeof AdminToolsRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/admin': typeof AdminIndexRoute
+  '/og': typeof OgIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/admin/tools/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
+  '/og/': typeof OgIndexRoute
   '/tools/': typeof ToolsIndexRoute
   '/admin/tools_/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/og/tools'
     | '/tools/$slug'
     | '/admin/'
+    | '/og'
     | '/tools'
     | '/admin/tools/$slug'
     | '/api/auth/$'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/admin/tools'
     | '/og/tools'
     | '/admin'
+    | '/og'
     | '/tools'
     | '/admin/tools/$slug'
     | '/api/auth/$'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/og/tools'
     | '/tools/$slug'
     | '/admin/'
+    | '/og/'
     | '/tools/'
     | '/admin/tools_/$slug'
     | '/api/auth/$'
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   OgToolsRoute: typeof OgToolsRouteWithChildren
   ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
+  OgIndexRoute: typeof OgIndexRoute
   ToolsIndexRoute: typeof ToolsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -295,6 +308,13 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof ToolsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/og/': {
+      id: '/og/'
+      path: '/og'
+      fullPath: '/og'
+      preLoaderRoute: typeof OgIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -447,6 +467,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   OgToolsRoute: OgToolsRouteWithChildren,
   ToolsSlugRoute: ToolsSlugRouteWithChildren,
+  OgIndexRoute: OgIndexRoute,
   ToolsIndexRoute: ToolsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
