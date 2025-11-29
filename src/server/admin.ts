@@ -1,7 +1,5 @@
 import { createMiddleware, createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { z } from 'zod'
-import { auth } from '../lib/auth/server'
 import { UserRole } from '../lib/auth/types'
 import { getSessionFn } from './auth'
 import { getPrisma } from './db'
