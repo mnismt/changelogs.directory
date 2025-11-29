@@ -3,12 +3,14 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
-const TOTAL_SIGNUPS = 74
+const TOTAL_SIGNUPS = 73
 const PROVIDERS = ["gmail.com", "outlook.com", "icloud.com", "yahoo.com"] as const
 
-const currentYear = new Date().getFullYear()
-const startDate = new Date(Date.UTC(currentYear, 9, 30, 0, 0, 0))
-const endDate = new Date(Date.UTC(currentYear, 10, 24, 23, 59, 59))
+const START_DATE = "2025-10-30"
+const END_DATE = "2025-11-29"
+
+const startDate = new Date(`${START_DATE}T00:00:00Z`)
+const endDate = new Date(`${END_DATE}T23:59:59Z`)
 
 function getRandomDate(): Date {
 	return faker.date.between({ from: startDate, to: endDate })
@@ -58,7 +60,7 @@ async function main() {
 		skipDuplicates: true,
 	})
 
-	console.log(`Inserted ${result.count} waitlist signups between 10/30 and 11/24 (year: ${currentYear})`)
+	console.log(`Inserted ${result.count} waitlist signups between ${START_DATE} and ${END_DATE}`)
 }
 
 main()

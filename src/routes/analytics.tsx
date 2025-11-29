@@ -21,7 +21,7 @@ import { ToolChangeProfilesChart } from '@/components/admin/tool-change-profiles
 import { ToolQualityMetricsChart } from '@/components/admin/tool-quality-metrics-chart'
 import { ToolsTable } from '@/components/admin/tools-table'
 import { WaitlistChart } from '@/components/admin/waitlist-chart'
-import { cn } from '@/lib/utils'
+import { cn, maskEmail } from '@/lib/utils'
 import {
 	getChangeTypeDistribution,
 	getContentSummary,
@@ -76,15 +76,56 @@ export const Route = createFileRoute('/analytics')({
 			toolQualityMetrics,
 		}
 	},
-	head: () => ({
-		meta: [
-			{ title: 'Admin Dashboard | Changelogs.directory' },
-			{
-				name: 'robots',
-				content: 'noindex, nofollow',
-			},
-		],
-	}),
+	head: () => {
+		const baseUrl = process.env.VITE_BASE_URL || 'https://changelogs.directory'
+		return {
+			meta: [
+				{ title: 'Analytics | Changelogs.directory' },
+				{
+					name: 'robots',
+					content: 'noindex, nofollow',
+				},
+				{
+					name: 'description',
+					content:
+						'Real-time monitoring of ingestion pipelines, content metrics, and platform growth.',
+				},
+				{
+					name: 'keywords',
+					content: 'analytics, changelogs, changelog, changelog directory',
+				},
+				{
+					property: 'og:url',
+					content: `${baseUrl}/analytics`,
+				},
+				{
+					property: 'og:image',
+					content: `${baseUrl}/og`,
+				},
+				{
+					name: 'twitter:card',
+					content: 'summary_large_image',
+				},
+				{
+					name: 'twitter:creator',
+					content: '@leodoan_',
+				},
+				{
+					name: 'twitter:title',
+					content: 'changelogs.directory - Latest Developer Tool Updates',
+				},
+				{
+					name: 'twitter:description',
+					content:
+						'Track the latest releases, features, and breaking changes for your favorite developer tools.',
+				},
+				{
+					name: 'twitter:image',
+					content: `${baseUrl}/og`,
+				},
+			],
+		}
+	},
 	component: AdminDashboard,
 })
 
@@ -307,7 +348,7 @@ function AdminDashboard() {
 													<div className="flex items-center gap-3">
 														<div className="size-2 rounded-full bg-foreground/20 animate-pulse" />
 														<span className="font-mono text-sm text-foreground/80">
-															{signup.email}
+															{maskEmail(signup.email)}
 														</span>
 													</div>
 													<span className="text-xs font-mono text-muted-foreground/60">
