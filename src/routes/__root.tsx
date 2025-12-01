@@ -35,7 +35,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: 'width=device-width, initial-scale=1',
 			},
 			{
-				title: 'changelogs.directory - Track CLI Tool Updates',
+				title: 'changelogs.directory - track cli tool updates',
 			},
 			{
 				name: 'description',

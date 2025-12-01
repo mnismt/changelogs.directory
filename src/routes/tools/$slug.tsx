@@ -19,7 +19,7 @@ export const Route = createFileRoute('/tools/$slug')({
 		return {
 			meta: [
 				{
-					title: `${toolName} Changelog - changelogs.directory`,
+					title: `${toolName.toLowerCase()} changelog - changelogs.directory`,
 				},
 				{
 					name: 'description',
@@ -29,7 +29,7 @@ export const Route = createFileRoute('/tools/$slug')({
 				{ property: 'og:type', content: 'website' },
 				{
 					property: 'og:title',
-					content: `${toolName} Changelog`,
+					content: `${toolName.toLowerCase()} changelog`,
 				},
 				{
 					property: 'og:description',
