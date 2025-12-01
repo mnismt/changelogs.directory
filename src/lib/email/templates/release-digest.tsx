@@ -468,6 +468,7 @@ const toolLogoColumnStyle = {
 const toolLogoStyle = {
 	borderRadius: '8px',
 	border: `1px solid ${colors.borderSubtle}`,
+	objectFit: 'cover' as const,
 }
 
 const toolInfoColumnStyle = {
