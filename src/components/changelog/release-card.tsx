@@ -17,11 +17,11 @@ import {
 } from '@/components/ui/tooltip'
 import { formatDate } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ReleaseCardBaseProps {
 	toolSlug: string
 	version: string
+	formattedVersion?: string
 	releaseDate?: Date | string | null
 	headline?: string | null
 	changeCount: number
@@ -65,6 +65,7 @@ const changeTypeOrder: ChangeType[] = [
 export function ReleaseCardBase({
 	toolSlug,
 	version,
+	formattedVersion,
 	releaseDate,
 	headline,
 	changeCount,
@@ -106,9 +107,7 @@ export function ReleaseCardBase({
 				<div className="flex items-start justify-between gap-4">
 					<CardTitle className="flex items-center font-mono text-xl">
 						<Package className="size-5" />
-						<span className="ml-2">
-							{formatVersionForDisplay(version, toolSlug)}
-						</span>
+						<span className="ml-2">{formattedVersion || version}</span>
 					</CardTitle>
 					{(hasSeverityBadges || accessory) && (
 						<div className="flex shrink-0 flex-col items-end gap-2">
@@ -165,6 +164,7 @@ export function ReleaseCardBase({
 export function ReleaseCard({
 	toolSlug,
 	version,
+	formattedVersion,
 	releaseDate,
 	headline,
 	changeCount,
@@ -209,6 +209,7 @@ export function ReleaseCard({
 		<ReleaseCardBase
 			toolSlug={toolSlug}
 			version={version}
+			formattedVersion={formattedVersion}
 			releaseDate={releaseDate}
 			headline={headline}
 			changeCount={changeCount}

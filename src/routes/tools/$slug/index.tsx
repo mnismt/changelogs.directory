@@ -364,6 +364,7 @@ function ReleaseCardWithReveal({
 			<ReleaseCard
 				toolSlug={toolSlug}
 				version={release.version}
+				formattedVersion={release.formattedVersion}
 				releaseDate={releaseDate}
 				headline={release.headline}
 				changeCount={release._count.changes}

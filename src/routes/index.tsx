@@ -50,6 +50,7 @@ type ReleaseData = {
 	hasBreaking: boolean
 	hasSecurity: boolean
 	hasDeprecation: boolean
+	formattedVersion?: string
 }
 
 const trackedToolSlugs = ['claude-code', 'codex', 'cursor'] as const
@@ -276,7 +277,6 @@ function HomePage() {
 	}, [animationStep])
 
 	const showFeed = animationStep === 'expanding' || animationStep === 'done'
-	const _showPrompt = animationStep !== 'hero' && animationStep !== 'connector'
 
 	// Stable callback to prevent infinite loops in HeroSection effect
 	const handleHeroAnimationComplete = useCallback(() => {
@@ -557,7 +557,7 @@ function FeedReleaseCardWithReveal({
 	return (
 		<div
 			ref={ref}
-			className={`transition-all ease-out ${
+			className={`h-full transition-all ease-out ${
 				isMounted && (isVisible || isSearching)
 					? 'translate-y-0 opacity-100 duration-400'
 					: 'translate-y-4 opacity-0 duration-600'
@@ -571,6 +571,7 @@ function FeedReleaseCardWithReveal({
 				toolName={release.tool.name}
 				vendor={release.tool.vendor}
 				version={release.version}
+				formattedVersion={release.formattedVersion}
 				releaseDate={release.releaseDate}
 				headline={release.headline}
 				changeCount={release._count.changes}

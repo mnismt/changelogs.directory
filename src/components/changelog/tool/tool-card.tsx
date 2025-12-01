@@ -10,7 +10,6 @@ import {
 	CardTitle,
 } from '@/components/ui/card'
 import { formatDate, formatRelativeDate } from '@/lib/date-utils'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ToolCardProps {
 	slug: string
@@ -20,6 +19,7 @@ interface ToolCardProps {
 	tags: string[]
 	releaseCount: number
 	latestVersion?: string | null
+	formattedLatestVersion?: string | null
 	latestReleaseDate?: Date | null
 	logo?: ReactNode
 }
@@ -32,6 +32,7 @@ export function ToolCard({
 	tags,
 	releaseCount,
 	latestVersion,
+	formattedLatestVersion,
 	latestReleaseDate,
 	logo,
 }: ToolCardProps) {
@@ -90,7 +91,7 @@ export function ToolCard({
 							{latestVersion && (
 								<div className="relative flex flex-col items-end gap-0.5">
 									<span className="font-mono text-foreground transition-colors duration-300 group-hover:text-foreground/90">
-										{formatVersionForDisplay(latestVersion, slug)}
+										{formattedLatestVersion || latestVersion}
 									</span>
 									<div className="relative h-4 min-w-[80px] overflow-hidden text-[10px]">
 										{/* Relative date - visible by default, fades out on hover */}

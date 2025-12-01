@@ -3,10 +3,8 @@ import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { formatDate } from '@/lib/date-utils'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ToolHeaderProps {
-	slug: string
 	name: string
 	vendor: string
 	description?: string | null
@@ -15,15 +13,16 @@ interface ToolHeaderProps {
 	releaseCount: number
 	lastFetchedAt?: Date | null
 	latestVersion?: string
+	formattedLatestVersion?: string | null
 	latestReleaseDate?: Date | null
 	firstVersion?: string
+	formattedFirstVersion?: string | null
 	firstReleaseDate?: Date | null
 	tags: string[]
 	logo?: ReactNode
 }
 
 export function ToolHeader({
-	slug,
 	name,
 	vendor,
 	description,
@@ -32,8 +31,10 @@ export function ToolHeader({
 	releaseCount,
 	lastFetchedAt,
 	latestVersion,
+	formattedLatestVersion,
 	latestReleaseDate,
 	firstVersion,
+	formattedFirstVersion,
 	firstReleaseDate,
 	tags,
 	logo,
@@ -94,7 +95,7 @@ export function ToolHeader({
 							</div>
 							<div className="space-y-0.5">
 								<div className="font-mono text-sm font-semibold">
-									{formatVersionForDisplay(latestVersion, slug)}
+									{formattedLatestVersion || latestVersion}
 								</div>
 								<div className="font-mono text-xs text-muted-foreground">
 									{formatDateValue(latestReleaseDate)}
@@ -111,7 +112,7 @@ export function ToolHeader({
 							</div>
 							<div className="space-y-0.5">
 								<div className="font-mono text-sm font-semibold">
-									{formatVersionForDisplay(firstVersion, slug)}
+									{formattedFirstVersion || firstVersion}
 								</div>
 								<div className="font-mono text-xs text-muted-foreground">
 									{formatDateValue(firstReleaseDate)}

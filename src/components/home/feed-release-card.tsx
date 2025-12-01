@@ -9,13 +9,13 @@ import {
 	isMonochromeLogo,
 } from '@/lib/tool-logos'
 import { cn } from '@/lib/utils'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface FeedReleaseCardProps {
 	toolSlug: string
 	toolName: string
 	vendor: string | null
 	version: string
+	formattedVersion?: string
 	releaseDate: Date | string | null
 	headline: string | null
 	changeCount: number
@@ -36,6 +36,7 @@ export function FeedReleaseCard({
 	toolName,
 	vendor,
 	version,
+	formattedVersion,
 	releaseDate,
 	headline,
 	changeCount,
@@ -60,7 +61,7 @@ export function FeedReleaseCard({
 	return (
 		<Card
 			className={cn(
-				'group relative overflow-hidden border-border bg-card transition-all duration-300 ease-out',
+				'group relative overflow-hidden border-border bg-card transition-all duration-300 ease-out h-full flex flex-col',
 				isThisCardHovered && 'border-foreground/30',
 				isDimmed && 'opacity-50',
 				className,
@@ -95,7 +96,7 @@ export function FeedReleaseCard({
 				</div>
 			</div>
 
-			<div className="p-5">
+			<div className="p-5 flex-1 flex flex-col">
 				<Link
 					to="/tools/$slug/releases/$version"
 					params={{ slug: toolSlug, version }}
@@ -143,7 +144,7 @@ export function FeedReleaseCard({
 					{/* Version and badges */}
 					<div className="mb-2 flex flex-wrap items-center gap-2">
 						<code className="rounded px-2 py-1 font-mono text-sm font-medium">
-							{formatVersionForDisplay(version, toolSlug)}
+							{formattedVersion || version}
 						</code>
 
 						{hasBreaking && (
@@ -230,7 +231,7 @@ export function FeedReleaseCard({
 				</Link>
 
 				{/* Secondary link to tool page */}
-				<div className="mt-3 border-t border-border/50 pt-3">
+				<div className="mt-auto border-t border-border/50 pt-3">
 					<Link
 						to="/tools/$slug"
 						params={{ slug: toolSlug }}

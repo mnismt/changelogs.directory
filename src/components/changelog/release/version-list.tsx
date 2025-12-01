@@ -10,13 +10,13 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { formatDate } from '@/lib/date-utils'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface VersionListProps {
 	toolSlug: string
 	currentVersion: string
 	versions: Array<{
 		version: string
+		formattedVersion?: string
 		releaseDate: Date | null
 		_count: { changes: number }
 		changesByType?: Record<string, number>
@@ -112,7 +112,7 @@ export function VersionList({
 				<div className="flex items-start justify-between gap-2">
 					<div className="space-y-1.5">
 						<div className="font-mono text-sm font-bold tracking-tight group-hover:text-foreground transition-colors">
-							{formatVersionForDisplay(version.version, toolSlug)}
+							{version.formattedVersion || version.version}
 						</div>
 						<div className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider">
 							{formatDate(version.releaseDate, 'MMM d, yyyy')}

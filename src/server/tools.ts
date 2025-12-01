@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { subDays, subMonths, subYears } from 'date-fns'
 import { z } from 'zod'
 import { captureServerException } from '@/integrations/sentry/server'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 import { getPrisma } from './db'
 
 // Input schemas
@@ -122,8 +123,14 @@ export const getToolMetadata = createServerFn({ method: 'GET' })
 			return {
 				...tool,
 				latestVersion: latestRelease?.version || null,
+				formattedLatestVersion: latestRelease?.version
+					? formatVersionForDisplay(latestRelease.version, tool.slug)
+					: null,
 				latestReleaseDate: latestRelease?.releaseDate || null,
 				firstVersion: firstRelease?.version || null,
+				formattedFirstVersion: firstRelease?.version
+					? formatVersionForDisplay(firstRelease.version, tool.slug)
+					: null,
 				firstReleaseDate: firstRelease?.releaseDate || null,
 			}
 		} catch (error: unknown) {
@@ -160,7 +167,7 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 			// Verify tool exists
 			const tool = await prisma.tool.findUnique({
 				where: { slug: data.slug },
-				select: { id: true },
+				select: { id: true, slug: true },
 			})
 
 			if (!tool) {
@@ -241,6 +248,7 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 			// Attach changesByType to each release
 			const releasesWithTypes = releases.map((release) => ({
 				...release,
+				formattedVersion: formatVersionForDisplay(release.version, tool.slug),
 				changesByType: changesByTypeMap.get(release.id) || {},
 			}))
 
@@ -300,7 +308,13 @@ export const getReleaseWithChanges = createServerFn({ method: 'GET' })
 				throw new Error('Release not found')
 			}
 
-			return release
+			return {
+				...release,
+				formattedVersion: formatVersionForDisplay(
+					release.version,
+					release.tool.slug,
+				),
+			}
 		} catch (error: unknown) {
 			if (error instanceof Error) {
 				if (error.message === 'Release not found') {
@@ -339,7 +353,12 @@ export const getAdjacentVersions = createServerFn({ method: 'GET' })
 			})
 
 			if (!currentRelease) {
-				return { prev: null, next: null }
+				return {
+					prev: null,
+					next: null,
+					formattedPrev: null,
+					formattedNext: null,
+				}
 			}
 
 			// Get next version (higher versionSort)
@@ -364,12 +383,23 @@ export const getAdjacentVersions = createServerFn({ method: 'GET' })
 
 			return {
 				next: next?.version || null,
+				formattedNext: next?.version
+					? formatVersionForDisplay(next.version, data.toolSlug)
+					: null,
 				prev: prev?.version || null,
+				formattedPrev: prev?.version
+					? formatVersionForDisplay(prev.version, data.toolSlug)
+					: null,
 			}
 		} catch (error: unknown) {
 			console.error('Error fetching adjacent versions:', error)
 			captureServerException(error)
-			return { prev: null, next: null }
+			return {
+				prev: null,
+				next: null,
+				formattedPrev: null,
+				formattedNext: null,
+			}
 		}
 	})
 
@@ -427,6 +457,7 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 			// Attach changesByType to each version
 			const versionsWithTypes = versions.map((version) => ({
 				version: version.version,
+				formattedVersion: formatVersionForDisplay(version.version, data.slug),
 				releaseDate: version.releaseDate,
 				_count: version._count,
 				changesByType: changesByTypeMap.get(version.id) || {},
@@ -536,10 +567,14 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 
 				// Remove changes array from the result to match the expected return type
 				// (though we need to cast or omit it since it's in the select now)
-				const { changes, ...releaseWithoutChanges } = release
+				const { changes: _changes, ...releaseWithoutChanges } = release
 
 				return {
 					...releaseWithoutChanges,
+					formattedVersion: formatVersionForDisplay(
+						release.version,
+						release.tool.slug,
+					),
 					changesByType,
 					hasBreaking,
 					hasSecurity,
@@ -603,6 +638,9 @@ export const getAllTools = createServerFn({ method: 'GET' }).handler(
 					return {
 						...tool,
 						latestVersion: latestRelease?.version || null,
+						formattedLatestVersion: latestRelease?.version
+							? formatVersionForDisplay(latestRelease.version, tool.slug)
+							: null,
 						latestReleaseDate: latestRelease?.releaseDate || null,
 					}
 				}),

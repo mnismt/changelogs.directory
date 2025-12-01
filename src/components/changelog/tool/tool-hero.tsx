@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { getToolLogo } from '@/lib/tool-logos'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ToolHeroProps {
 	slug: string
@@ -11,6 +10,7 @@ interface ToolHeroProps {
 		name: string
 		description: string | null
 		latestVersion: string | null
+		formattedLatestVersion?: string | null
 		homepage: string | null
 		_count: {
 			releases: number
@@ -28,7 +28,13 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 	)
 	const version = versionMatch?.params?.version
 	const releaseData = versionMatch?.loaderData as
-		| { release: { changes: unknown[]; sourceUrl: string } }
+		| {
+				release: {
+					changes: unknown[]
+					sourceUrl: string
+					formattedVersion?: string
+				}
+		  }
 		| undefined
 	const release = releaseData?.release
 
@@ -127,7 +133,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 							>
 								<span>/</span>
 								<span className="text-foreground">
-									{formatVersionForDisplay(version, slug)}
+									{release?.formattedVersion || version}
 								</span>
 							</motion.div>
 						)}
@@ -254,7 +260,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 							<div className="flex items-center gap-2">
 								<span className="text-muted-foreground/40">LATEST_VER:</span>
 								<span className="text-foreground">
-									{formatVersionForDisplay(tool.latestVersion, slug)}
+									{tool.formattedLatestVersion || tool.latestVersion}
 								</span>
 							</div>
 						)}

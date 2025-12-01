@@ -98,7 +98,7 @@ function ToolsDirectoryPage() {
 						background="transparent"
 						minSize={0.4}
 						maxSize={1}
-						particleDensity={50}
+						particleDensity={150}
 						className="h-full w-full"
 						particleColor="#FFFFFF"
 					/>
@@ -178,6 +178,7 @@ function ToolsDirectoryPage() {
 									tool.latestVersion && tool.latestReleaseDate
 										? {
 												version: tool.latestVersion,
+												formattedVersion: tool.formattedLatestVersion,
 												createdAt: tool.latestReleaseDate,
 											}
 										: undefined
