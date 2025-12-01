@@ -72,7 +72,7 @@ export function HeroSection({
 
 					{/* Main Title with Typewriter */}
 					<div className="mb-6 h-12 sm:h-16">
-						<h1 className="font-mono text-4xl font-bold tracking-tighter sm:text-6xl">
+						<h1 className="font-mono text-3xl font-bold tracking-tighter sm:text-5xl">
 							{text}
 							<span className="animate-pulse text-muted-foreground">_</span>
 						</h1>
