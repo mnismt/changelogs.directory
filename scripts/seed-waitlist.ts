@@ -7,7 +7,7 @@ const TOTAL_SIGNUPS = 73
 const PROVIDERS = ["gmail.com", "outlook.com", "icloud.com", "yahoo.com"] as const
 
 const START_DATE = "2025-10-30"
-const END_DATE = "2025-11-29"
+const END_DATE = "2025-11-30"
 
 const startDate = new Date(`${START_DATE}T00:00:00Z`)
 const endDate = new Date(`${END_DATE}T23:59:59Z`)

@@ -15,55 +15,57 @@ import {
 } from '@react-email/components'
 import { baseStyles, colors, fonts } from './styles'
 
-interface BreakingChange {
+interface ChangelogItem {
 	title: string
 	description?: string
-	impact?: 'high' | 'medium' | 'low'
+	type: 'feature' | 'fix' | 'improvement' | 'breaking'
 }
 
-export interface BreakingChangeAlertEmailProps {
+export interface ToolReleaseUpdateEmailProps {
 	toolName?: string
 	toolSlug?: string
 	toolLogo?: string
 	vendor?: string
 	version?: string
 	releaseDate?: string
-	breakingChanges?: BreakingChange[]
+	changes?: ChangelogItem[]
 	migrationGuideUrl?: string
 }
 
-const defaultBreakingChanges: BreakingChange[] = [
+const defaultChanges: ChangelogItem[] = [
 	{
-		title: 'Removed deprecated --legacy-mode flag',
+		title: 'Added support for custom system prompts',
 		description:
-			'The --legacy-mode flag has been removed. Use --compatibility=v1 instead.',
-		impact: 'high',
+			'You can now define custom system prompts in your configuration file.',
+		type: 'feature',
 	},
 	{
-		title: 'Changed default output format from JSON to YAML',
+		title: 'Improved context window handling',
 		description:
-			'Output format now defaults to YAML. Add --format=json to restore previous behavior.',
-		impact: 'medium',
+			'The context window is now managed more efficiently, allowing for larger inputs.',
+		type: 'improvement',
 	},
 	{
-		title: 'Minimum Node.js version bumped to 20.x',
-		description:
-			'Node.js 18.x is no longer supported. Please upgrade to Node.js 20 or later.',
-		impact: 'high',
+		title: 'Fixed crash on startup with specific configs',
+		type: 'fix',
 	},
 ]
 
-export function BreakingChangeAlertEmail({
+export function ToolReleaseUpdateEmail({
 	toolName = 'Claude Code',
 	toolSlug = 'claude-code',
 	toolLogo = 'https://changelogs.directory/images/tools/claude-code.png',
 	vendor = 'Anthropic',
 	version = 'v3.0.0',
 	releaseDate = 'Nov 27, 2025',
-	breakingChanges = defaultBreakingChanges,
-	migrationGuideUrl = 'https://changelogs.directory/tools/claude-code/releases/v3.0.0#migration',
-}: BreakingChangeAlertEmailProps) {
-	const previewText = `⚠️ BREAKING: ${toolName} ${version} contains ${breakingChanges.length} breaking change${breakingChanges.length > 1 ? 's' : ''}`
+	changes = defaultChanges,
+}: ToolReleaseUpdateEmailProps) {
+	const previewText = `🚀 New Release: ${toolName} ${version} is out now`
+
+	const features = changes.filter((c) => c.type === 'feature')
+	const improvements = changes.filter((c) => c.type === 'improvement')
+	const fixes = changes.filter((c) => c.type === 'fix')
+	const breaking = changes.filter((c) => c.type === 'breaking')
 
 	return (
 		<Html>
@@ -71,54 +73,25 @@ export function BreakingChangeAlertEmail({
 				<style>
 					{`
 						@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
-						
-						@keyframes pulse {
-							0%, 100% { opacity: 1; }
-							50% { opacity: 0.6; }
-						}
 					`}
 				</style>
 			</Head>
 			<Preview>{previewText}</Preview>
 			<Body style={baseStyles.body}>
 				<Container style={baseStyles.container}>
-					{/* Alert Banner */}
-					<Section style={alertBannerStyle}>
-						<Row>
-							<Column style={alertIconColumnStyle}>
-								<Text style={alertIconStyle}>⚠</Text>
-							</Column>
-							<Column>
-								<Text style={alertTextStyle}>BREAKING_CHANGE_DETECTED</Text>
-								<Text style={alertSubtextStyle}>Action may be required</Text>
-							</Column>
-						</Row>
+					{/* Header */}
+					<Section style={headerStyle}>
+						<Text style={logoTextStyle}>
+							<span style={logoPromptStyle}>&gt;_</span> changelogs.directory
+						</Text>
 					</Section>
 
 					{/* Terminal Window */}
 					<Section style={baseStyles.terminalWindow}>
 						{/* Terminal Header */}
 						<Section style={terminalHeaderStyle}>
-							<span
-								style={{
-									...baseStyles.terminalDot,
-									backgroundColor: '#FF5F56',
-								}}
-							/>
-							<span
-								style={{
-									...baseStyles.terminalDot,
-									backgroundColor: '#FFBD2E',
-								}}
-							/>
-							<span
-								style={{
-									...baseStyles.terminalDot,
-									backgroundColor: '#27CA40',
-								}}
-							/>
 							<Text style={terminalTitleStyle}>
-								alert — breaking-change — URGENT
+								release — {version} — latest
 							</Text>
 						</Section>
 
@@ -130,7 +103,7 @@ export function BreakingChangeAlertEmail({
 									<span style={timestampStyle}>
 										[{new Date().toISOString().split('T')[0]}]
 									</span>
-									<span style={errorLevelStyle}> [WARN]</span> Breaking change
+									<span style={infoLevelStyle}> [INFO]</span> New release
 									detected
 								</Text>
 								<Text style={outputLineStyle}>
@@ -175,77 +148,88 @@ export function BreakingChangeAlertEmail({
 								</Row>
 							</Section>
 
-							{/* Breaking Changes Count */}
-							<Section style={breakingCountStyle}>
-								<Text style={breakingCountTextStyle}>
-									<span style={breakingNumberStyle}>
-										{breakingChanges.length}
-									</span>
-									<span style={breakingLabelStyle}>
-										{' '}
-										BREAKING CHANGE{breakingChanges.length > 1 ? 'S' : ''}{' '}
-										DETECTED
-									</span>
-								</Text>
+							{/* Stats */}
+							<Section style={statsStyle}>
+								<Row>
+									{features.length > 0 && (
+										<Column style={statColumnStyle}>
+											<Text style={statNumberStyle}>{features.length}</Text>
+											<Text style={statLabelStyle}>Features</Text>
+										</Column>
+									)}
+									{improvements.length > 0 && (
+										<Column style={statColumnStyle}>
+											<Text style={statNumberStyle}>{improvements.length}</Text>
+											<Text style={statLabelStyle}>Improvements</Text>
+										</Column>
+									)}
+									{fixes.length > 0 && (
+										<Column style={statColumnStyle}>
+											<Text style={statNumberStyle}>{fixes.length}</Text>
+											<Text style={statLabelStyle}>Fixes</Text>
+										</Column>
+									)}
+									{breaking.length > 0 && (
+										<Column style={statColumnStyle}>
+											<Text
+												style={{ ...statNumberStyle, color: colors.accentRed }}
+											>
+												{breaking.length}
+											</Text>
+											<Text style={statLabelStyle}>Breaking</Text>
+										</Column>
+									)}
+								</Row>
 							</Section>
 
 							<Hr style={dividerStyle} />
 
-							{/* Breaking Changes List */}
+							{/* Changelog */}
 							<Heading style={sectionHeadingStyle}>
-								$ cat BREAKING_CHANGES.md
+								$ cat RELEASE_NOTES.md
 							</Heading>
 
 							<Section style={changesContainerStyle}>
-								{breakingChanges.map((change, idx) => (
+								{changes.map((change, idx) => (
 									<Section
-										key={`breaking-${change.title.slice(0, 20)}-${idx}`}
+										key={`change-${change.title.slice(0, 20)}-${idx}`}
 										style={changeItemStyle}
 									>
-										<Row style={changeHeaderStyle}>
-											<Column style={changeIndexColumnStyle}>
-												<Text style={changeIndexStyle}>#{idx + 1}</Text>
+										{' '}
+										<Row>
+											<Column style={changeTypeColumnStyle}>
+												<Text
+													style={{
+														...badgeStyle,
+														...(change.type === 'feature'
+															? featureBadgeStyle
+															: change.type === 'fix'
+																? fixBadgeStyle
+																: change.type === 'breaking'
+																	? breakingBadgeStyle
+																	: improvementBadgeStyle),
+													}}
+												>
+													{change.type.toUpperCase()}
+												</Text>
 											</Column>
-											<Column style={changeImpactColumnStyle}>
-												{change.impact && (
-													<Text
-														style={{
-															...impactBadgeStyle,
-															...(change.impact === 'high'
-																? impactHighStyle
-																: change.impact === 'medium'
-																	? impactMediumStyle
-																	: impactLowStyle),
-														}}
-													>
-														{change.impact.toUpperCase()}
+											<Column>
+												<Text style={changeTitleStyle}>{change.title}</Text>
+												{change.description && (
+													<Text style={changeDescriptionStyle}>
+														{change.description}
 													</Text>
 												)}
 											</Column>
 										</Row>
-										<Text style={changeTitleStyle}>
-											<span style={breakingPrefixStyle}>!</span> {change.title}
-										</Text>
-										{change.description && (
-											<Text style={changeDescriptionStyle}>
-												{change.description}
-											</Text>
-										)}
 									</Section>
 								))}
 							</Section>
 
 							<Hr style={dividerStyle} />
 
-							{/* Action Required */}
+							{/* Action */}
 							<Section style={actionBoxStyle}>
-								<Text style={actionHeaderStyle}>
-									<span style={actionIconStyle}>→</span> ACTION_REQUIRED
-								</Text>
-								<Text style={actionTextStyle}>
-									Review the breaking changes above before upgrading. Check your
-									codebase for affected patterns and update accordingly.
-								</Text>
 								<Row style={actionButtonsStyle}>
 									<Column style={buttonColumnStyle}>
 										<Link
@@ -255,23 +239,13 @@ export function BreakingChangeAlertEmail({
 											[ VIEW_FULL_CHANGELOG ]
 										</Link>
 									</Column>
-									{migrationGuideUrl && (
-										<Column style={buttonColumnStyle}>
-											<Link
-												href={migrationGuideUrl}
-												style={secondaryButtonStyle}
-											>
-												[ MIGRATION_GUIDE ]
-											</Link>
-										</Column>
-									)}
 								</Row>
 							</Section>
 
 							{/* Output */}
 							<Text style={footerOutputStyle}>
-								<span style={dimStyle}>{'//'}</span> Stay ahead of breaking
-								changes. Review before you upgrade.
+								<span style={dimStyle}>{'//'}</span> Stay updated with the
+								latest tools and versions.
 							</Text>
 						</Section>
 					</Section>
@@ -279,14 +253,14 @@ export function BreakingChangeAlertEmail({
 					{/* Footer */}
 					<Section style={footerContainerStyle}>
 						<Text style={footerTextStyle}>
-							changelogs.directory • Breaking change alerts
+							changelogs.directory • Release updates
 						</Text>
 						<Text style={footerLinksStyle}>
 							<Link
 								href="https://changelogs.directory/preferences"
 								style={footerLinkStyle}
 							>
-								Manage alert preferences
+								Manage preferences
 							</Link>
 							<span style={footerDividerStyle}>•</span>
 							<Link
@@ -304,39 +278,21 @@ export function BreakingChangeAlertEmail({
 }
 
 // Styles
-const alertBannerStyle = {
-	backgroundColor: 'rgba(239, 68, 68, 0.15)',
-	border: `1px solid rgba(239, 68, 68, 0.3)`,
-	borderRadius: '8px',
-	padding: '16px 20px',
-	marginBottom: '20px',
+const headerStyle = {
+	marginBottom: '24px',
+	textAlign: 'center' as const,
 }
 
-const alertIconColumnStyle = {
-	width: '48px',
-	verticalAlign: 'middle' as const,
-}
-
-const alertIconStyle = {
-	fontSize: '28px',
-	margin: '0',
-	lineHeight: '1',
-}
-
-const alertTextStyle = {
+const logoTextStyle = {
 	fontFamily: fonts.mono,
-	fontSize: '14px',
+	fontSize: '16px',
 	fontWeight: '600',
-	color: colors.accentRed,
-	margin: '0 0 2px 0',
-	letterSpacing: '0.02em',
+	color: colors.textPrimary,
+	margin: '0',
 }
 
-const alertSubtextStyle = {
-	fontFamily: fonts.mono,
-	fontSize: '12px',
-	color: colors.textSecondary,
-	margin: '0',
+const logoPromptStyle = {
+	color: colors.accentGreen,
 }
 
 const terminalHeaderStyle = {
@@ -348,9 +304,9 @@ const terminalHeaderStyle = {
 const terminalTitleStyle = {
 	fontFamily: fonts.mono,
 	fontSize: '12px',
-	color: colors.accentYellow,
+	color: colors.accentCyan,
 	margin: '0',
-	marginLeft: '12px',
+	marginLeft: '0', // Adjusted from 12px to 0 as dots are removed
 	display: 'inline',
 }
 
@@ -368,10 +324,6 @@ const outputLineStyle = {
 
 const timestampStyle = {
 	color: colors.textMuted,
-}
-
-const errorLevelStyle = {
-	color: colors.accentYellow,
 }
 
 const infoLevelStyle = {
@@ -439,7 +391,7 @@ const versionValueStyle = {
 	fontFamily: fonts.mono,
 	fontSize: '16px',
 	fontWeight: '600',
-	color: colors.accentRed,
+	color: colors.accentCyan,
 	margin: '0 0 2px 0',
 }
 
@@ -450,27 +402,28 @@ const releaseDateStyle = {
 	margin: '0',
 }
 
-const breakingCountStyle = {
-	textAlign: 'center' as const,
+const statsStyle = {
 	padding: '16px 0',
 }
 
-const breakingCountTextStyle = {
-	margin: '0',
+const statColumnStyle = {
+	textAlign: 'center' as const,
 }
 
-const breakingNumberStyle = {
+const statNumberStyle = {
 	fontFamily: fonts.mono,
-	fontSize: '36px',
+	fontSize: '24px',
 	fontWeight: '700',
-	color: colors.accentRed,
+	color: colors.textPrimary,
+	margin: '0 0 4px 0',
 }
 
-const breakingLabelStyle = {
+const statLabelStyle = {
 	fontFamily: fonts.mono,
-	fontSize: '14px',
-	fontWeight: '500',
-	color: colors.textSecondary,
+	fontSize: '11px',
+	color: colors.textMuted,
+	margin: '0',
+	textTransform: 'uppercase' as const,
 	letterSpacing: '0.05em',
 }
 
@@ -487,36 +440,15 @@ const changesContainerStyle = {
 }
 
 const changeItemStyle = {
-	backgroundColor: colors.bgCard,
-	border: `1px solid rgba(239, 68, 68, 0.2)`,
-	borderLeft: `3px solid ${colors.accentRed}`,
-	borderRadius: '6px',
-	padding: '16px',
-	marginBottom: '12px',
+	marginBottom: '16px',
 }
 
-const changeHeaderStyle = {
-	marginBottom: '8px',
-}
-
-const changeIndexColumnStyle = {
-	width: '32px',
+const changeTypeColumnStyle = {
+	width: '100px',
 	verticalAlign: 'top' as const,
 }
 
-const changeIndexStyle = {
-	fontFamily: fonts.mono,
-	fontSize: '11px',
-	color: colors.textMuted,
-	margin: '0',
-}
-
-const changeImpactColumnStyle = {
-	textAlign: 'right' as const,
-	verticalAlign: 'top' as const,
-}
-
-const impactBadgeStyle = {
+const badgeStyle = {
 	fontFamily: fonts.mono,
 	fontSize: '10px',
 	fontWeight: '500',
@@ -527,37 +459,37 @@ const impactBadgeStyle = {
 	letterSpacing: '0.05em',
 }
 
-const impactHighStyle = {
-	backgroundColor: 'rgba(239, 68, 68, 0.2)',
-	color: colors.accentRed,
-	border: `1px solid rgba(239, 68, 68, 0.3)`,
+const featureBadgeStyle = {
+	backgroundColor: 'rgba(34, 197, 94, 0.15)',
+	color: colors.accentGreen,
+	border: `1px solid rgba(34, 197, 94, 0.25)`,
 }
 
-const impactMediumStyle = {
-	backgroundColor: 'rgba(234, 179, 8, 0.2)',
-	color: colors.accentYellow,
-	border: `1px solid rgba(234, 179, 8, 0.3)`,
-}
-
-const impactLowStyle = {
-	backgroundColor: 'rgba(6, 182, 212, 0.2)',
+const fixBadgeStyle = {
+	backgroundColor: 'rgba(6, 182, 212, 0.15)',
 	color: colors.accentCyan,
-	border: `1px solid rgba(6, 182, 212, 0.3)`,
+	border: `1px solid rgba(6, 182, 212, 0.25)`,
+}
+
+const improvementBadgeStyle = {
+	backgroundColor: 'rgba(249, 115, 22, 0.15)',
+	color: colors.accentOrange,
+	border: `1px solid rgba(249, 115, 22, 0.25)`,
+}
+
+const breakingBadgeStyle = {
+	backgroundColor: 'rgba(239, 68, 68, 0.15)',
+	color: colors.accentRed,
+	border: `1px solid rgba(239, 68, 68, 0.25)`,
 }
 
 const changeTitleStyle = {
 	fontFamily: fonts.sans,
-	fontSize: '15px',
+	fontSize: '14px',
 	fontWeight: '500',
 	color: colors.textPrimary,
-	margin: '0 0 8px 0',
-	lineHeight: '22px',
-}
-
-const breakingPrefixStyle = {
-	color: colors.accentRed,
-	fontFamily: fonts.mono,
-	fontWeight: '700',
+	margin: '0 0 4px 0',
+	lineHeight: '20px',
 }
 
 const changeDescriptionStyle = {
@@ -566,37 +498,11 @@ const changeDescriptionStyle = {
 	color: colors.textSecondary,
 	margin: '0',
 	lineHeight: '20px',
-	paddingLeft: '16px',
-	borderLeft: `2px solid ${colors.borderSubtle}`,
 }
 
 const actionBoxStyle = {
-	backgroundColor: colors.bgTertiary,
-	borderRadius: '8px',
-	padding: '20px',
-	border: `1px solid ${colors.borderSubtle}`,
+	textAlign: 'center' as const,
 	marginBottom: '20px',
-}
-
-const actionHeaderStyle = {
-	fontFamily: fonts.mono,
-	fontSize: '13px',
-	fontWeight: '600',
-	color: colors.accentYellow,
-	margin: '0 0 12px 0',
-	letterSpacing: '0.02em',
-}
-
-const actionIconStyle = {
-	color: colors.accentGreen,
-}
-
-const actionTextStyle = {
-	fontFamily: fonts.sans,
-	fontSize: '14px',
-	color: colors.textSecondary,
-	margin: '0 0 16px 0',
-	lineHeight: '22px',
 }
 
 const actionButtonsStyle = {
@@ -604,7 +510,7 @@ const actionButtonsStyle = {
 }
 
 const buttonColumnStyle = {
-	paddingRight: '12px',
+	textAlign: 'center' as const,
 }
 
 const primaryButtonStyle = {
@@ -617,20 +523,6 @@ const primaryButtonStyle = {
 	borderRadius: '6px',
 	textDecoration: 'none',
 	display: 'inline-block',
-	letterSpacing: '0.02em',
-}
-
-const secondaryButtonStyle = {
-	backgroundColor: 'transparent',
-	color: colors.textPrimary,
-	fontFamily: fonts.mono,
-	fontSize: '12px',
-	fontWeight: '500',
-	padding: '11px 19px',
-	borderRadius: '6px',
-	textDecoration: 'none',
-	display: 'inline-block',
-	border: `1px solid ${colors.borderLight}`,
 	letterSpacing: '0.02em',
 }
 
@@ -674,4 +566,4 @@ const footerDividerStyle = {
 	margin: '0 8px',
 }
 
-export default BreakingChangeAlertEmail
+export default ToolReleaseUpdateEmail
