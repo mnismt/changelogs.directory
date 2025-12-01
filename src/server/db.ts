@@ -21,6 +21,9 @@ import { PrismaClient } from '@prisma/client'
  *   })
  * ```
  */
+
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
+
 export function getPrisma(): PrismaClient {
 	const connectionString = process.env.DATABASE_URL
 
@@ -28,12 +31,23 @@ export function getPrisma(): PrismaClient {
 		throw new Error('DATABASE_URL environment variable is not set')
 	}
 
-	const isProduction = process.env.NODE_ENV === 'production'
+	// Use a global variable to prevent creating multiple instances in both
+	// development and production, which can exhaust database connections.
+	// This is critical for serverless environments where many parallel requests
+	// might call getPrisma() simultaneously.
+	if (!globalForPrisma.prisma) {
+		const isProduction = process.env.NODE_ENV === 'production'
 
-	if (isProduction) {
-		const adapter = new PrismaNeon({ connectionString })
-		return new PrismaClient({ adapter })
+		if (isProduction) {
+			const adapter = new PrismaNeon({ connectionString })
+			globalForPrisma.prisma = new PrismaClient({
+				adapter,
+				log: ['error', 'warn'],
+			})
+		} else {
+			globalForPrisma.prisma = new PrismaClient()
+		}
 	}
 
-	return new PrismaClient()
+	return globalForPrisma.prisma
 }

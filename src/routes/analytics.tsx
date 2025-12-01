@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Await, createFileRoute, defer } from '@tanstack/react-router'
 import {
 	Activity,
 	AlertTriangle,
@@ -12,7 +12,7 @@ import {
 	Zap,
 } from 'lucide-react'
 import { motion } from 'motion/react'
-import type { ReactNode } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { ChangeTypeChart } from '@/components/admin/change-type-chart'
 import { IngestionStatsChart } from '@/components/admin/ingestion-stats-chart'
 import { IngestionTable } from '@/components/admin/ingestion-table'
@@ -21,6 +21,8 @@ import { ToolChangeProfilesChart } from '@/components/admin/tool-change-profiles
 import { ToolQualityMetricsChart } from '@/components/admin/tool-quality-metrics-chart'
 import { ToolsTable } from '@/components/admin/tools-table'
 import { WaitlistChart } from '@/components/admin/waitlist-chart'
+import { DataStreamLoader } from '@/components/ui/data-stream-loader'
+import { Reveal } from '@/components/ui/reveal'
 import { cn, maskEmail } from '@/lib/utils'
 import {
 	getChangeTypeDistribution,
@@ -39,41 +41,38 @@ import {
 
 export const Route = createFileRoute('/analytics')({
 	loader: async () => {
-		const [
-			ingestionOverview,
-			ingestionStats,
-			toolsOverview,
-			changeTypeDistribution,
-			contentSummary,
-			waitlistStats,
-			waitlistDailySignups,
-			releaseTrends,
-			toolChangeProfiles,
-			toolQualityMetrics,
-		] = await Promise.all([
-			getIngestionOverview(),
-			getIngestionStats(),
-			getToolsOverview(),
-			getChangeTypeDistribution(),
-			getContentSummary(),
-			getWaitlistStats(),
-			getWaitlistDailySignups(),
-			getReleaseTrends(),
-			getToolChangeProfiles(),
-			getToolQualityMetrics(),
-		])
+		// Start fetching everything
+		const ingestionOverviewPromise = getIngestionOverview()
+		const ingestionStatsPromise = getIngestionStats()
+		const waitlistStatsPromise = getWaitlistStats()
+
+		const toolsOverviewPromise = getToolsOverview()
+		const changeTypeDistributionPromise = getChangeTypeDistribution()
+		const contentSummaryPromise = getContentSummary()
+		const waitlistDailySignupsPromise = getWaitlistDailySignups()
+		const releaseTrendsPromise = getReleaseTrends()
+		const toolChangeProfilesPromise = getToolChangeProfiles()
+		const toolQualityMetricsPromise = getToolQualityMetrics()
+
+		// Await critical/fast data
+		const [ingestionOverview, ingestionStats, waitlistStats] =
+			await Promise.all([
+				ingestionOverviewPromise,
+				ingestionStatsPromise,
+				waitlistStatsPromise,
+			])
 
 		return {
 			ingestionOverview,
 			ingestionStats,
-			toolsOverview,
-			changeTypeDistribution,
-			contentSummary,
 			waitlistStats,
-			waitlistDailySignups,
-			releaseTrends,
-			toolChangeProfiles,
-			toolQualityMetrics,
+			toolsOverview: defer(toolsOverviewPromise),
+			changeTypeDistribution: defer(changeTypeDistributionPromise),
+			contentSummary: defer(contentSummaryPromise),
+			waitlistDailySignups: defer(waitlistDailySignupsPromise),
+			releaseTrends: defer(releaseTrendsPromise),
+			toolChangeProfiles: defer(toolChangeProfilesPromise),
+			toolQualityMetrics: defer(toolQualityMetricsPromise),
 		}
 	},
 	head: () => {
@@ -174,67 +173,158 @@ function AdminDashboard() {
 				<div className="grid grid-cols-1 gap-8">
 					{/* Tool Statistics Section */}
 					<Section title="Tool Statistics" delay={0.1}>
-						<GlassCard className="overflow-hidden">
-							<ToolsTable tools={toolsOverview} />
-						</GlassCard>
+						<Suspense
+							fallback={
+								<DataStreamLoader
+									className="h-[400px]"
+									text="ANALYZING_TOOL_METRICS"
+								/>
+							}
+						>
+							<Await promise={toolsOverview}>
+								{(data) => (
+									<Reveal>
+										<GlassCard className="overflow-hidden">
+											<ToolsTable tools={data} />
+										</GlassCard>
+									</Reveal>
+								)}
+							</Await>
+						</Suspense>
 					</Section>
 
 					{/* Tool Comparison Section */}
 					<Section title="Tool Comparison" delay={0.15}>
 						<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-							<GlassCard className="p-6">
-								<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
-									Change Type Profiles
-								</h3>
-								<ToolChangeProfilesChart data={toolChangeProfiles} />
-							</GlassCard>
-							<GlassCard className="p-6">
-								<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
-									Quality Metrics Comparison
-								</h3>
-								<ToolQualityMetricsChart data={toolQualityMetrics} />
-							</GlassCard>
+							<Suspense
+								fallback={
+									<DataStreamLoader
+										className="h-[400px]"
+										text="COMPARING_PROFILES"
+									/>
+								}
+							>
+								<Await promise={toolChangeProfiles}>
+									{(data) => (
+										<Reveal>
+											<GlassCard className="p-6">
+												<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
+													Change Type Profiles
+												</h3>
+												<ToolChangeProfilesChart data={data} />
+											</GlassCard>
+										</Reveal>
+									)}
+								</Await>
+							</Suspense>
+							<Suspense
+								fallback={
+									<DataStreamLoader
+										className="h-[400px]"
+										text="CALCULATING_QUALITY"
+									/>
+								}
+							>
+								<Await promise={toolQualityMetrics}>
+									{(data) => (
+										<Reveal delay={0.1}>
+											<GlassCard className="p-6">
+												<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
+													Quality Metrics Comparison
+												</h3>
+												<ToolQualityMetricsChart data={data} />
+											</GlassCard>
+										</Reveal>
+									)}
+								</Await>
+							</Suspense>
 						</div>
 					</Section>
 
 					{/* Content Metrics Section */}
 					<Section title="Content Metrics" delay={0.2}>
-						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-							<StatsCard
-								title="Total Releases"
-								value={contentSummary.totalReleases}
-								icon={<Package className="size-4" />}
-								trend="up"
-							/>
-							<StatsCard
-								title="Total Changes"
-								value={contentSummary.totalChanges}
-								icon={<FileText className="size-4" />}
-								trend="up"
-							/>
-							<StatsCard
-								title="Breaking Changes"
-								value={contentSummary.breakingCount}
-								description={`${contentSummary.securityCount} security / ${contentSummary.deprecationCount} deprecations`}
-								icon={<AlertTriangle className="size-4" />}
-								trend="down"
-								trendLabel="High Attention"
-							/>
-						</div>
+						<Suspense
+							fallback={
+								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+									<DataStreamLoader className="h-32" text="COUNTING" />
+									<DataStreamLoader className="h-32" text="COUNTING" />
+									<DataStreamLoader className="h-32" text="SCANNING" />
+								</div>
+							}
+						>
+							<Await promise={contentSummary}>
+								{(data) => (
+									<Reveal>
+										<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+											<StatsCard
+												title="Total Releases"
+												value={data.totalReleases}
+												icon={<Package className="size-4" />}
+												trend="up"
+											/>
+											<StatsCard
+												title="Total Changes"
+												value={data.totalChanges}
+												icon={<FileText className="size-4" />}
+												trend="up"
+											/>
+											<StatsCard
+												title="Breaking Changes"
+												value={data.breakingCount}
+												description={`${data.securityCount} security / ${data.deprecationCount} deprecations`}
+												icon={<AlertTriangle className="size-4" />}
+												trend="down"
+												trendLabel="High Attention"
+											/>
+										</div>
+									</Reveal>
+								)}
+							</Await>
+						</Suspense>
 
 						<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-							<GlassCard className="p-6">
-								<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
-									Change Distribution
-								</h3>
-								<ChangeTypeChart data={changeTypeDistribution} />
-							</GlassCard>
-							<GlassCard className="p-6">
-								<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
-									Release Activity (8 Weeks)
-								</h3>
-								<ReleaseTrendsChart data={releaseTrends} />
-							</GlassCard>
+							<Suspense
+								fallback={
+									<DataStreamLoader
+										className="h-[400px]"
+										text="ANALYZING_DISTRIBUTION"
+									/>
+								}
+							>
+								<Await promise={changeTypeDistribution}>
+									{(data) => (
+										<Reveal>
+											<GlassCard className="p-6">
+												<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
+													Change Distribution
+												</h3>
+												<ChangeTypeChart data={data} />
+											</GlassCard>
+										</Reveal>
+									)}
+								</Await>
+							</Suspense>
+							<Suspense
+								fallback={
+									<DataStreamLoader
+										className="h-[400px]"
+										text="PLOTTING_TRENDS"
+									/>
+								}
+							>
+								<Await promise={releaseTrends}>
+									{(data) => (
+										<Reveal delay={0.1}>
+											<GlassCard className="p-6">
+												<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
+													Release Activity (8 Weeks)
+												</h3>
+												<ReleaseTrendsChart data={data} />
+											</GlassCard>
+										</Reveal>
+									)}
+								</Await>
+							</Suspense>
 						</div>
 					</Section>
 
@@ -266,13 +356,25 @@ function AdminDashboard() {
 								icon={<Activity className="size-4" />}
 								trend={ingestionStats.failedCount > 0 ? 'down' : 'up'}
 							/>
-							<StatsCard
-								title="Tools Tracked"
-								value={contentSummary.totalTools}
-								description="Active connectors"
-								icon={<Wrench className="size-4" />}
-								trend="up"
-							/>
+							<Suspense
+								fallback={
+									<DataStreamLoader className="h-32" text="CHECKING_TOOLS" />
+								}
+							>
+								<Await promise={contentSummary}>
+									{(data) => (
+										<Reveal>
+											<StatsCard
+												title="Tools Tracked"
+												value={data.totalTools}
+												description="Active connectors"
+												icon={<Wrench className="size-4" />}
+												trend="up"
+											/>
+										</Reveal>
+									)}
+								</Await>
+							</Suspense>
 						</div>
 						<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 							<GlassCard className="p-6">
@@ -322,12 +424,27 @@ function AdminDashboard() {
 							/>
 						</div>
 						<div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
-							<GlassCard className="p-6">
-								<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
-									Growth Trajectory
-								</h3>
-								<WaitlistChart data={waitlistDailySignups} />
-							</GlassCard>
+							<Suspense
+								fallback={
+									<DataStreamLoader
+										className="h-[400px]"
+										text="PROJECTING_GROWTH"
+									/>
+								}
+							>
+								<Await promise={waitlistDailySignups}>
+									{(data) => (
+										<Reveal>
+											<GlassCard className="p-6">
+												<h3 className="font-mono text-sm font-medium text-muted-foreground mb-6">
+													Growth Trajectory
+												</h3>
+												<WaitlistChart data={data} />
+											</GlassCard>
+										</Reveal>
+									)}
+								</Await>
+							</Suspense>
 							<GlassCard className="flex flex-col h-full">
 								<div className="p-6 border-b border-border/40">
 									<h3 className="font-mono text-sm font-medium text-muted-foreground">
