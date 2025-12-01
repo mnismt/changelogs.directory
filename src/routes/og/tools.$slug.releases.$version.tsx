@@ -22,10 +22,9 @@ export const Route = createFileRoute('/og/tools/$slug/releases/$version')({
 					const fonts = await loadOGFonts()
 					const logoSVG = getToolLogoSVG(params.slug)
 
-					const formattedVersion = formatVersionForDisplay(
-						params.version,
-						params.slug,
-					)
+					const formattedVersion =
+						release.formattedVersion ||
+						formatVersionForDisplay(params.version, params.slug)
 					const timeAgo = formatDistanceToNow(
 						new Date(release.releaseDate ?? new Date()),
 						{

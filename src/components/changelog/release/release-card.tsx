@@ -10,11 +10,10 @@ import {
 } from '@/components/ui/tooltip'
 import { formatDate, formatRelativeDate } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ReleaseCardBaseProps {
-	toolSlug: string
 	version: string
+	formattedVersion?: string
 	releaseDate?: Date | string | null
 	headline?: string | null
 	changesByType?: Record<string, number>
@@ -29,6 +28,7 @@ interface ReleaseCardProps
 		ReleaseCardBaseProps,
 		'rightAccessory' | 'bodyFooter' | 'summaryLineClamp' | 'className'
 	> {
+	toolSlug: string
 	changeCount: number
 }
 
@@ -57,8 +57,8 @@ const changeTypeOrder: ChangeType[] = [
 ]
 
 export function ReleaseCardBase({
-	toolSlug,
 	version,
+	formattedVersion,
 	releaseDate,
 	headline,
 	changesByType,
@@ -103,7 +103,7 @@ export function ReleaseCardBase({
 						<div className="flex items-center gap-3">
 							<div className="flex items-center gap-2 font-mono text-xl font-bold tracking-tight text-foreground">
 								<Package className="size-5 text-muted-foreground" />
-								<span>{formatVersionForDisplay(version, toolSlug)}</span>
+								<span>{formattedVersion || version}</span>
 							</div>
 							{hasSeverityBadges && (
 								<div className="flex gap-1.5">
@@ -160,6 +160,7 @@ export function ReleaseCardBase({
 export function ReleaseCard({
 	toolSlug,
 	version,
+	formattedVersion,
 	releaseDate,
 	headline,
 	changeCount,
@@ -202,8 +203,8 @@ export function ReleaseCard({
 
 	const cardContent = (
 		<ReleaseCardBase
-			toolSlug={toolSlug}
 			version={version}
+			formattedVersion={formattedVersion}
 			releaseDate={releaseDate}
 			headline={headline}
 			changesByType={changesByType}

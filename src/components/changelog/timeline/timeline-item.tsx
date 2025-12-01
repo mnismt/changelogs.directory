@@ -9,6 +9,7 @@ interface TimelineItemProps {
 	id: string
 	toolSlug: string
 	version: string
+	formattedVersion?: string
 	releaseDate?: Date | string | null
 	headline?: string | null
 	changeCount: number
@@ -23,6 +24,7 @@ export function TimelineItem({
 	id,
 	toolSlug,
 	version,
+	formattedVersion,
 	releaseDate,
 	headline,
 	changeCount,
@@ -62,6 +64,7 @@ export function TimelineItem({
 		<ReleaseCardBase
 			toolSlug={toolSlug}
 			version={version}
+			formattedVersion={formattedVersion}
 			releaseDate={releaseDate}
 			headline={headline}
 			changesByType={changesByType}

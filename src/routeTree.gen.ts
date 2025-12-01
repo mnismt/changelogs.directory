@@ -20,6 +20,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
 import { Route as OgToolsRouteImport } from './routes/og/tools'
 import { Route as AdminToolsRouteImport } from './routes/admin/tools'
+import { Route as AdminTestEmailRouteImport } from './routes/admin/test-email'
 import { Route as AdminIngestionRouteImport } from './routes/admin/ingestion'
 import { Route as AdminEmailsRouteImport } from './routes/admin/emails'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
@@ -84,6 +85,11 @@ const AdminToolsRoute = AdminToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminTestEmailRoute = AdminTestEmailRouteImport.update({
+  id: '/test-email',
+  path: '/test-email',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminIngestionRoute = AdminIngestionRouteImport.update({
   id: '/ingestion',
   path: '/ingestion',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
+  '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
+  '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/admin': typeof AdminIndexRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
+  '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/admin/emails'
     | '/admin/ingestion'
+    | '/admin/test-email'
     | '/admin/tools'
     | '/og/tools'
     | '/tools/$slug'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/admin/emails'
     | '/admin/ingestion'
+    | '/admin/test-email'
     | '/admin/tools'
     | '/og/tools'
     | '/admin'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/admin/emails'
     | '/admin/ingestion'
+    | '/admin/test-email'
     | '/admin/tools'
     | '/og/tools'
     | '/tools/$slug'
@@ -345,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminToolsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/test-email': {
+      id: '/admin/test-email'
+      path: '/test-email'
+      fullPath: '/admin/test-email'
+      preLoaderRoute: typeof AdminTestEmailRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/ingestion': {
       id: '/admin/ingestion'
       path: '/ingestion'
@@ -407,6 +426,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminIngestionRoute: typeof AdminIngestionRoute
+  AdminTestEmailRoute: typeof AdminTestEmailRoute
   AdminToolsRoute: typeof AdminToolsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminToolsSlugRoute: typeof AdminToolsSlugRoute
@@ -415,6 +435,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminEmailsRoute: AdminEmailsRoute,
   AdminIngestionRoute: AdminIngestionRoute,
+  AdminTestEmailRoute: AdminTestEmailRoute,
   AdminToolsRoute: AdminToolsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminToolsSlugRoute: AdminToolsSlugRoute,

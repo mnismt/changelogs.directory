@@ -91,7 +91,8 @@ export const Route = createFileRoute('/og/tools/$slug')({
 													border: '1px solid rgba(255, 255, 255, 0.15)',
 												}}
 											>
-												v{tool.latestVersion}
+												{tool.formattedLatestVersion ||
+													`v${tool.latestVersion}`}
 											</div>
 											{timeAgo && (
 												<div

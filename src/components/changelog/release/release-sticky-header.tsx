@@ -8,15 +8,18 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { formatDate } from '@/lib/date-utils'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface ReleaseStickyHeaderProps {
 	toolSlug: string
 	version: string
+	formattedVersion?: string
 	prevVersion: string | null
+	formattedPrevVersion?: string | null
 	nextVersion: string | null
+	formattedNextVersion?: string | null
 	allVersions: Array<{
 		version: string
+		formattedVersion?: string
 		releaseDate: Date | null
 		_count: { changes: number }
 	}>
@@ -26,6 +29,7 @@ interface ReleaseStickyHeaderProps {
 export function ReleaseStickyHeader({
 	toolSlug,
 	version,
+	formattedVersion,
 	prevVersion,
 	nextVersion,
 	allVersions,
@@ -45,7 +49,7 @@ export function ReleaseStickyHeader({
 							</Link>
 						)}
 						<span className="font-mono text-sm font-semibold">
-							{formatVersionForDisplay(version, toolSlug)}
+							{formattedVersion || version}
 						</span>
 
 						{/* Version Switcher */}
@@ -75,7 +79,7 @@ export function ReleaseStickyHeader({
 											}`}
 										>
 											<div className="font-mono">
-												{formatVersionForDisplay(v.version, toolSlug)}
+												{v.formattedVersion || v.version}
 											</div>
 											<div className="text-xs text-muted-foreground">
 												{formatDate(v.releaseDate, 'MMM d, yyyy')} •{' '}

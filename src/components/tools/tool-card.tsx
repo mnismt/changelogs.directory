@@ -18,6 +18,7 @@ interface ToolCardProps {
 	}
 	latestRelease?: {
 		version: string
+		formattedVersion?: string | null
 		createdAt: Date | string
 	}
 	releaseCount?: number
@@ -136,8 +137,9 @@ export function ToolCard({
 						<div className="flex items-center gap-2">
 							{latestRelease ? (
 								<span className="flex items-center gap-1.5">
-									<span className="w-1.5 h-1.5 rounded-full bg-green-500/80" />v
-									{latestRelease.version}
+									<span className="w-1.5 h-1.5 rounded-full bg-green-500/80" />
+									{latestRelease.formattedVersion ||
+										`v${latestRelease.version}`}
 								</span>
 							) : (
 								<span>No releases</span>

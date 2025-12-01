@@ -7,7 +7,6 @@ import { ReleaseDetailSkeleton } from '@/components/changelog/release/release-de
 import { VersionList } from '@/components/changelog/release/version-list'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { captureException } from '@/integrations/sentry'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 import {
 	getAdjacentVersions,
 	getAllVersions,
@@ -40,10 +39,8 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 	head: ({ params, loaderData }) => {
 		const baseUrl =
 			import.meta.env.VITE_BASE_URL || 'https://changelogs.directory'
-		const formattedVersion = formatVersionForDisplay(
-			params.version,
-			params.slug,
-		)
+		const formattedVersion =
+			loaderData?.release?.formattedVersion || params.version
 		const toolName = loaderData?.release?.tool?.name ?? 'Release'
 		const pageTitle = `${toolName} ${formattedVersion} Changelog - changelogs.directory`
 		const description = `View all changes, features, and bugfixes in ${toolName} version ${formattedVersion}.`

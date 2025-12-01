@@ -7,6 +7,7 @@ import { TimelineItem } from './timeline-item'
 export interface TimelineRelease {
 	id: string
 	version: string
+	formattedVersion?: string
 	releaseDate: Date | string | null
 	headline: string | null
 	summary: string | null
@@ -163,6 +164,7 @@ export function TimelineView({
 											id={release.id}
 											toolSlug={toolSlug}
 											version={release.version}
+											formattedVersion={release.formattedVersion}
 											releaseDate={release.releaseDate}
 											headline={release.headline}
 											changeCount={release._count.changes}

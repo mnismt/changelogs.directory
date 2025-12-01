@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { getEmailLogs } from '@/server/admin-emails'
 
@@ -15,8 +15,16 @@ function AdminEmails() {
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
-				<h2 className="text-2xl font-bold">Email Activity</h2>
-				<div className="text-sm text-neutral-400">Last 100 emails sent</div>
+				<div>
+					<h2 className="text-2xl font-bold">Email Activity</h2>
+					<div className="text-sm text-neutral-400">Last 100 emails sent</div>
+				</div>
+				<Link
+					to="/admin/test-email"
+					className="rounded-md bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-200"
+				>
+					Test Emails
+				</Link>
 			</div>
 
 			<div className="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden">

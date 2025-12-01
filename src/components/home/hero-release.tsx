@@ -10,13 +10,13 @@ import {
 	isMonochromeLogo,
 } from '@/lib/tool-logos'
 import { cn } from '@/lib/utils'
-import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 interface HeroReleaseProps {
 	toolSlug: string
 	toolName: string
 	vendor: string | null
 	version: string
+	formattedVersion?: string
 	releaseDate: Date | string | null
 	headline: string | null
 	summary: string | null
@@ -56,6 +56,7 @@ export function HeroRelease({
 	toolName,
 	vendor,
 	version,
+	formattedVersion,
 	releaseDate,
 	headline,
 	changeCount,
@@ -196,7 +197,7 @@ export function HeroRelease({
 										className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground/80 mb-6"
 									>
 										<span className="font-semibold text-foreground">
-											{formatVersionForDisplay(version, toolSlug)}
+											{formattedVersion || version}
 										</span>
 										<span className="text-muted-foreground/30">•</span>
 										{releaseDate ? (
