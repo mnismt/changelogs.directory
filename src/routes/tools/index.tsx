@@ -20,7 +20,7 @@ export const Route = createFileRoute('/tools/')({
 		return {
 			meta: [
 				{
-					title: 'Developer Tools Directory - changelogs.directory',
+					title: 'developer tools directory - changelogs.directory',
 				},
 				{
 					name: 'description',
@@ -31,7 +31,7 @@ export const Route = createFileRoute('/tools/')({
 				{ property: 'og:type', content: 'website' },
 				{
 					property: 'og:title',
-					content: 'Developer Tools Directory - changelogs.directory',
+					content: 'developer tools directory - changelogs.directory',
 				},
 				{
 					property: 'og:description',

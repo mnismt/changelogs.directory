@@ -42,7 +42,7 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 		const formattedVersion =
 			loaderData?.release?.formattedVersion || params.version
 		const toolName = loaderData?.release?.tool?.name ?? 'Release'
-		const pageTitle = `${toolName} ${formattedVersion} Changelog - changelogs.directory`
+		const pageTitle = `${toolName.toLowerCase()} ${formattedVersion.toLowerCase()} changelog - changelogs.directory`
 		const description = `View all changes, features, and bugfixes in ${toolName} version ${formattedVersion}.`
 
 		return {
@@ -58,7 +58,7 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 				{ property: 'og:type', content: 'website' },
 				{
 					property: 'og:title',
-					content: `${toolName} ${formattedVersion} Changelog`,
+					content: `${toolName.toLowerCase()} ${formattedVersion.toLowerCase()} changelog`,
 				},
 				{
 					property: 'og:description',

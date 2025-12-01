@@ -79,7 +79,7 @@ export const Route = createFileRoute('/analytics')({
 		const baseUrl = process.env.VITE_BASE_URL || 'https://changelogs.directory'
 		return {
 			meta: [
-				{ title: 'Analytics | Changelogs.directory' },
+				{ title: 'analytics | changelogs.directory' },
 				{
 					name: 'robots',
 					content: 'noindex, nofollow',
