@@ -37,6 +37,13 @@ The palette is strictly monochrome, inspired by high-end developer tools (Cursor
 -   **Mobile Adaptation**:
     -   **Lists**: Convert long vertical grids into **horizontal scrollable lists** (`overflow-x-auto`) on mobile to conserve vertical space.
     -   **Controls**: Use compact, icon-only toggles on mobile; expand to text labels on desktop.
+    -   **Floating Dock**:
+        -   **Position**: Fixed at bottom-center (`bottom-6`), floating above content.
+        -   **Aesthetic**: High-grade glassmorphism (`backdrop-blur-xl`, `bg-black/60`) with a subtle white border (`border-white/10`).
+        -   **Interaction**:
+            -   **Active State**: Smooth sliding background (`layoutId`) and a glowing green dot indicator.
+            -   **Animations**: Spring-based entry (`y: 100` -> `0`) and scale effects on tap/hover.
+        -   **Content**: Essential navigation icons + primary action (Subscribe).
 
 ## UX & Animation
 
@@ -84,5 +91,6 @@ For detailed documentation on how specific pages implement these design rules, i
 -   **[Homepage Flow](transition-flow/index.md)**: The "Terminal Boot Sequence" with its multi-stage animation.
 -   **[Tools Page Flow](transition-flow/tools.$slug.md)**: The "Directory Listing" with staggered entrance and global background effects.
 -   **[Release Page Flow](transition-flow/tools.$slug/releases.$version.md)**: The "Deep Dive" with context persistence and cinematic data stream.
+-   **[Analytics Page Flow](transition-flow/analytics.md)**: The "Network Operations Center" with real-time data streams and system status monitoring.
 
 These documents provide concrete examples of how the abstract principles above are applied in practice.

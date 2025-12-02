@@ -148,27 +148,8 @@ function AdminDashboard() {
 			{/* Content */}
 			<div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 				{/* Header Section */}
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
-					className="mb-12"
-				>
-					<div className="flex items-center gap-3 mb-2">
-						<div className="h-px flex-1 bg-border/40" />
-						<span className="font-mono text-xs text-muted-foreground/60 uppercase tracking-widest">
-							System Status
-						</span>
-						<div className="h-px flex-1 bg-border/40" />
-					</div>
-					<h1 className="text-4xl md:text-5xl font-bold tracking-tight text-center text-foreground font-mono">
-						Analytics_Dashboard
-					</h1>
-					<p className="text-center text-muted-foreground mt-4 max-w-2xl mx-auto font-mono text-sm">
-						Real-time monitoring of ingestion pipelines, content metrics, and
-						platform growth.
-					</p>
-				</motion.div>
+				{/* Header Section */}
+				<SystemStatusHeader />
 
 				<div className="grid grid-cols-1 gap-8">
 					{/* Tool Statistics Section */}
@@ -245,28 +226,39 @@ function AdminDashboard() {
 					<Section title="Content Metrics" delay={0.2}>
 						<Suspense
 							fallback={
-								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-									<DataStreamLoader className="h-32" text="COUNTING" />
-									<DataStreamLoader className="h-32" text="COUNTING" />
-									<DataStreamLoader className="h-32" text="SCANNING" />
+								<div className="flex overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:pb-0 snap-x">
+									<DataStreamLoader
+										className="h-32 min-w-[260px] sm:min-w-0 snap-center"
+										text="COUNTING"
+									/>
+									<DataStreamLoader
+										className="h-32 min-w-[260px] sm:min-w-0 snap-center"
+										text="COUNTING"
+									/>
+									<DataStreamLoader
+										className="h-32 min-w-[260px] sm:min-w-0 snap-center"
+										text="SCANNING"
+									/>
 								</div>
 							}
 						>
 							<Await promise={contentSummary}>
 								{(data) => (
 									<Reveal>
-										<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+										<div className="flex overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:pb-0 snap-x scrollbar-hide">
 											<StatsCard
 												title="Total Releases"
 												value={data.totalReleases}
 												icon={<Package className="size-4" />}
 												trend="up"
+												className="min-w-[260px] sm:min-w-0 snap-center"
 											/>
 											<StatsCard
 												title="Total Changes"
 												value={data.totalChanges}
 												icon={<FileText className="size-4" />}
 												trend="up"
+												className="min-w-[260px] sm:min-w-0 snap-center"
 											/>
 											<StatsCard
 												title="Breaking Changes"
@@ -275,6 +267,7 @@ function AdminDashboard() {
 												icon={<AlertTriangle className="size-4" />}
 												trend="down"
 												trendLabel="High Attention"
+												className="min-w-[260px] sm:min-w-0 snap-center"
 											/>
 										</div>
 									</Reveal>
@@ -330,13 +323,14 @@ function AdminDashboard() {
 
 					{/* Ingestion Health Section */}
 					<Section title="Ingestion Health" delay={0.3}>
-						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+						<div className="flex overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:pb-0 snap-x scrollbar-hide mb-6">
 							<StatsCard
 								title="Success Rate (7d)"
 								value={`${ingestionStats.successRate}%`}
 								description="Last 7 days"
 								icon={<CheckCircle className="size-4" />}
 								trend="neutral"
+								className="min-w-[260px] sm:min-w-0 snap-center"
 							/>
 							<StatsCard
 								title="Avg Duration"
@@ -348,6 +342,7 @@ function AdminDashboard() {
 								description="Successful jobs"
 								icon={<Clock className="size-4" />}
 								trend="neutral"
+								className="min-w-[260px] sm:min-w-0 snap-center"
 							/>
 							<StatsCard
 								title="Total Jobs (7d)"
@@ -355,10 +350,14 @@ function AdminDashboard() {
 								description={`${ingestionStats.successCount} success / ${ingestionStats.failedCount} failed`}
 								icon={<Activity className="size-4" />}
 								trend={ingestionStats.failedCount > 0 ? 'down' : 'up'}
+								className="min-w-[260px] sm:min-w-0 snap-center"
 							/>
 							<Suspense
 								fallback={
-									<DataStreamLoader className="h-32" text="CHECKING_TOOLS" />
+									<DataStreamLoader
+										className="h-32 min-w-[260px] sm:min-w-0 snap-center"
+										text="CHECKING_TOOLS"
+									/>
 								}
 							>
 								<Await promise={contentSummary}>
@@ -370,6 +369,7 @@ function AdminDashboard() {
 												description="Active connectors"
 												icon={<Wrench className="size-4" />}
 												trend="up"
+												className="min-w-[260px] sm:min-w-0 snap-center"
 											/>
 										</Reveal>
 									)}
@@ -400,13 +400,14 @@ function AdminDashboard() {
 
 					{/* Waitlist Section */}
 					<Section title="Growth & Community" delay={0.4}>
-						<div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
+						<div className="flex overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-3 sm:pb-0 snap-x scrollbar-hide mb-6">
 							<StatsCard
 								title="Total Subscribers"
 								value={waitlistStats.totalCount}
 								description="All time"
 								icon={<Mail className="size-4" />}
 								trend="up"
+								className="min-w-[260px] sm:min-w-0 snap-center"
 							/>
 							<StatsCard
 								title="Last 24 Hours"
@@ -414,6 +415,7 @@ function AdminDashboard() {
 								description="New subscribers"
 								icon={<Zap className="size-4" />}
 								trend="up"
+								className="min-w-[260px] sm:min-w-0 snap-center"
 							/>
 							<StatsCard
 								title="Last 7 Days"
@@ -421,6 +423,7 @@ function AdminDashboard() {
 								description="New subscribers"
 								icon={<Calendar className="size-4" />}
 								trend="up"
+								className="min-w-[260px] sm:min-w-0 snap-center"
 							/>
 						</div>
 						<div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
@@ -506,6 +509,45 @@ function AdminDashboard() {
 	)
 }
 
+function SystemStatusHeader() {
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.5 }}
+			className="mb-12"
+		>
+			<div className="flex items-center gap-3 mb-4 justify-center">
+				<div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/50" />
+				<div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+					<div className="size-1.5 rounded-full bg-primary animate-pulse" />
+					<span className="font-mono text-[10px] text-primary uppercase tracking-widest">
+						System Online
+					</span>
+				</div>
+				<div className="h-px w-12 bg-gradient-to-l from-transparent to-primary/50" />
+			</div>
+
+			<h1 className="text-4xl md:text-5xl font-bold tracking-tight text-center text-foreground font-mono mb-4">
+				<span className="opacity-50 mr-2">{'>'}</span>
+				Analytics_Dashboard
+				<motion.span
+					animate={{ opacity: [0, 1, 0] }}
+					transition={{ duration: 0.8, repeat: Infinity }}
+					className="ml-1 inline-block w-3 h-8 bg-primary/50 align-middle"
+				/>
+			</h1>
+
+			<p className="text-center text-muted-foreground max-w-2xl mx-auto font-mono text-xs md:text-sm leading-relaxed">
+				<span className="text-primary/60">{'//'}</span> Real-time monitoring of
+				ingestion pipelines,
+				<br className="hidden sm:block" />
+				content metrics, and platform growth.
+			</p>
+		</motion.div>
+	)
+}
+
 function Section({
 	title,
 	children,
@@ -543,7 +585,7 @@ function GlassCard({
 	return (
 		<div
 			className={cn(
-				'relative overflow-hidden rounded-xl border border-border/40 bg-background/20 backdrop-blur-xl supports-[backdrop-filter]:bg-background/10 shadow-sm transition-all duration-300 hover:border-border/60 hover:bg-background/30 hover:shadow-md',
+				'relative overflow-hidden rounded-xl border border-border/40 bg-background/20 backdrop-blur-xl supports-[backdrop-filter]:bg-background/10 shadow-sm transition-all duration-300 hover:border-border/60 hover:bg-background/30 hover:shadow-md active:scale-[0.99]',
 				className,
 			)}
 		>
@@ -559,6 +601,7 @@ function StatsCard({
 	icon,
 	trend,
 	trendLabel,
+	className,
 }: {
 	title: string
 	value: string | number
@@ -566,12 +609,15 @@ function StatsCard({
 	icon: ReactNode
 	trend?: 'up' | 'down' | 'neutral'
 	trendLabel?: string
+	className?: string
 }) {
 	return (
-		<GlassCard className="p-5 group">
-			<div className="flex items-start justify-between">
+		<GlassCard
+			className={cn('p-5 group flex flex-col justify-between', className)}
+		>
+			<div className="flex items-start justify-between mb-4">
 				<div className="space-y-1">
-					<p className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wider">
+					<p className="text-[10px] font-mono font-medium text-muted-foreground uppercase tracking-wider">
 						{title}
 					</p>
 					<div className="flex items-baseline gap-2">
@@ -589,7 +635,7 @@ function StatsCard({
 				</div>
 			</div>
 			{(description || trend) && (
-				<div className="mt-4 flex items-center gap-2 text-xs">
+				<div className="flex items-center gap-2 text-xs mt-auto">
 					{trend && (
 						<span
 							className={cn(

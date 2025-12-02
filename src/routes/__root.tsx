@@ -13,6 +13,7 @@ import { useEffect } from 'react'
 import { AppErrorBoundary } from '@/components/shared/app-error-boundary'
 import { Footer } from '@/components/shared/footer'
 import { Header } from '@/components/shared/header'
+import { MobileDock } from '@/components/shared/mobile-dock'
 import { NotFound } from '@/components/shared/not-found'
 import { PostHogPageView } from '@/integrations/posthog/page-view'
 import { PostHogProvider } from '@/integrations/posthog/provider'
@@ -127,6 +128,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					<Header />
 					<main className="flex-1">{children}</main>
 					<Footer />
+					<MobileDock />
 				</div>
 				{import.meta.env.DEV && (
 					<TanStackDevtools

@@ -1,16 +1,20 @@
+import { Filter, X } from 'lucide-react'
 import {
 	AnimatePresence,
 	motion,
 	useMotionValueEvent,
 	useScroll,
 } from 'motion/react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 
 export function StickyFilterBar({ children }: { children: React.ReactNode }) {
 	const ref = useRef<HTMLDivElement>(null)
 	const { scrollY } = useScroll()
 	const [isStuck, setIsStuck] = useState(false)
+	const [isExpanded, setIsExpanded] = useState(false)
+	const isDesktop = useMediaQuery('(min-width: 768px)')
 
 	useMotionValueEvent(scrollY, 'change', () => {
 		if (ref.current) {
@@ -36,6 +40,13 @@ export function StickyFilterBar({ children }: { children: React.ReactNode }) {
 		}
 	})
 
+	// Reset expansion when unstuck
+	useEffect(() => {
+		if (!isStuck) {
+			setIsExpanded(false)
+		}
+	}, [isStuck])
+
 	return (
 		<>
 			{/* Sentinel to track position */}
@@ -52,24 +63,66 @@ export function StickyFilterBar({ children }: { children: React.ReactNode }) {
 			</div>
 
 			{/* Sticky Clone */}
-			<AnimatePresence>
+			<AnimatePresence mode="wait">
 				{isStuck && (
-					<motion.div
-						initial={{ opacity: 0, y: -20, scale: 0.95 }}
-						animate={{
-							opacity: 1,
-							y: 0,
-							scale: 1,
-							backgroundColor: 'rgba(0,0,0,0.8)',
-							borderColor: 'rgba(255,255,255,0.1)',
-							backdropFilter: 'blur(12px)',
-						}}
-						exit={{ opacity: 0, y: -20, scale: 0.95 }}
-						transition={{ duration: 0.3, ease: 'circOut' }}
-						className="fixed top-20 left-4 right-4 z-50 mx-auto max-w-7xl rounded-xl border border-white/10 shadow-2xl shadow-black/50 p-4 md:left-8 md:right-8 lg:left-0 lg:right-0"
-					>
-						{children}
-					</motion.div>
+					<>
+						{/* Mobile Collapsed State */}
+						{!isDesktop && !isExpanded && (
+							<motion.button
+								initial={{ opacity: 0, y: -20, scale: 0.9 }}
+								animate={{
+									opacity: 1,
+									y: 0,
+									scale: 1,
+									backgroundColor: 'rgba(0,0,0,0.8)',
+									borderColor: 'rgba(255,255,255,0.1)',
+									backdropFilter: 'blur(12px)',
+								}}
+								exit={{ opacity: 0, y: -20, scale: 0.9 }}
+								transition={{ duration: 0.2 }}
+								onClick={() => setIsExpanded(true)}
+								className="fixed top-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-muted-foreground shadow-xl backdrop-blur-xl hover:bg-white/5 hover:text-foreground"
+							>
+								<Filter className="h-4 w-4" />
+								<span>Filters</span>
+							</motion.button>
+						)}
+
+						{/* Expanded State (Mobile & Desktop) */}
+						{(isDesktop || isExpanded) && (
+							<motion.div
+								initial={{ opacity: 0, y: -20, scale: 0.95 }}
+								animate={{
+									opacity: 1,
+									y: 0,
+									scale: 1,
+									backgroundColor: 'rgba(0,0,0,0.8)',
+									borderColor: 'rgba(255,255,255,0.1)',
+									backdropFilter: 'blur(12px)',
+								}}
+								exit={{ opacity: 0, y: -20, scale: 0.95 }}
+								transition={{ duration: 0.3, ease: 'circOut' }}
+								className="fixed top-20 left-4 right-4 z-50 mx-auto max-w-7xl rounded-xl border border-white/10 p-4 shadow-2xl shadow-black/50 md:left-8 md:right-8 lg:left-0 lg:right-0"
+							>
+								{/* Mobile Close Button */}
+								{!isDesktop && (
+									<div className="mb-4 flex items-center justify-between border-b border-white/5 pb-2 md:hidden">
+										<span className="font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider">
+											Filter & View
+										</span>
+										<button
+											type="button"
+											onClick={() => setIsExpanded(false)}
+											className="rounded-full p-1 text-muted-foreground hover:bg-white/10 hover:text-foreground"
+										>
+											<X className="h-4 w-4" />
+										</button>
+									</div>
+								)}
+								{children}
+							</motion.div>
+						)}
+					</>
 				)}
 			</AnimatePresence>
 		</>
