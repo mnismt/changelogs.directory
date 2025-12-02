@@ -38,16 +38,7 @@ export async function fetchGitHubReleases(
 	// Check cache first
 	const cached = await getCachedReleases(repo.owner, repo.name)
 
-	if (cached.releases) {
-		logger.info('Using cached releases', {
-			owner: repo.owner,
-			repo: repo.name,
-			count: cached.releases.length,
-		})
-		return applyFilters(cached.releases, options)
-	}
-
-	// Cache miss - fetch from GitHub
+	// Prepare headers for GitHub API request
 	const headers: Record<string, string> = {
 		'User-Agent': 'Changelogs.directory Bot',
 		Accept: 'application/vnd.github.v3+json',
@@ -57,13 +48,14 @@ export async function fetchGitHubReleases(
 		headers.Authorization = `Bearer ${token}`
 	}
 
-	// Add ETag for conditional request (if we have it)
+	// Add ETag for conditional request (if available)
 	if (cached.etag) {
 		headers['If-None-Match'] = cached.etag
-		logger.info('Using ETag for conditional request', {
+		logger.info('Making conditional request with ETag', {
 			owner: repo.owner,
 			repo: repo.name,
 			etag: cached.etag,
+			hasCachedReleases: !!cached.releases,
 		})
 	}
 
@@ -72,10 +64,11 @@ export async function fetchGitHubReleases(
 	let newEtag: string | null = null
 	const perPage = options?.perPage || 100
 
-	logger.info('Fetching GitHub releases (with pagination)', {
+	logger.info('Fetching GitHub releases', {
 		repo,
 		perPage,
 		hasEtag: !!cached.etag,
+		hasCachedReleases: !!cached.releases,
 	})
 
 	// Paginate through all releases
@@ -84,15 +77,23 @@ export async function fetchGitHubReleases(
 
 		const response = await fetch(url, { headers })
 
-		// Handle 304 Not Modified (content hasn't changed)
+		// Handle 304 Not Modified (cached data still valid)
 		if (response.status === 304) {
-			logger.info('GitHub API returned 304 Not Modified (content unchanged)', {
+			logger.info('GitHub returned 304 Not Modified - using cached releases', {
 				owner: repo.owner,
 				repo: repo.name,
+				cachedCount: cached.releases?.length || 0,
 			})
-			// Return empty array - caller should handle this
-			// (This shouldn't happen if we have cached.releases, but just in case)
-			return []
+
+			if (cached.releases) {
+				return applyFilters(cached.releases, options)
+			}
+
+			// Edge case: 304 but no cached releases - retry without ETag
+			logger.warn('304 received but no cache found - refetching')
+			delete headers['If-None-Match']
+			page = 1
+			continue
 		}
 
 		if (!response.ok) {

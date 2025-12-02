@@ -59,6 +59,9 @@ export function parseGitHubReleases(
 			continue
 		}
 
+		// Normalize body (some releases may have null body)
+		const body = release.body || ''
+
 		// Extract version (strip prefix if configured)
 		let version = release.name || release.tag_name
 		if (config?.versionPrefix && version.startsWith(config.versionPrefix)) {
@@ -78,7 +81,7 @@ export function parseGitHubReleases(
 		const releaseDate = new Date(release.published_at)
 
 		// Parse body into changes
-		const changes = parseReleaseBody(release.body, config?.repositoryUrl)
+		const changes = parseReleaseBody(body, config?.repositoryUrl)
 
 		// Generate version sort key with pre-release handling
 		const versionSort = generateVersionSortWithPreRelease(
@@ -87,11 +90,11 @@ export function parseGitHubReleases(
 		)
 
 		// Compute content hash
-		const contentHash = createHash('sha256').update(release.body).digest('hex')
+		const contentHash = createHash('sha256').update(body).digest('hex')
 
 		// Generate summary + headline
-		const summary = generateSummary(release.body)
-		const headline = generateHeadline(summary, release.body, version)
+		const summary = generateSummary(body)
+		const headline = generateHeadline(summary, body, version)
 
 		parsedReleases.push({
 			version,
@@ -100,7 +103,7 @@ export function parseGitHubReleases(
 			title: release.name || undefined,
 			headline,
 			summary,
-			rawContent: release.body,
+			rawContent: body,
 			contentHash,
 			changes,
 			isPrerelease: release.prerelease,

@@ -27,6 +27,7 @@ const searchSchema = z.object({
 	datePreset: z.enum(['7d', '30d', '3mo', '6mo', '1y', 'all']).optional(),
 	startDate: z.string().optional(),
 	endDate: z.string().optional(),
+	showPrereleases: z.boolean().optional().default(false),
 })
 
 export const Route = createFileRoute('/tools/$slug/')({
@@ -35,6 +36,7 @@ export const Route = createFileRoute('/tools/$slug/')({
 		datePreset: search.datePreset,
 		startDate: search.startDate,
 		endDate: search.endDate,
+		showPrereleases: search.showPrereleases,
 	}),
 	loader: async ({ params, deps }) => {
 		const firstPage = await getToolReleasesPaginated({
@@ -45,6 +47,7 @@ export const Route = createFileRoute('/tools/$slug/')({
 				datePreset: deps.datePreset,
 				startDate: deps.startDate,
 				endDate: deps.endDate,
+				includePrereleases: deps.showPrereleases,
 			},
 		})
 
@@ -103,6 +106,7 @@ function ToolPage() {
 		search.datePreset,
 		search.startDate,
 		search.endDate,
+		search.showPrereleases,
 		loaderData.initialReleases,
 		loaderData.initialPagination,
 	])
@@ -121,6 +125,7 @@ function ToolPage() {
 					datePreset: search.datePreset,
 					startDate: search.startDate,
 					endDate: search.endDate,
+					includePrereleases: search.showPrereleases,
 				},
 			})
 
@@ -141,6 +146,7 @@ function ToolPage() {
 		search.datePreset,
 		search.startDate,
 		search.endDate,
+		search.showPrereleases,
 	])
 
 	// Intersection observer for infinite scroll
