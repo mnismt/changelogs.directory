@@ -1,7 +1,7 @@
 import { Link, useMatches } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
-import { CompareDialog } from '@/components/shared/compare-dialog'
+
 import { SubscribeDialog } from '@/components/shared/subscribe-dialog'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,7 +15,6 @@ import { getToolLogo } from '@/lib/tool-logos'
 
 export function Header() {
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
-	const [isCompareDialogOpen, setIsCompareDialogOpen] = useState(false)
 
 	return (
 		<header className="fixed left-0 right-0 top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
@@ -60,13 +59,15 @@ export function Header() {
 
 					<Tooltip>
 						<TooltipTrigger asChild>
-							<button
-								type="button"
-								className="group relative flex h-8 cursor-pointer items-center rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-								onClick={() => setIsCompareDialogOpen(true)}
+							<Link
+								to="/compare"
+								className="group relative flex h-8 items-center rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground data-[status=active]:bg-muted/50 data-[status=active]:text-foreground"
+								activeProps={{
+									'data-status': 'active',
+								}}
 							>
 								<span className="font-mono">/compare</span>
-							</button>
+							</Link>
 						</TooltipTrigger>
 						<TooltipContent
 							side="bottom"
@@ -123,10 +124,6 @@ export function Header() {
 			<SubscribeDialog
 				open={isDialogOpen}
 				onClose={() => setIsDialogOpen(false)}
-			/>
-			<CompareDialog
-				open={isCompareDialogOpen}
-				onClose={() => setIsCompareDialogOpen(false)}
 			/>
 		</header>
 	)
