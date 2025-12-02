@@ -14,6 +14,7 @@ import { FeedReleaseCard } from '@/components/home/feed-release-card'
 import { HeroSection } from '@/components/home/hero-section'
 import { HomePageSkeleton } from '@/components/home/home-skeleton'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
+import { AnimatedNumber } from '@/components/ui/animated-number'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { useDebounce } from '@/hooks/use-debounce'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
@@ -61,7 +62,7 @@ type ToolFilterOption = {
 	logo: ReactNode
 }
 
-const MAX_FEED_RELEASES = 9
+const MAX_FEED_RELEASES = 12
 const INITIAL_RELEASE_LIMIT = MAX_FEED_RELEASES + 1
 
 export const Route = createFileRoute('/')({
@@ -147,6 +148,7 @@ function HomePage() {
 	// State
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 	const [selectedTools, setSelectedTools] = useState<string[]>([])
+	const [showPrereleases, setShowPrereleases] = useState(false)
 	const [searchQuery, setSearchQuery] = useState('')
 	const debouncedSearchQuery = useDebounce(searchQuery, 300)
 	const isSearching = searchQuery !== debouncedSearchQuery
@@ -160,7 +162,7 @@ function HomePage() {
 				background="transparent"
 				minSize={0.4}
 				maxSize={1}
-				particleDensity={100}
+				particleDensity={30}
 				className="h-full w-full"
 				particleColor="#FFFFFF"
 			/>
@@ -179,7 +181,10 @@ function HomePage() {
 
 	// Fetch releases with React Query
 	const { data } = useQuery({
-		queryKey: ['releases', { types: selectedTypes, tools: selectedTools }],
+		queryKey: [
+			'releases',
+			{ types: selectedTypes, tools: selectedTools, showPrereleases },
+		],
 		queryFn: () =>
 			fetchReleases({
 				data: {
@@ -190,6 +195,7 @@ function HomePage() {
 							? (selectedTypes as ChangeType[])
 							: undefined,
 					toolSlugs: selectedTools.length > 0 ? selectedTools : undefined,
+					includePrereleases: showPrereleases,
 				},
 			}),
 		initialData: initialData,
@@ -237,8 +243,10 @@ function HomePage() {
 	)
 
 	// Calculate stats
-	const totalTools = new Set(releases.map((r) => r.tool.slug)).size
-	const totalReleases = pagination.totalCount
+	const filteredTools = pagination.matchingToolsCount ?? 0
+	const totalTools = initialData.pagination.matchingToolsCount ?? 0
+	const filteredReleases = pagination.totalCount
+	const totalReleases = initialData.pagination.totalCount
 
 	const toolFilterOptions: ToolFilterOption[] = trackedToolSlugs.flatMap(
 		(slug) => {
@@ -312,7 +320,7 @@ function HomePage() {
 					)}
 				>
 					{/* Sparkles Effect */}
-					<div className="absolute inset-0 -top-12 h-24 w-full pointer-events-none">
+					<div className="absolute top-1/2 left-0 h-24 w-full -translate-y-1/2 pointer-events-none">
 						{viewReleasesSparkles}
 					</div>
 					<span className="text-muted-foreground/50">$</span>
@@ -332,7 +340,7 @@ function HomePage() {
 				<div
 					className={cn(
 						'w-px bg-gradient-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
-						showFeed ? 'h-8 opacity-100' : 'h-0 opacity-0',
+						showFeed ? 'h-12 opacity-100' : 'h-0 opacity-0',
 					)}
 				/>
 			</div>
@@ -387,6 +395,8 @@ function HomePage() {
 											<FeedFilters
 												selectedTypes={selectedTypes}
 												onTypeChange={setSelectedTypes}
+												showPrereleases={showPrereleases}
+												onShowPrereleasesChange={setShowPrereleases}
 											/>
 
 											{toolFilterOptions.length > 0 && (
@@ -433,15 +443,19 @@ function HomePage() {
 								{/* Stats */}
 								<div className="border-b border-border/40 flex items-center gap-4 px-4 py-3 text-sm text-muted-foreground">
 									<div className="flex items-center gap-2">
-										<span className="font-mono font-semibold text-foreground">
-											{totalTools}
+										<span className="font-mono font-semibold text-foreground flex items-center gap-1">
+											<AnimatedNumber value={filteredTools} />
+											<span className="text-muted-foreground/50">/</span>
+											<AnimatedNumber value={totalTools} />
 										</span>
 										<span>tools tracked</span>
 									</div>
 									<span className="text-muted-foreground/50">•</span>
 									<div className="flex items-center gap-2">
-										<span className="font-mono font-semibold text-foreground">
-											{totalReleases}
+										<span className="font-mono font-semibold text-foreground flex items-center gap-1">
+											<AnimatedNumber value={filteredReleases} />
+											<span className="text-muted-foreground/50">/</span>
+											<AnimatedNumber value={totalReleases} />
 										</span>
 										<span>total releases</span>
 									</div>

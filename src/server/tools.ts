@@ -23,6 +23,7 @@ const paginatedReleasesSchema = z.object({
 	datePreset: z.enum(['7d', '30d', '3mo', '6mo', '1y', 'all']).optional(),
 	startDate: z.string().optional(),
 	endDate: z.string().optional(),
+	includePrereleases: z.boolean().default(true),
 })
 
 const latestReleasesSchema = z.object({
@@ -44,6 +45,7 @@ const latestReleasesSchema = z.object({
 		)
 		.optional(),
 	toolSlugs: z.array(z.string().min(1)).optional(),
+	includePrereleases: z.boolean().default(true),
 })
 
 const getDateRange = (preset?: string) => {
@@ -197,8 +199,13 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 			const whereClause: {
 				toolId: string
 				releaseDate?: { gte?: Date; lte?: Date }
+				isPrerelease?: boolean
 			} = {
 				toolId: tool.id,
+			}
+
+			if (!data.includePrereleases) {
+				whereClause.isPrerelease = false
 			}
 
 			if (dateFilter.gte || dateFilter.lte) {
@@ -507,6 +514,10 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 				}
 			}
 
+			if (!data.includePrereleases) {
+				whereClause.isPrerelease = false
+			}
+
 			// Get total count for pagination metadata
 			const totalCount = await prisma.release.count({
 				where: whereClause,
@@ -522,6 +533,7 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 				select: {
 					id: true,
 					version: true,
+					isPrerelease: true,
 					releaseDate: true,
 					headline: true,
 					summary: true,
@@ -579,8 +591,16 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 					hasBreaking,
 					hasSecurity,
 					hasDeprecation,
+					isPrerelease: release.isPrerelease,
 				}
 			})
+
+			// Get count of tools matching the filter
+			const matchingToolsRaw = await prisma.release.groupBy({
+				by: ['toolId'],
+				where: whereClause,
+			})
+			const matchingToolsCount = matchingToolsRaw.length
 
 			return {
 				releases: releasesWithMetadata,
@@ -589,6 +609,7 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 					limit: data.limit,
 					totalCount,
 					hasMore: data.offset + releases.length < totalCount,
+					matchingToolsCount,
 				},
 			}
 		} catch (error: unknown) {

@@ -54,7 +54,7 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 
 ## Routes (TanStack Start)
 
-- /: recent releases feed across all tools with quick filters by tool and change type, server-rendered for speed and SEO.
+- /: recent releases feed across all tools with quick filters by tool, change type, and stable versions, server-rendered for speed and SEO.
 - /tools: directory of CLI tools with "latest version" badges from normalized data.
 - /tools/:tool: tool overview, releases list, filters, and deep links per version sourced from respective changelog data.
 - /tools/:tool/releases/:version: release details grouped by change type with source link and last-checked timestamp.
@@ -66,7 +66,7 @@ A comprehensive directory that automatically tracks, curates, and presents chang
 - **✅ COMPLETED** - Waitlist subscription with email validation and duplicate checking for launch notifications.
 - Aggregated "What's new" feed, per-tool release lists, and release details with grouped change types and direct source attribution.
 - Version diff for CLI tools by comparing normalized change arrays between two selected versions.
-- Search and filters: full-text search over title/description and chips for change type and time windows, implemented via server functions.
+- Search and filters: full-text search over title/description and chips for change type, time windows, and stable version toggle, implemented via server functions.
 - RSS/Atom feeds: global and per-tool feeds generated from normalized releases for subscriptions and automation.
 
 ## Email subscription & notifications

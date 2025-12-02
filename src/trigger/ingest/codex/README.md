@@ -38,9 +38,15 @@ Key differences from Claude Code:
 - Paginated GET: `/repos/:owner/:repo/releases?per_page=100&page=N`
 - Filters drafts by default; pre-releases filter configurable via `tool.sourceConfig.includePreReleases` (default: true)
 - GitHub token support (5000/hr vs 60/hr)
+- **Caching with ETag support:**
+  - Always makes conditional request to GitHub with `If-None-Match: <etag>` header
+  - 304 response → uses cached releases (data unchanged, ~300ms)
+  - 200 response → fetches fresh data, updates cache (new releases, ~2-5s)
+  - Cache TTL: 90 days (Redis)
 
 ### Phase 3: Parse
 - Strip version prefix from tags (e.g., `rust-v0.55.0` → `0.55.0`)
+- Normalize null/empty bodies to empty string (some releases have `body: null`)
 - Parse body sections:
   - `## Highlights` → high-impact items (FEATURE/IMPROVEMENT bias)
   - `## Merged PRs` → PR-linked items; builds links to `.../pull/<number>`

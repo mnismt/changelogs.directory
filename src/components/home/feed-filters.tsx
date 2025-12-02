@@ -13,12 +13,16 @@ const CHANGE_TYPES = [
 interface FeedFiltersProps {
 	selectedTypes: string[]
 	onTypeChange: (types: string[]) => void
+	showPrereleases: boolean
+	onShowPrereleasesChange: (show: boolean) => void
 	className?: string
 }
 
 export function FeedFilters({
 	selectedTypes,
 	onTypeChange,
+	showPrereleases,
+	onShowPrereleasesChange,
 	className,
 }: FeedFiltersProps) {
 	const handleToggle = (value: string | null) => {
@@ -62,6 +66,21 @@ export function FeedFilters({
 					{label}
 				</button>
 			))}
+
+			<div className="h-4 w-px bg-border mx-2" />
+
+			<button
+				type="button"
+				onClick={() => onShowPrereleasesChange(!showPrereleases)}
+				className={cn(
+					'rounded cursor-pointer border px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-all duration-300 ease-out',
+					!showPrereleases
+						? 'border-foreground/30 bg-accent text-foreground'
+						: 'border-border bg-card text-muted-foreground hover:border-foreground/20 hover:bg-accent/50 hover:text-foreground',
+				)}
+			>
+				Stable Only
+			</button>
 		</div>
 	)
 }

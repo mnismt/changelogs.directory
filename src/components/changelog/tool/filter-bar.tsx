@@ -35,6 +35,7 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 		datePreset?: string
 		startDate?: string
 		endDate?: string
+		showPrereleases?: boolean
 	}
 
 	const [showCustomPicker, setShowCustomPicker] = useState(
@@ -63,7 +64,9 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 			? selectedTypes.filter((t) => t !== type)
 			: [...selectedTypes, type]
 
-		const searchObj: Record<string, string | string[]> = { ...search }
+		const searchObj: Record<string, string | string[] | boolean | undefined> = {
+			...search,
+		}
 
 		if (newTypes.length > 0) {
 			searchObj.type = newTypes.length === 1 ? newTypes[0] : newTypes
@@ -76,7 +79,9 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 	}
 
 	const setDatePreset = (preset: string) => {
-		const searchObj: Record<string, string | string[]> = { ...search }
+		const searchObj: Record<string, string | string[] | boolean | undefined> = {
+			...search,
+		}
 
 		if (preset === 'all') {
 			delete searchObj.datePreset
@@ -95,7 +100,9 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 	}
 
 	const setCustomDateRange = (startDate: string, endDate: string) => {
-		const searchObj: Record<string, string | string[]> = { ...search }
+		const searchObj: Record<string, string | string[] | boolean | undefined> = {
+			...search,
+		}
 
 		if (startDate) {
 			searchObj.startDate = startDate
@@ -119,6 +126,13 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
 		navigate({ search: {}, replace: true, resetScroll: false } as any)
 		setShowCustomPicker(false)
+	}
+
+	const togglePrereleases = () => {
+		const searchObj: Record<string, string | string[] | boolean> = { ...search }
+		searchObj.showPrereleases = !search.showPrereleases
+		// biome-ignore lint/suspicious/noExplicitAny: TanStack Router search typing is complex
+		navigate({ search: searchObj, replace: true, resetScroll: false } as any)
 	}
 
 	return (
@@ -276,6 +290,34 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 						</motion.div>
 					)}
 				</AnimatePresence>
+			</div>
+
+			{/* Stable Only Toggle */}
+			<div className="space-y-3">
+				<div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
+					<span className="text-purple-500/50">❯</span>
+					<span>FILTER_BY_VERSION</span>
+				</div>
+				<motion.button
+					type="button"
+					onClick={togglePrereleases}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
+					className={cn(
+						'relative px-3 py-1.5 font-mono text-xs transition-all duration-300 border rounded-sm',
+						!search.showPrereleases
+							? 'bg-foreground text-background border-foreground font-bold'
+							: 'bg-transparent text-foreground/60 border-transparent hover:text-foreground hover:border-white/10 hover:bg-white/5',
+					)}
+				>
+					{!search.showPrereleases && (
+						<motion.span
+							layoutId="active-stable-dot"
+							className="absolute -top-1 -right-1 size-1.5 rounded-full bg-purple-500"
+						/>
+					)}
+					Stable Only
+				</motion.button>
 			</div>
 
 			{/* Active Filters Summary & Clear */}

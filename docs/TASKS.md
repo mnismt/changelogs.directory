@@ -35,6 +35,7 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 - [x] Build `/tools/$slug` overview page (tool details + releases list)
 - [x] Build `/tools/$slug/releases/$version` page (release details with changes)
 - [x] Implement basic filtering (by change type: feature/bugfix/breaking)
+- [x] Implement stable version filter (hide pre-releases)
 - [x] Add platform badges (Windows, macOS, VSCode, etc.) – filters deferred post-MVP
 - [x] Style with monochrome dark theme (matching design system)
 
