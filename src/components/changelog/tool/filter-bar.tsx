@@ -1,7 +1,7 @@
 import type { ChangeType } from '@prisma/client'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 const FILTER_OPTIONS: Array<{ value: ChangeType; label: string }> = [
@@ -26,6 +26,54 @@ const DATE_PRESETS = [
 
 interface FilterBarProps {
 	hoveredTypes?: ChangeType[] | null
+}
+
+interface FilterSectionProps {
+	title: string
+	children: React.ReactNode
+	colorClass: string
+}
+
+function FilterSection({ title, children, colorClass }: FilterSectionProps) {
+	const [isOpen, setIsOpen] = useState(true)
+
+	useEffect(() => {
+		// Default to collapsed on mobile (< 768px), expanded on desktop
+		const isMobile = window.innerWidth < 768
+		setIsOpen(!isMobile)
+	}, [])
+
+	return (
+		<div className="space-y-3">
+			<button
+				type="button"
+				onClick={() => setIsOpen(!isOpen)}
+				className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full group"
+			>
+				<motion.span
+					animate={{ rotate: isOpen ? 90 : 0 }}
+					className={cn('transition-colors', colorClass)}
+				>
+					❯
+				</motion.span>
+				<span>{title}</span>
+			</button>
+
+			<AnimatePresence initial={false}>
+				{isOpen && (
+					<motion.div
+						initial={{ height: 0, opacity: 0 }}
+						animate={{ height: 'auto', opacity: 1 }}
+						exit={{ height: 0, opacity: 0 }}
+						transition={{ duration: 0.3, ease: 'easeInOut' }}
+						className="overflow-hidden"
+					>
+						{children}
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</div>
+	)
 }
 
 export function FilterBar({ hoveredTypes }: FilterBarProps) {
@@ -138,11 +186,7 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 	return (
 		<div className="space-y-8">
 			{/* Type Filters */}
-			<div className="space-y-3">
-				<div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
-					<span className="text-green-500/50">❯</span>
-					<span>FILTER_BY_TYPE</span>
-				</div>
+			<FilterSection title="FILTER_BY_TYPE" colorClass="text-green-500/50">
 				<div className="flex flex-wrap gap-2">
 					{FILTER_OPTIONS.map((option) => {
 						const isActive = selectedTypes.includes(option.value)
@@ -179,14 +223,10 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 						)
 					})}
 				</div>
-			</div>
+			</FilterSection>
 
 			{/* Date Filters */}
-			<div className="space-y-3">
-				<div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
-					<span className="text-blue-500/50">❯</span>
-					<span>FILTER_BY_DATE</span>
-				</div>
+			<FilterSection title="FILTER_BY_DATE" colorClass="text-blue-500/50">
 				<div className="flex flex-wrap items-center gap-2">
 					{DATE_PRESETS.map((preset) => {
 						const isActive =
@@ -290,14 +330,10 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 						</motion.div>
 					)}
 				</AnimatePresence>
-			</div>
+			</FilterSection>
 
 			{/* Stable Only Toggle */}
-			<div className="space-y-3">
-				<div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
-					<span className="text-purple-500/50">❯</span>
-					<span>FILTER_BY_VERSION</span>
-				</div>
+			<FilterSection title="FILTER_BY_VERSION" colorClass="text-purple-500/50">
 				<motion.button
 					type="button"
 					onClick={togglePrereleases}
@@ -318,7 +354,7 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 					)}
 					Stable Only
 				</motion.button>
-			</div>
+			</FilterSection>
 
 			{/* Active Filters Summary & Clear */}
 			<AnimatePresence>

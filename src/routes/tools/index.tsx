@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { ToolCard } from '@/components/tools/tool-card'
+import { AnimatedNumber } from '@/components/ui/animated-number'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { captureException } from '@/integrations/sentry'
 import { getAllTools } from '@/server/tools'
@@ -123,22 +124,67 @@ function ToolsDirectoryPage() {
 					</p>
 
 					{/* System Stats */}
-					<div className="flex items-center justify-center gap-6 text-xs font-mono text-muted-foreground mt-8">
-						<div className="flex items-center gap-2">
-							<span className="w-2 h-2 rounded-full bg-green-500/50 animate-pulse" />
-							<span>SYSTEM_READY</span>
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{
+							duration: 0.8,
+							delay: 0.2,
+							ease: [0.2, 0.65, 0.3, 0.9],
+						}}
+						className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-8 max-w-3xl mx-auto"
+					>
+						{/* System Status */}
+						<div className="group relative overflow-hidden rounded-lg border border-border/40 bg-card/20 p-4 backdrop-blur-sm transition-all hover:border-green-500/30 hover:bg-card/40">
+							<div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+							<div className="relative flex flex-col items-center justify-center gap-2">
+								<div className="flex items-center gap-2">
+									<span className="relative flex h-2.5 w-2.5">
+										<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
+										<span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+									</span>
+									<span className="font-mono text-xs font-medium tracking-wider text-green-500/80">
+										SYSTEM_READY
+									</span>
+								</div>
+								<span className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-widest">
+									Status
+								</span>
+							</div>
 						</div>
-						<span className="text-border">|</span>
-						<div>
-							TOTAL_TOOLS:{' '}
-							<span className="text-foreground">{stats.totalTools}</span>
+
+						{/* Total Tools */}
+						<div className="group relative overflow-hidden rounded-lg border border-border/40 bg-card/20 p-4 backdrop-blur-sm transition-all hover:border-blue-500/30 hover:bg-card/40">
+							<div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+							<div className="relative flex flex-col items-center justify-center gap-1">
+								<div className="flex items-baseline gap-1">
+									<AnimatedNumber
+										value={stats.totalTools}
+										className="font-mono text-2xl font-bold text-foreground"
+									/>
+								</div>
+								<span className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-widest">
+									Total Tools
+								</span>
+							</div>
 						</div>
-						<span className="text-border">|</span>
-						<div>
-							TOTAL_RELEASES:{' '}
-							<span className="text-foreground">{stats.totalReleases}</span>
+
+						{/* Total Releases */}
+						<div className="group relative overflow-hidden rounded-lg border border-border/40 bg-card/20 p-4 backdrop-blur-sm transition-all hover:border-purple-500/30 hover:bg-card/40">
+							<div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+							<div className="relative flex flex-col items-center justify-center gap-1">
+								<div className="flex items-baseline gap-1">
+									<AnimatedNumber
+										value={stats.totalReleases}
+										className="font-mono text-2xl font-bold text-foreground"
+									/>
+								</div>
+								<span className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-widest">
+									Total Releases
+								</span>
+							</div>
 						</div>
-					</div>
+					</motion.div>
 				</motion.div>
 			</div>
 

@@ -62,7 +62,6 @@ export function TimelineItem({
 
 	const renderCard = () => (
 		<ReleaseCardBase
-			toolSlug={toolSlug}
 			version={version}
 			formattedVersion={formattedVersion}
 			releaseDate={releaseDate}
@@ -80,16 +79,20 @@ export function TimelineItem({
 				'relative grid gap-6 pb-12 transition-all duration-700 ease-out group/timeline-item',
 				isVisible
 					? 'translate-y-0 opacity-100 translate-x-0'
-					: `translate-y-6 opacity-0 ${isLeft ? 'translate-x-8' : '-translate-x-8'}`,
-				isLeft ? 'grid-cols-[1fr_auto_1fr]' : 'grid-cols-[1fr_auto_1fr]',
+					: `translate-y-6 opacity-0 ${isLeft ? 'md:translate-x-8' : 'md:-translate-x-8'} translate-x-4`,
+				// Mobile: [marker content] (content is always on right)
+				// Desktop: [content marker content] (zigzag)
+				'grid-cols-[auto_1fr] md:grid-cols-[1fr_auto_1fr]',
 				isBlurred && 'blur-[2px] opacity-40',
 			)}
 			style={{ transitionDelay: staggerDelay }}
 		>
 			{/* Left content (or empty space) */}
+			{/* Left content (Desktop only for right-aligned items, Mobile hidden) */}
 			{isLeft ? (
-				<div className="relative">
-					<div className="absolute top-6 -right-6 h-px w-6 bg-white/10 transition-colors duration-500 group-hover/timeline-item:bg-white/30" />
+				<div className="relative order-2 md:order-1">
+					<div className="absolute top-6 -left-6 h-px w-6 bg-white/10 transition-colors duration-500 group-hover/timeline-item:bg-white/30 md:hidden" />
+					<div className="absolute top-6 -right-6 hidden h-px w-6 bg-white/10 transition-colors duration-500 group-hover/timeline-item:bg-white/30 md:block" />
 					<Link
 						to="/tools/$slug/releases/$version"
 						params={{ slug: toolSlug, version }}
@@ -102,11 +105,11 @@ export function TimelineItem({
 					</Link>
 				</div>
 			) : (
-				<div />
+				<div className="hidden md:block md:order-1" />
 			)}
 
-			{/* Timeline marker - centered */}
-			<div className="relative flex flex-col items-center">
+			{/* Timeline marker - centered on desktop, left on mobile */}
+			<div className="relative flex flex-col items-center order-1 md:order-2 w-10 md:w-auto">
 				{/* Marker dot with animation for important releases */}
 				<div className="relative mt-6 flex h-3 w-3 items-center justify-center">
 					{/* Ping animation layer (only for breaking/security) */}
@@ -121,8 +124,13 @@ export function TimelineItem({
 			</div>
 
 			{/* Right content (or empty space) */}
+			{/* Right content (Desktop only for left-aligned items, Mobile always shown if !isLeft, but wait... logic check) */}
+			{/* Actually:
+				Mobile: Always show content on right.
+				Desktop: Show on right if !isLeft.
+			*/}
 			{!isLeft ? (
-				<div className="relative">
+				<div className="relative order-2 md:order-3">
 					<div className="absolute top-6 -left-6 h-px w-6 bg-white/10 transition-colors duration-500 group-hover/timeline-item:bg-white/30" />
 					<Link
 						to="/tools/$slug/releases/$version"
@@ -136,7 +144,7 @@ export function TimelineItem({
 					</Link>
 				</div>
 			) : (
-				<div />
+				<div className="hidden md:block md:order-3" />
 			)}
 		</div>
 	)

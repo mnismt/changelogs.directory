@@ -55,6 +55,22 @@ To ensure navigation feels instant:
     -   **Active**: Once loaded, it snaps to **Green** (Active state).
 -   **Zero Delay**: The artificial delay is removed to prioritize perceived performance.
 
+### F. Version History Navigation
+The version history list adapts its layout and interaction model based on the device:
+
+1.  **Mobile (< 768px)**:
+    -   **Layout**: **Horizontal Scrollable List** (`snap-x`).
+    -   **Goal**: Conserve vertical space and provide a touch-friendly swipe experience.
+    -   **Interaction**: Users swipe to view more versions; a "Load More" button appends data.
+
+2.  **Desktop (>= 768px)**:
+    -   **Layout**: **Paginated Grid** (15 items/page).
+    -   **Animation**:
+        -   **Directional Slide**: Grid slides Left/Right based on Next/Prev action.
+        -   **Blur Transition**: Content blurs out (`blur(10px)`) and fades in.
+        -   **Staggered Entrance**: Items cascade in (`staggerChildren: 0.05`).
+        -   **Active Indicator**: The active page background slides smoothly between numbers (`layoutId`).
+
 ## 3. Visual Aesthetics ("Dev-Vibe")
 
 ### Breadcrumbs as Navigation

@@ -23,7 +23,7 @@ export function ChangeItem({
 	media,
 }: ChangeItemProps) {
 	return (
-		<div className="group relative pl-4 py-3 transition-all duration-300 hover:bg-white/[0.02] border-l-2 border-transparent hover:border-white/20 rounded-r-lg">
+		<div className="group relative pl-2 md:pl-4 py-3 transition-all duration-300 hover:bg-white/[0.02] border-l-2 border-transparent hover:border-white/20 rounded-r-lg">
 			<div className="space-y-3">
 				<div className="flex flex-col gap-2">
 					<div className="flex flex-wrap items-start gap-3">

@@ -34,6 +34,9 @@ The palette is strictly monochrome, inspired by high-end developer tools (Cursor
 -   **Grid Systems**: Use CSS Grid for robust, responsive layouts.
 -   **Borders**: Thin, subtle borders (`border-white/10`) to define structure.
 -   **Glassmorphism**: Use `backdrop-blur` and semi-transparent backgrounds (`bg-black/40`) to create depth without clutter.
+-   **Mobile Adaptation**:
+    -   **Lists**: Convert long vertical grids into **horizontal scrollable lists** (`overflow-x-auto`) on mobile to conserve vertical space.
+    -   **Controls**: Use compact, icon-only toggles on mobile; expand to text labels on desktop.
 
 ## UX & Animation
 
@@ -59,6 +62,10 @@ The application features an immersive global background system.
     -   **Cards**: Subtle border glow, background lighten, or reveal of hidden elements (arrows).
     -   **Buttons**: Text color shift or background fill.
 -   **Staggered Entrance**: When loading lists (like the Tools grid), stagger the entrance of items (`staggerChildren: 0.05`) for a cascading effect.
+-   **Pagination Transitions**:
+    -   **Directional Slide**: Content should slide left/right based on navigation direction.
+    -   **Blur & Fade**: Apply a subtle blur (`blur(10px)`) during exit/enter to mask the transition.
+    -   **Active Indicator**: Use `layoutId` to smoothly animate the active state background between pagination buttons.
 
 ## Implementation Checklist
 

@@ -52,7 +52,7 @@ export function ViewToggle() {
 				)}
 				<span className="relative z-10 flex items-center gap-2">
 					<Grid3x3 className="h-3 w-3" />
-					GRID
+					<span className="hidden md:inline">GRID</span>
 				</span>
 			</motion.button>
 
@@ -84,7 +84,7 @@ export function ViewToggle() {
 				)}
 				<span className="relative z-10 flex items-center gap-2">
 					<List className="h-3 w-3" />
-					TIMELINE
+					<span className="hidden md:inline">TIMELINE</span>
 				</span>
 			</motion.button>
 		</div>

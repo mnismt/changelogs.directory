@@ -1,5 +1,6 @@
 import type { ChangeType } from '@prisma/client'
 import { Link } from '@tanstack/react-router'
+import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +11,7 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { formatDate } from '@/lib/date-utils'
+import { cn } from '@/lib/utils'
 
 interface VersionListProps {
 	toolSlug: string
@@ -56,6 +58,18 @@ export function VersionList({
 }: VersionListProps) {
 	const [showAll, setShowAll] = useState(false)
 	const [pendingVersion, setPendingVersion] = useState<string | null>(null)
+	const [isDesktop, setIsDesktop] = useState(false)
+	const [currentPage, setCurrentPage] = useState(1)
+	const [direction, setDirection] = useState(0)
+
+	const ITEMS_PER_PAGE = 15
+
+	useEffect(() => {
+		const checkDesktop = () => setIsDesktop(window.innerWidth >= 768)
+		checkDesktop()
+		window.addEventListener('resize', checkDesktop)
+		return () => window.removeEventListener('resize', checkDesktop)
+	}, [])
 
 	// Reset pending state when the version actually changes
 	useEffect(() => {
@@ -66,8 +80,23 @@ export function VersionList({
 		return null
 	}
 
-	const displayedVersions = showAll ? versions : versions.slice(0, initialLimit)
+	// Mobile Logic
+	const mobileDisplayedVersions = showAll
+		? versions
+		: versions.slice(0, initialLimit)
 	const remainingCount = versions.length - initialLimit
+
+	// Desktop Logic
+	const totalPages = Math.ceil(versions.length / ITEMS_PER_PAGE)
+	const desktopDisplayedVersions = versions.slice(
+		(currentPage - 1) * ITEMS_PER_PAGE,
+		currentPage * ITEMS_PER_PAGE,
+	)
+
+	const handlePageChange = (newPage: number) => {
+		setDirection(newPage > currentPage ? 1 : -1)
+		setCurrentPage(newPage)
+	}
 
 	const renderChangeTypeTooltip = (changesByType?: Record<string, number>) => {
 		if (!changesByType || Object.keys(changesByType).length === 0) {
@@ -143,7 +172,7 @@ export function VersionList({
 		)
 
 		let cardClasses = `
-			group block h-full p-4 rounded-sm border transition-all duration-300
+			group block h-full p-4 rounded-sm border transition-all duration-300 w-full
 		`
 
 		if (isCurrent) {
@@ -171,11 +200,11 @@ export function VersionList({
 		)
 
 		if (!hasTooltip) {
-			return <div key={version.version}>{cardElement}</div>
+			return cardElement
 		}
 
 		return (
-			<Tooltip key={version.version}>
+			<Tooltip>
 				<TooltipTrigger asChild>{cardElement}</TooltipTrigger>
 				<TooltipContent
 					side="top"
@@ -187,6 +216,45 @@ export function VersionList({
 				</TooltipContent>
 			</Tooltip>
 		)
+	}
+
+	// Animation Variants
+	const containerVariants: Variants = {
+		enter: (direction: number) => ({
+			x: direction > 0 ? 50 : -50,
+			opacity: 0,
+			filter: 'blur(10px)',
+		}),
+		center: {
+			x: 0,
+			opacity: 1,
+			filter: 'blur(0px)',
+			transition: {
+				duration: 0.4,
+				ease: 'easeInOut',
+				staggerChildren: 0.05,
+			},
+		},
+		exit: (direction: number) => ({
+			x: direction > 0 ? -50 : 50,
+			opacity: 0,
+			filter: 'blur(10px)',
+			transition: {
+				duration: 0.3,
+				ease: 'easeIn',
+			},
+		}),
+	}
+
+	const itemVariants: Variants = {
+		enter: { opacity: 0, y: 20, scale: 0.95 },
+		center: {
+			opacity: 1,
+			y: 0,
+			scale: 1,
+			transition: { duration: 0.4, ease: 'easeOut' },
+		},
+		exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
 	}
 
 	return (
@@ -204,32 +272,145 @@ export function VersionList({
 				</Badge>
 			</div>
 
-			<div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-				{displayedVersions.map(renderVersionCard)}
-			</div>
+			{/* Mobile View: Horizontal Scroll */}
+			{!isDesktop && (
+				<>
+					<div className="flex overflow-x-auto pb-4 gap-3 snap-x snap-mandatory scrollbar-hide">
+						{mobileDisplayedVersions.map((version) => (
+							<div key={version.version} className="min-w-[160px] snap-start">
+								{renderVersionCard(version)}
+							</div>
+						))}
+					</div>
 
-			{!showAll && remainingCount > 0 && (
-				<div className="mt-8 text-center">
-					<Button
-						variant="ghost"
-						onClick={() => setShowAll(true)}
-						className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/10"
-					>
-						{'>'} load_more_versions({remainingCount})
-					</Button>
-				</div>
+					{!showAll && remainingCount > 0 && (
+						<div className="mt-8 text-center">
+							<Button
+								variant="ghost"
+								onClick={() => setShowAll(true)}
+								className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/10"
+							>
+								{'>'} load_more_versions({remainingCount})
+							</Button>
+						</div>
+					)}
+
+					{showAll && versions.length > initialLimit && (
+						<div className="mt-8 text-center">
+							<Button
+								variant="ghost"
+								onClick={() => setShowAll(false)}
+								className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/10"
+							>
+								{'>'} collapse_history()
+							</Button>
+						</div>
+					)}
+				</>
 			)}
 
-			{showAll && versions.length > initialLimit && (
-				<div className="mt-8 text-center">
-					<Button
-						variant="ghost"
-						onClick={() => setShowAll(false)}
-						className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/10"
-					>
-						{'>'} collapse_history()
-					</Button>
-				</div>
+			{/* Desktop View: Grid with Pagination */}
+			{isDesktop && (
+				<>
+					<div className="relative min-h-[400px]">
+						<AnimatePresence mode="wait" custom={direction} initial={false}>
+							<motion.div
+								key={currentPage}
+								custom={direction}
+								variants={containerVariants}
+								initial="enter"
+								animate="center"
+								exit="exit"
+								className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+							>
+								{desktopDisplayedVersions.map((version) => (
+									<motion.div key={version.version} variants={itemVariants}>
+										{renderVersionCard(version)}
+									</motion.div>
+								))}
+							</motion.div>
+						</AnimatePresence>
+					</div>
+
+					{totalPages > 1 && (
+						<div className="mt-8 flex items-center justify-center gap-2">
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+								disabled={currentPage === 1}
+								className="font-mono text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+							>
+								Prev
+							</Button>
+
+							<div className="flex items-center gap-1">
+								{Array.from({ length: totalPages }, (_, i) => i + 1).map(
+									(page) => {
+										// Show first, last, current, and adjacent pages
+										if (
+											page === 1 ||
+											page === totalPages ||
+											(page >= currentPage - 1 && page <= currentPage + 1)
+										) {
+											const isActive = currentPage === page
+											return (
+												<div key={page} className="relative">
+													{isActive && (
+														<motion.div
+															layoutId="active-page-indicator"
+															className="absolute inset-0 bg-foreground rounded-md"
+															transition={{
+																type: 'spring',
+																stiffness: 300,
+																damping: 30,
+															}}
+														/>
+													)}
+													<button
+														type="button"
+														onClick={() => handlePageChange(page)}
+														className={cn(
+															'relative z-10 font-mono text-xs w-8 h-8 flex items-center justify-center rounded-md transition-colors',
+															isActive
+																? 'text-background font-bold'
+																: 'text-muted-foreground hover:text-foreground hover:bg-white/5',
+														)}
+													>
+														{page}
+													</button>
+												</div>
+											)
+										}
+										if (page === currentPage - 2 || page === currentPage + 2) {
+											return (
+												<span
+													key={page}
+													className="text-muted-foreground/40 font-mono text-xs px-1"
+												>
+													...
+												</span>
+											)
+										}
+										return null
+									},
+								)}
+							</div>
+
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() =>
+									handlePageChange(Math.min(totalPages, currentPage + 1))
+								}
+								disabled={currentPage === totalPages}
+								className="font-mono text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+							>
+								Next
+							</Button>
+						</div>
+					)}
+				</>
 			)}
 		</div>
 	)
