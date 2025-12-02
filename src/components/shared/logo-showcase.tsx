@@ -1,19 +1,18 @@
 import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { Ampcode } from '@/components/logo/amp'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
 import { OpenAI } from '@/components/logo/openai'
 import { cn } from '@/lib/utils'
 
 const tools = [
-	{
-		name: 'Amp',
-		Logo: Ampcode,
-		url: 'https://ampcode.com',
-		subtitle: 'by Sourcegraph',
-		isMonochrome: false,
-	},
+	// {
+	// 	name: 'Amp',
+	// 	Logo: Ampcode,
+	// 	url: 'https://ampcode.com',
+	// 	subtitle: 'by Sourcegraph',
+	// 	isMonochrome: false,
+	// },
 	{
 		name: 'Claude Code',
 		Logo: ClaudeAI,
