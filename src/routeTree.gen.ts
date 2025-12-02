@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -38,6 +39,11 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
+  '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
+  '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -204,6 +213,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/analytics'
+    | '/compare'
     | '/login'
     | '/unsubscribe'
     | '/admin/emails'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/analytics'
+    | '/compare'
     | '/login'
     | '/unsubscribe'
     | '/admin/emails'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/analytics'
+    | '/compare'
     | '/login'
     | '/unsubscribe'
     | '/admin/emails'
@@ -269,6 +281,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
+  CompareRoute: typeof CompareRoute
   LoginRoute: typeof LoginRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   OgToolsRoute: typeof OgToolsRouteWithChildren
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analytics': {
@@ -484,6 +504,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
+  CompareRoute: CompareRoute,
   LoginRoute: LoginRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   OgToolsRoute: OgToolsRouteWithChildren,
