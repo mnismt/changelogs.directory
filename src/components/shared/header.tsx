@@ -27,7 +27,7 @@ export function Header() {
 								&gt;_
 							</span>
 						</div>
-						<span className="hidden font-mono text-sm font-semibold tracking-tight text-foreground/90 transition-colors group-hover:text-foreground sm:inline-block">
+						<span className="font-mono text-sm font-semibold tracking-tight text-foreground/90 transition-colors group-hover:text-foreground">
 							changelogs.directory
 						</span>
 					</Link>

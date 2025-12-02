@@ -572,6 +572,8 @@ function FeedReleaseCardWithReveal({
 		<div
 			ref={ref}
 			className={`h-full transition-all ease-out ${
+				index >= 4 ? 'hidden sm:block' : ''
+			} ${
 				isMounted && (isVisible || isSearching)
 					? 'translate-y-0 opacity-100 duration-400'
 					: 'translate-y-4 opacity-0 duration-600'

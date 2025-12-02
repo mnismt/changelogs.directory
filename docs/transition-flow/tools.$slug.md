@@ -58,6 +58,11 @@ The release cards are designed to look like "terminal windows" or data modules.
 Interactive elements use "heavy" physics to feel tactile and premium.
 
 ### Filter Bar & View Toggle
+-   **Sticky Behavior**: The filter bar sticks to the top of the viewport on scroll, ensuring controls are always accessible.
+-   **Accordion Functionality**:
+    -   **Mobile (< 768px)**: Filter sections (Type, Date, Version) are **collapsed by default** to save screen space. Users can expand them to view options.
+    -   **Desktop (>= 768px)**: Filter sections are **expanded by default** for immediate access.
+    -   **Animation**: Smooth height transition (`AnimatePresence`) when expanding/collapsing.
 -   **Sliding Background**:
     -   **Technique**: `framer-motion`'s `layoutId`.
     -   **Behavior**: A white background "slides" physically from the active item to the new selection.
@@ -65,6 +70,9 @@ Interactive elements use "heavy" physics to feel tactile and premium.
 -   **Text Contrast**: Text color inverts (Black on White) instantly when active to maintain readability.
 
 ### Timeline Items
+-   **Responsive Layout**:
+    -   **Mobile (< 768px)**: **One-sided layout**. All content sits to the right of the timeline to maximize horizontal space for text.
+    -   **Desktop (>= 768px)**: **Zigzag layout**. Items alternate left and right for a balanced, dynamic reading flow.
 -   **Entrance**: As the user scrolls, items slide in from the side (`x: -32` -> `0`) while fading in.
 -   **Magnetic Feel**: Items slide in towards the center line, creating a "magnetic" attachment effect.
 

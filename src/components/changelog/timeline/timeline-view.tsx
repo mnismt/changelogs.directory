@@ -115,13 +115,13 @@ export function TimelineView({
 		<div ref={containerRef} className="mx-auto max-w-5xl">
 			<div ref={timelineRef} className="relative">
 				{/* Static background line - Circuit Trace Style */}
-				<div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/10" />
-				<div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/5 to-transparent blur-[1px]" />
+				<div className="pointer-events-none absolute left-[19px] top-0 h-full w-px -translate-x-1/2 bg-white/10 md:left-1/2" />
+				<div className="pointer-events-none absolute left-[19px] top-0 h-full w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/5 to-transparent blur-[1px] md:left-1/2" />
 
 				{/* Animated scroll-progress line - Glowing Pulse */}
 				<div
 					style={{ height: `${height}px` }}
-					className="pointer-events-none absolute left-1/2 top-0 w-px -translate-x-1/2 overflow-hidden"
+					className="pointer-events-none absolute left-[19px] top-0 w-px -translate-x-1/2 overflow-hidden md:left-1/2"
 				>
 					<motion.div
 						style={{

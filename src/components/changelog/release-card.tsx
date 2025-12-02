@@ -63,7 +63,6 @@ const changeTypeOrder: ChangeType[] = [
 ]
 
 export function ReleaseCardBase({
-	toolSlug,
 	version,
 	formattedVersion,
 	releaseDate,
@@ -207,7 +206,6 @@ export function ReleaseCard({
 
 	const cardContent = (
 		<ReleaseCardBase
-			toolSlug={toolSlug}
 			version={version}
 			formattedVersion={formattedVersion}
 			releaseDate={releaseDate}

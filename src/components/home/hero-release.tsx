@@ -119,7 +119,7 @@ export function HeroRelease({
 			</div>
 
 			{/* Content */}
-			<div className="relative z-10 p-6 sm:p-8 font-mono">
+			<div className="relative z-10 p-6 sm:p-8 font-mono text-left">
 				{/* Command Prompt Simulation */}
 				<div className="mb-8 flex flex-wrap items-center gap-2 text-sm">
 					<span className="text-green-500 font-bold">➜</span>
