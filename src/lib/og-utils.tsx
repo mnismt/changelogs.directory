@@ -53,6 +53,24 @@ export function getToolLogoSVG(
 					/>
 				</svg>
 			)
+		case 'windsurf':
+			return (
+				<svg width={size} height={size} viewBox="0 0 64 64" style={commonStyle}>
+					<path
+						fill="#fff"
+						d="M12 51 20.4 11l11 24.5L41.5 6 54 51Z"
+						opacity="0.9"
+					/>
+					<path
+						d="M10 50.5c4 3.2 9 4.8 15.5 4.8 7.2 0 13.5-2.2 20.5-5.3"
+						stroke="#fff"
+						strokeWidth="3"
+						strokeLinecap="round"
+						fill="none"
+						opacity="0.85"
+					/>
+				</svg>
+			)
 		default:
 			return null
 	}
