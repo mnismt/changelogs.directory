@@ -277,22 +277,51 @@ function ComponentName() {
 - shadcn/ui components for UI primitives
 - Lucide React for icons
 
+## Documentation Structure
+
+**Complete documentation** is in the `docs/` directory organized into 4 categories:
+
+### 📘 For Task-Oriented Work (Start Here)
+- **[docs/guides/adding-a-tool.md](docs/guides/adding-a-tool.md)** ⭐ - Step-by-step guide for adding new tools (most common task)
+- **[docs/guides/environment-variables.md](docs/guides/environment-variables.md)** - All environment variables reference
+- **[docs/guides/testing.md](docs/guides/testing.md)** - Testing strategies and commands
+- **[docs/guides/deployment.md](docs/guides/deployment.md)** - Production deployment procedures
+
+### 📕 For Technical Deep Dives
+- **[docs/reference/database-schema.md](docs/reference/database-schema.md)** - Complete database schema and query patterns
+- **[docs/reference/ingestion-pipeline.md](docs/reference/ingestion-pipeline.md)** - 7-phase ingestion architecture
+- **[docs/reference/parsers.md](docs/reference/parsers.md)** - Parser development patterns
+- **[docs/reference/api-patterns.md](docs/reference/api-patterns.md)** - SSR loaders and server functions
+
+### 🎨 For Design & UX
+- **[docs/design/design-rules.md](docs/design/design-rules.md)** - Core aesthetic principles (**READ BEFORE ANY UI WORK**)
+- **[docs/design/og-images.md](docs/design/og-images.md)** - Open Graph image generation
+- **[docs/design/animations/](docs/design/animations/)** - Page-by-page animation choreography
+
+### 📋 For Project Context
+- **[docs/project/architecture.md](docs/project/architecture.md)** - System architecture and design decisions
+- **[docs/project/prd.md](docs/project/prd.md)** - Product vision and roadmap
+- **[docs/project/TASKS.md](docs/project/TASKS.md)** - MVP task tracking
+
+### Quick Reference by Task
+- **Adding a new tool** → `docs/guides/adding-a-tool.md` (start here, it cross-references everything else)
+- **Understanding data model** → `docs/reference/database-schema.md`
+- **Setting up environment** → `docs/guides/environment-variables.md`
+- **Implementing UI/UX** → `docs/design/design-rules.md` (MUST READ FIRST)
+- **Deploying to production** → `docs/guides/deployment.md`
+- **Understanding system** → `docs/project/architecture.md`
+
+**Navigation**: All docs cross-reference each other. Start with `docs/README.md` for full navigation map.
+
 ## Design System & UI Guidelines
 
-**CRITICAL**: Before implementing any UI/UX, you **MUST** read and follow the [Design Rules](docs/DESIGN_RULES.md).
+**CRITICAL**: Before implementing any UI/UX, you **MUST** read [docs/design/design-rules.md](docs/design/design-rules.md).
 
-This project follows a strict **"The Directory"** concept with a monochrome dev-vibe aesthetic.
-
--   **Concept**: Terminal Directory Listing (`~/tools`).
--   **Aesthetic**: Monochrome, Dark Mode, Glassmorphism.
--   **Typography**: Inter (UI) + Fira Code (Technical Data).
--   **UX**: Cinematic animations, Global Background Effects.
-
-Refer to `docs/DESIGN_RULES.md` for detailed rules on:
--   Visual Aesthetics
--   Typography & Layout
--   UX & Animation Principles
--   Implementation Checklists
+This project follows a strict **"The Directory"** concept with a monochrome dev-vibe aesthetic:
+-   **Concept**: Terminal Directory Listing (`~/tools`)
+-   **Aesthetic**: Monochrome, Dark Mode, Glassmorphism
+-   **Typography**: Inter (UI) + Fira Code (Technical Data)
+-   **UX**: Cinematic animations, Global Background Effects
 
 ## Cursor Rules
 
@@ -327,8 +356,8 @@ From `.cursorrules`:
 - TypeScript is configured with strict mode - avoid `any` types and ensure type safety
 
 ### Task Management Workflow
-- After completing any work, refer to `docs/TASKS.md` to identify which task was addressed
+- After completing any work, refer to `docs/project/TASKS.md` to identify which task was addressed
 - **DO NOT automatically mark tasks as complete** - wait for user confirmation
-- When the user confirms work is complete, update the checkbox in `docs/TASKS.md` by changing `- [ ]` to `- [x]`
+- When the user confirms work is complete, update the checkbox in `docs/project/TASKS.md` by changing `- [ ]` to `- [x]`
 - If work spans multiple tasks, note which tasks are affected and wait for user to decide which to mark complete
 - The TASKS.md file is the source of truth for MVP progress - keep it updated as you go
