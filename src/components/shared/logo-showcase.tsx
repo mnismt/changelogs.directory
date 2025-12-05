@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
 import { OpenAI } from '@/components/logo/openai'
+import { Windsurf } from '@/components/logo/windsurf'
 import { cn } from '@/lib/utils'
 
 const tools = [
@@ -26,6 +27,13 @@ const tools = [
 		url: 'https://cursor.com',
 		subtitle: 'by Anysphere',
 		isMonochrome: true,
+	},
+	{
+		name: 'Windsurf',
+		Logo: Windsurf,
+		url: 'https://windsurf.com',
+		subtitle: 'by Codeium',
+		isMonochrome: false,
 	},
 	{
 		name: 'Codex',

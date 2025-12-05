@@ -129,6 +129,50 @@ async function main() {
 
 	console.log(`✅ Seeded tool: ${cursorTool.name} (${cursorTool.slug})`)
 
+	// Seed Windsurf tool
+	const windsurf = await prisma.tool.upsert({
+		where: { slug: "windsurf" },
+		update: {
+			name: "Windsurf",
+			vendor: "Codeium",
+			description: "AI-powered IDE by Codeium with embedded agentic workflows",
+			homepage: "https://windsurf.com",
+			repositoryUrl: "https://windsurf.com",
+			sourceType: "CUSTOM_API",
+			sourceUrl: "https://windsurf.com/changelog",
+			sourceConfig: {
+				baseUrl: "https://windsurf.com",
+				startPath: "/changelog",
+				releaseSelector: "div[id][class*=\"scroll-mt-10\"]",
+				bodySelector: ".prose",
+				maxReleasesPerRun: 200,
+			},
+			tags: ["ide", "editor", "codeium", "windsurf", "ai"],
+			isActive: true,
+		},
+		create: {
+			slug: "windsurf",
+			name: "Windsurf",
+			vendor: "Codeium",
+			description: "AI-powered IDE by Codeium with embedded agentic workflows",
+			homepage: "https://windsurf.com",
+			repositoryUrl: "https://windsurf.com",
+			sourceType: "CUSTOM_API",
+			sourceUrl: "https://windsurf.com/changelog",
+			sourceConfig: {
+				baseUrl: "https://windsurf.com",
+				startPath: "/changelog",
+				releaseSelector: "div[id][class*=\"scroll-mt-10\"]",
+				bodySelector: ".prose",
+				maxReleasesPerRun: 200,
+			},
+			tags: ["ide", "editor", "codeium", "windsurf", "ai"],
+			isActive: true,
+		},
+	})
+
+	console.log(`✅ Seeded tool: ${windsurf.name} (${windsurf.slug})`)
+
 	console.log("Database seed completed!")
 }
 
