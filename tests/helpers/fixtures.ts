@@ -24,6 +24,13 @@ export function loadCursorChangelogFixture(
 	return readFileSync(fixturePath, 'utf-8')
 }
 
+export function loadWindsurfChangelogFixture(
+	filename = 'windsurf-changelog/page-1.html',
+): string {
+	const fixturePath = join(process.cwd(), 'tests', 'fixtures', filename)
+	return readFileSync(fixturePath, 'utf-8')
+}
+
 /**
  * Create a mock Tool record
  */
@@ -149,4 +156,3 @@ export function createMockParsedRelease(overrides?: Partial<ParsedRelease>): Par
 		...overrides,
 	}
 }
-
