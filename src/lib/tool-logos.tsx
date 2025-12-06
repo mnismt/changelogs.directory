@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
 import { OpenAI } from '@/components/logo/openai'
+import { Windsurf } from '@/components/logo/windsurf'
 
 function createClaudeLogo(): ReactNode {
 	return <ClaudeAI />
@@ -15,10 +16,15 @@ function createCursorLogo(): ReactNode {
 	return <Cursor />
 }
 
+function createWindsurfLogo(): ReactNode {
+	return <Windsurf />
+}
+
 const logoMap: Record<string, () => ReactNode> = {
 	'claude-code': createClaudeLogo,
 	codex: createOpenAILogo,
 	cursor: createCursorLogo,
+	windsurf: createWindsurfLogo,
 }
 
 export function getToolLogo(slug: string): ReactNode | null {
@@ -41,7 +47,7 @@ export function isMonochromeLogo(slug: string): boolean {
  * Cursor only scales (no rotation) since it's a simple icon
  */
 export function getLogoHoverClasses(slug: string): string {
-	if (slug === 'cursor') {
+	if (slug === 'cursor' || slug === 'windsurf') {
 		return 'group-hover:scale-110'
 	}
 	return 'group-hover:rotate-45 group-hover:scale-110'

@@ -19,7 +19,11 @@ import { SparklesCore } from '@/components/ui/sparkles'
 import { useDebounce } from '@/hooks/use-debounce'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { captureException } from '@/integrations/sentry'
-import { getToolLogo, isMonochromeLogo } from '@/lib/tool-logos'
+import {
+	getLogoHoverClasses,
+	getToolLogo,
+	isMonochromeLogo,
+} from '@/lib/tool-logos'
 import { cn } from '@/lib/utils'
 import { getLatestReleasesAcrossTools } from '@/server/tools'
 
@@ -54,7 +58,7 @@ type ReleaseData = {
 	formattedVersion?: string
 }
 
-const trackedToolSlugs = ['claude-code', 'codex', 'cursor'] as const
+const trackedToolSlugs = ['claude-code', 'codex', 'cursor', 'windsurf'] as const
 type TrackedToolSlug = (typeof trackedToolSlugs)[number]
 type ToolFilterOption = {
 	slug: TrackedToolSlug
@@ -423,7 +427,8 @@ function HomePage() {
 																>
 																	<span
 																		className={cn(
-																			'flex size-8 items-center justify-center text-current transition-transform duration-700 ease-out group-hover:rotate-30 [&>svg]:size-5',
+																			'flex size-8 items-center justify-center text-current transition-transform duration-700 ease-out [&>svg]:size-5',
+																			getLogoHoverClasses(slug),
 																			isMonochromeLogo(slug) &&
 																				'[&>svg]:fill-foreground [&>svg_path]:fill-foreground',
 																		)}

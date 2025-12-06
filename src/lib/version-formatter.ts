@@ -15,6 +15,7 @@ export function formatVersionForDisplay(
 		codex: formatCodexVersion,
 		cursor: formatCursorVersion,
 		'claude-code': formatClaudeCodeVersion,
+		windsurf: formatWindsurfVersion,
 	}
 
 	const formatter = formatters[toolSlug]
@@ -53,6 +54,11 @@ function formatClaudeCodeVersion(version: string): string {
 function formatCursorVersion(version: string): string {
 	const versionPart = version.replace(/^cursor-/, '')
 	return `v${versionPart.replace(/-/g, '.')}`
+}
+
+function formatWindsurfVersion(version: string): string {
+	const versionPart = version.replace(/^windsurf-/, '')
+	return `v${versionPart}`
 }
 
 /**

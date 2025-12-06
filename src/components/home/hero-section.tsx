@@ -4,8 +4,26 @@ import { LogoShowcase } from '@/components/shared/logo-showcase'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
+type HeroReleaseData = {
+	tool: {
+		slug: string
+		name: string
+		vendor: string | null
+	}
+	version: string
+	formattedVersion?: string
+	releaseDate: Date | string | null
+	headline: string | null
+	summary: string | null
+	_count: { changes: number }
+	changesByType: Record<string, number>
+	hasBreaking: boolean
+	hasSecurity: boolean
+	hasDeprecation: boolean
+}
+
 interface HeroSectionProps {
-	heroRelease: any // Using any for now to match the prop passing, ideally should be typed
+	heroRelease: HeroReleaseData
 	isMounted: boolean
 	onAnimationComplete?: () => void
 }
@@ -128,6 +146,7 @@ export function HeroSection({
 									toolName={heroRelease.tool.name}
 									vendor={heroRelease.tool.vendor}
 									version={heroRelease.version}
+									formattedVersion={heroRelease.formattedVersion}
 									releaseDate={heroRelease.releaseDate}
 									headline={heroRelease.headline}
 									summary={heroRelease.summary}
