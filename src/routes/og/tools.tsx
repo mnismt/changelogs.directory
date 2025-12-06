@@ -17,7 +17,7 @@ export const Route = createFileRoute('/og/tools')({
 					const fonts = await loadOGFonts()
 
 					// Get logos for first 3 tools
-					const toolLogos = tools.slice(0, 3).map((tool) => ({
+					const toolLogos = tools.slice(0, 4).map((tool) => ({
 						slug: tool.slug,
 						name: tool.name,
 						logo: getToolLogoSVG(tool.slug, 80),
