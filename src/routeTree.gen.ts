@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as NewToolBannerAnimatedRouteImport } from './routes/new-tool-banner-animated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
@@ -34,6 +35,11 @@ import { Route as OgToolsSlugReleasesVersionRouteImport } from './routes/og/tool
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewToolBannerAnimatedRoute = NewToolBannerAnimatedRouteImport.update({
+  id: '/new-tool-banner-animated',
+  path: '/new-tool-banner-animated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
+  '/new-tool-banner-animated': typeof NewToolBannerAnimatedRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
+  '/new-tool-banner-animated': typeof NewToolBannerAnimatedRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
+  '/new-tool-banner-animated': typeof NewToolBannerAnimatedRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/compare'
     | '/login'
+    | '/new-tool-banner-animated'
     | '/unsubscribe'
     | '/admin/emails'
     | '/admin/ingestion'
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/compare'
     | '/login'
+    | '/new-tool-banner-animated'
     | '/unsubscribe'
     | '/admin/emails'
     | '/admin/ingestion'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/compare'
     | '/login'
+    | '/new-tool-banner-animated'
     | '/unsubscribe'
     | '/admin/emails'
     | '/admin/ingestion'
@@ -283,6 +295,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   CompareRoute: typeof CompareRoute
   LoginRoute: typeof LoginRoute
+  NewToolBannerAnimatedRoute: typeof NewToolBannerAnimatedRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   OgToolsRoute: typeof OgToolsRouteWithChildren
   ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-tool-banner-animated': {
+      id: '/new-tool-banner-animated'
+      path: '/new-tool-banner-animated'
+      fullPath: '/new-tool-banner-animated'
+      preLoaderRoute: typeof NewToolBannerAnimatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -506,6 +526,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   CompareRoute: CompareRoute,
   LoginRoute: LoginRoute,
+  NewToolBannerAnimatedRoute: NewToolBannerAnimatedRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   OgToolsRoute: OgToolsRouteWithChildren,
   ToolsSlugRoute: ToolsSlugRouteWithChildren,

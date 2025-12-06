@@ -134,8 +134,9 @@ async function main() {
 		where: { slug: "windsurf" },
 		update: {
 			name: "Windsurf",
-			vendor: "Codeium",
-			description: "AI-powered IDE by Codeium with embedded agentic workflows",
+			vendor: "Cognition",
+			description:
+				"Advanced AI-powered code editor, built on VS Code.",
 			homepage: "https://windsurf.com",
 			repositoryUrl: "https://windsurf.com",
 			sourceType: "CUSTOM_API",
@@ -147,14 +148,15 @@ async function main() {
 				bodySelector: ".prose",
 				maxReleasesPerRun: 200,
 			},
-			tags: ["ide", "editor", "codeium", "windsurf", "ai"],
+			tags: ["ide", "editor", "cognition", "windsurf", "ai", "devin"],
 			isActive: true,
 		},
 		create: {
 			slug: "windsurf",
 			name: "Windsurf",
-			vendor: "Codeium",
-			description: "AI-powered IDE by Codeium with embedded agentic workflows",
+			vendor: "Cognition",
+			description:
+				"Advanced AI-powered code editor, built on VS Code.",
 			homepage: "https://windsurf.com",
 			repositoryUrl: "https://windsurf.com",
 			sourceType: "CUSTOM_API",
@@ -166,7 +168,7 @@ async function main() {
 				bodySelector: ".prose",
 				maxReleasesPerRun: 200,
 			},
-			tags: ["ide", "editor", "codeium", "windsurf", "ai"],
+			tags: ["ide", "editor", "cognition", "windsurf", "ai", "devin"],
 			isActive: true,
 		},
 	})
