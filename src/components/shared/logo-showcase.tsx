@@ -32,7 +32,7 @@ const tools = [
 		name: 'Windsurf',
 		Logo: Windsurf,
 		url: 'https://windsurf.com',
-		subtitle: 'by Codeium',
+		subtitle: 'by Cognition',
 		isMonochrome: false,
 	},
 	{
