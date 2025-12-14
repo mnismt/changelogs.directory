@@ -25,8 +25,8 @@ describe('parseStep', () => {
 	it('returns releases until cached slug and keeps cached release for change detection', () => {
 		const fetchResult: FetchResult = {
 			pages: [{ url: 'https://cursor.com/changelog', pageNumber: 1, html }],
-			cachedSlug: '2-0-91',
-			cacheEntry: { slug: '2-0-91' },
+			cachedSlug: '2-0',
+			cacheEntry: { slug: '2-0' },
 			initialScan: false,
 		}
 
@@ -34,7 +34,7 @@ describe('parseStep', () => {
 
 		expect(result.releases).toHaveLength(2)
 		expect(result.releases[0].version).toBe('cursor-2-1')
-		expect(result.releases[1].version).toBe('cursor-2-0-91')
+		expect(result.releases[1].version).toBe('cursor-2-0')
 		expect(result.newestRelease?.slug).toBe('2-1')
 		expect(result.newestRelease?.contentHash).toBeDefined()
 	})

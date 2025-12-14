@@ -49,7 +49,7 @@ describe('fetchPagesStep', () => {
 
 	it('stops fetching once cached slug is encountered', async () => {
 		vi.mocked(readCachedRelease).mockResolvedValue({
-			slug: '2-0-91',
+			slug: '2-0',
 		})
 
 		vi.mocked(global.fetch).mockResolvedValue({
@@ -62,7 +62,7 @@ describe('fetchPagesStep', () => {
 
 		expect(global.fetch).toHaveBeenCalledTimes(1)
 		expect(result.pages).toHaveLength(1)
-		expect(result.cachedSlug).toBe('2-0-91')
+		expect(result.cachedSlug).toBe('2-0')
 	})
 
 	it('performs initial scan until pagination ends', async () => {
@@ -88,7 +88,7 @@ describe('fetchPagesStep', () => {
 
 	it('treats cache as stale when database is empty and runs full scan', async () => {
 		vi.mocked(readCachedRelease).mockResolvedValue({
-			slug: '2-0-91',
+			slug: '2-0',
 		})
 
 		vi.mocked(ctx.prisma.release.count).mockResolvedValue(0)
