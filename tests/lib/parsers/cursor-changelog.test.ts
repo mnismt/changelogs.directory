@@ -23,7 +23,7 @@ describe('parseCursorChangelog', () => {
 		expect(latest.summary).toContain('clarifying questions inline')
 
 		const previous = releases[1]
-		expect(previous.version).toBe('cursor-2-0-91')
+		expect(previous.version).toBe('cursor-2-0')
 		expect(previous.changes).toHaveLength(2)
 		expect(previous.changes[0].title).toBe('Instant results for agent grep commands.')
 	})
@@ -33,7 +33,8 @@ describe('parseCursorChangelog', () => {
 			<main id="main" class="section section--longform">
 				<div class="container">
 					<article>
-						<p><a href="/changelog/notes"><time datetime="2025-10-01T00:00:00Z">Oct 1, 2025</time></a></p>
+						<h2><a href="/changelog/1-5">Minor Updates</a></h2>
+						<p><a href="/changelog/1-5"><time datetime="2025-10-01T00:00:00Z">Oct 1, 2025</time></a></p>
 						<div class="prose">
 							<p>Minor stability improvements across the agent runtime.</p>
 						</div>
@@ -44,6 +45,7 @@ describe('parseCursorChangelog', () => {
 
 		const releases = parseCursorChangelog(html)
 		expect(releases).toHaveLength(1)
+		expect(releases[0].version).toBe('cursor-1-5')
 		expect(releases[0].changes).toHaveLength(1)
 		expect(releases[0].changes[0].title).toContain('Minor stability improvements')
 	})

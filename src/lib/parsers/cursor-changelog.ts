@@ -62,6 +62,13 @@ function transformArticle(
 		? toAbsoluteUrl(permalink, config.baseUrl)
 		: `${config.baseUrl}/changelog`
 
+	if (!slug) {
+		console.warn(
+			`[cursor-parser] Skipping release without valid slug: "${title}" at ${sourceUrl}`,
+		)
+		return null
+	}
+
 	const timeNode = article.querySelector('time')
 	const releaseDate = parseDate(
 		timeNode?.getAttribute('datetime') || timeNode?.text.trim(),
@@ -88,17 +95,16 @@ function transformArticle(
 		.update(title ?? '')
 		.update(bodyHtml)
 		.digest('hex')
-	const fingerprint = contentHash.slice(0, 12)
-	const version = slug ? `cursor-${slug}` : `cursor-${fingerprint}`
+	const version = `cursor-${slug}`
 	const textContent = getNodeText(body)
 	const summary = generateSummary(textContent)
 	const headline = generateHeadline(summary, textContent, version)
 
 	return {
 		version,
-		versionSort: generateVersionSort(releaseDate, slug, fingerprint),
+		versionSort: generateVersionSort(releaseDate, slug),
 		releaseDate,
-		title: title || `Cursor update ${slug ?? ''}`.trim(),
+		title: title || `Cursor update ${slug}`.trim(),
 		headline,
 		summary,
 		rawContent,
@@ -279,6 +285,12 @@ function toAbsoluteUrl(url: string, baseUrl: string): string {
 	}
 }
 
+/**
+ * Valid Cursor changelog slugs follow the pattern: major-minor (e.g., "2-2", "1-7")
+ * This regex ensures we only accept properly formatted version slugs.
+ */
+const VALID_CURSOR_SLUG_PATTERN = /^\d+-\d+$/
+
 function extractSlug(
 	href: string | undefined | null,
 	baseUrl: string,
@@ -288,7 +300,13 @@ function extractSlug(
 	try {
 		const absolute = new URL(href, baseUrl)
 		const parts = absolute.pathname.split('/').filter(Boolean)
-		return parts.pop() || null
+		const slug = parts.pop() || null
+
+		if (slug && VALID_CURSOR_SLUG_PATTERN.test(slug)) {
+			return slug
+		}
+
+		return null
 	} catch {
 		return null
 	}
@@ -316,14 +334,13 @@ function generateSummary(text: string | undefined): string | undefined {
 
 function generateVersionSort(
 	releaseDate: Date | undefined,
-	slug: string | null,
-	fingerprint: string,
+	slug: string,
 ): string {
 	if (releaseDate) {
 		return releaseDate.toISOString()
 	}
 
-	return slug ? `slug-${slug}` : `cursor-${fingerprint}`
+	return `slug-${slug}`
 }
 
 function generateHeadline(
