@@ -1,10 +1,10 @@
-import { PrismaNeon } from '@prisma/adapter-neon'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
+import { Pool } from 'pg'
 
 /**
  * Creates a Prisma Client instance.
- * - In production: Uses Neon's serverless driver adapter for edge runtimes
+ * - In production: Uses pg driver adapter with connection pooling for Supabase
  * - In local/dev: Uses standard PostgreSQL connection
  *
  * @returns A configured PrismaClient instance
@@ -23,12 +23,13 @@ import { PrismaClient } from '@prisma/client'
  * ```
  */
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
+const globalForPrisma = globalThis as unknown as {
+	prisma: PrismaClient
+	pool: Pool
+}
 
 export function getPrisma(): PrismaClient {
 	const connectionString = process.env.DATABASE_URL
-
-	console.log(connectionString)
 
 	if (!connectionString) {
 		throw new Error('DATABASE_URL environment variable is not set')
@@ -42,7 +43,12 @@ export function getPrisma(): PrismaClient {
 		const isProduction = process.env.NODE_ENV === 'production'
 
 		if (isProduction) {
-			const adapter = new PrismaPg({ connectionString })
+			// Create a connection pool for Supabase
+			// Using ?pgbouncer=true in DATABASE_URL for Supavisor connection pooling
+			const pool = new Pool({ connectionString })
+			globalForPrisma.pool = pool
+
+			const adapter = new PrismaPg(pool)
 			globalForPrisma.prisma = new PrismaClient({
 				adapter,
 				log: ['error', 'warn'],
