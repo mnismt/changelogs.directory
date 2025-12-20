@@ -1,4 +1,5 @@
 import { PrismaNeon } from '@prisma/adapter-neon'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
 /**
@@ -27,6 +28,8 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 export function getPrisma(): PrismaClient {
 	const connectionString = process.env.DATABASE_URL
 
+	console.log(connectionString)
+
 	if (!connectionString) {
 		throw new Error('DATABASE_URL environment variable is not set')
 	}
@@ -39,7 +42,7 @@ export function getPrisma(): PrismaClient {
 		const isProduction = process.env.NODE_ENV === 'production'
 
 		if (isProduction) {
-			const adapter = new PrismaNeon({ connectionString })
+			const adapter = new PrismaPg({ connectionString })
 			globalForPrisma.prisma = new PrismaClient({
 				adapter,
 				log: ['error', 'warn'],
