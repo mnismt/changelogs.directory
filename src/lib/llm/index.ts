@@ -1,28 +1,14 @@
-import { createVertex } from '@ai-sdk/google-vertex/edge'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import type { LanguageModel } from 'ai'
 import { ensureBraintrustTelemetry } from './telemetry'
 
-interface GoogleCredentials {
-	type: string
-	project_id: string
-	private_key_id: string
-	private_key: string
-	client_email: string
-	client_id: string
-	auth_uri: string
-	token_uri: string
-	auth_provider_x509_cert_url: string
-	client_x509_cert_url: string
-	universe_domain?: string
-}
-
-// Initialize LLM only if credentials are available
+// Initialize LLM only if API key is available
 function initializeLLM(): LanguageModel | null {
-	const credentialsRaw = process.env.GOOGLE_VERTEX_CREDENTIALS || ''
+	const apiKey = process.env.GEMINI_API_KEY || ''
 
-	if (!credentialsRaw) {
+	if (!apiKey) {
 		console.warn(
-			'GOOGLE_VERTEX_CREDENTIALS environment variable is not set. LLM features will fall back to keyword-based classification.',
+			'GEMINI_API_KEY environment variable is not set. LLM features will fall back to keyword-based classification.',
 		)
 		return null
 	}
@@ -30,18 +16,11 @@ function initializeLLM(): LanguageModel | null {
 	ensureBraintrustTelemetry()
 
 	try {
-		const credentials = JSON.parse(credentialsRaw) as GoogleCredentials
-
-		const vertex = createVertex({
-			project: credentials.project_id,
-			location: 'global',
-			googleCredentials: {
-				clientEmail: credentials.client_email,
-				privateKey: credentials.private_key,
-			},
+		const google = createGoogleGenerativeAI({
+			apiKey,
 		})
 
-		return vertex('gemini-2.5-flash')
+		return google('gemini-3-flash-preview')
 	} catch (error) {
 		console.error('Failed to initialize LLM:', error)
 		return null
