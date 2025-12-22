@@ -10,7 +10,7 @@ export interface CursorParserOptions {
 
 const DEFAULT_OPTIONS: Required<CursorParserOptions> = {
 	baseUrl: 'https://cursor.com',
-	articleSelector: '#main.section.section--longform article',
+	articleSelector: 'main#main.section.section--longform article',
 	bodySelector: '.prose',
 }
 
@@ -49,9 +49,13 @@ function transformArticle(
 	normalizeUrls(article, config.baseUrl)
 
 	const title =
+		article.querySelector('h1')?.text.trim() ||
 		article.querySelector('h2')?.text.trim() ||
 		article.querySelector('h3')?.text.trim()
 	const permalink =
+		article
+			.querySelector('h1 a[href^="/changelog"], h1 a[href^="https"]')
+			?.getAttribute('href') ||
 		article
 			.querySelector('h2 a[href^="/changelog"], h2 a[href^="https"]')
 			?.getAttribute('href') ||
@@ -286,10 +290,14 @@ function toAbsoluteUrl(url: string, baseUrl: string): string {
 }
 
 /**
- * Valid Cursor changelog slugs follow the pattern: major-minor (e.g., "2-2", "1-7")
- * This regex ensures we only accept properly formatted version slugs.
+ * Valid Cursor changelog slugs can be:
+ * - Version numbers: major-minor (e.g., "2-2", "1-7")
+ * - Named releases: alphanumeric with hyphens (e.g., "enterprise-dec-2025")
+ *
+ * This regex ensures we accept properly formatted slugs while rejecting invalid ones
+ * like anchor fragments (#conversation-insights) or UI elements (Patches (11)).
  */
-const VALID_CURSOR_SLUG_PATTERN = /^\d+-\d+$/
+const VALID_CURSOR_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i
 
 function extractSlug(
 	href: string | undefined | null,

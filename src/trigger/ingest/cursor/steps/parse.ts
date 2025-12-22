@@ -9,6 +9,8 @@ export function parseStep(
 ): ParseResult {
 	logger.info('Phase 3: Parse Cursor changelog pages', {
 		pagesFetched: fetchResult.pages.length,
+		cachedSlug: fetchResult.cachedSlug,
+		initialScan: fetchResult.initialScan,
 	})
 
 	const config = resolveSourceConfig(ctx.tool.sourceConfig)
