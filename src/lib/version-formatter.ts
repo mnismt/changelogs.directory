@@ -48,12 +48,20 @@ function formatClaudeCodeVersion(version: string): string {
 }
 
 /**
- * Cursor versions: "cursor-2-1" → "v2.1"
- * Convert hyphens to dots after removing the "cursor-" prefix
+ * Cursor versions:
+ * - Numeric: "cursor-2-1" → "v2.1"
+ * - Named: "cursor-enterprise-dec-2025" → "enterprise-dec-2025"
  */
 function formatCursorVersion(version: string): string {
 	const versionPart = version.replace(/^cursor-/, '')
-	return `v${versionPart.replace(/-/g, '.')}`
+
+	// Check if it's a numeric version (e.g., "2-1", "0-48-x")
+	if (/^[\d-]+[a-z]?$/i.test(versionPart)) {
+		return `v${versionPart.replace(/-/g, '.')}`
+	}
+
+	// Named release: keep slug as-is
+	return versionPart
 }
 
 function formatWindsurfVersion(version: string): string {

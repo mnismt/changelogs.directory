@@ -7,6 +7,10 @@ function initSentryServer() {
 		return
 	}
 
+	if (process.env.NODE_ENV === 'development') {
+		return
+	}
+
 	const dsn = process.env.SENTRY_DSN || process.env.VITE_SENTRY_DSN
 	if (!dsn) {
 		return

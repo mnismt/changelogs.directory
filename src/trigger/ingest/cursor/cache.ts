@@ -3,15 +3,8 @@ import type { CachedCursorRelease } from './types'
 
 const CACHE_TTL_SECONDS = 60 * 60 * 24 * 30 // 30 days
 
-function getCacheNamespace(): string {
-	const namespace =
-		process.env.CACHE_NAMESPACE || process.env.NODE_ENV || 'prod'
-	return namespace.replace(/[^a-zA-Z0-9-_]/g, '-')
-}
-
 export function getCacheKey(toolSlug: string): string {
-	const namespace = getCacheNamespace()
-	return ['cursor', namespace, 'latest-release', toolSlug].join(':')
+	return ['cursor', 'latest-release', toolSlug].join(':')
 }
 
 export async function readCachedRelease(

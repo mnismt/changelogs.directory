@@ -7,6 +7,10 @@ export function initSentry() {
 		return
 	}
 
+	if (import.meta.env.DEV) {
+		return
+	}
+
 	const dsn = import.meta.env.VITE_SENTRY_DSN
 	if (!dsn) {
 		return

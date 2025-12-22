@@ -3,7 +3,7 @@ import type { CursorSourceConfig } from './types'
 const DEFAULT_CONFIG: Required<CursorSourceConfig> = {
 	baseUrl: 'https://cursor.com',
 	startPath: '/changelog',
-	articleSelector: '#main.section.section--longform article',
+	articleSelector: 'main#main.section.section--longform article',
 	bodySelector: '.prose',
 	maxPagesPerRun: 6,
 	initialPageCount: 40,
