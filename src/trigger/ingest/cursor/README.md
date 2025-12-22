@@ -25,6 +25,14 @@ Trigger.dev task that ingests Cursor’s public changelog (`https://cursor.com/c
 	- `src/trigger/ingest/cursor/cache.ts`
 	- `src/trigger/ingest/cursor/config.ts`
 
+## Slug Format
+
+Cursor changelog slugs can be:
+- **Version numbers**: `major-minor` (e.g., `2-2`, `1-7`)
+- **Named releases**: alphanumeric with hyphens (e.g., `enterprise-dec-2025`, `claude-support`)
+
+The parser validates slugs with pattern `/^[a-z0-9]+(?:-[a-z0-9]+)*$/i`.
+
 ## Phases
 
 ### Phase 1: Setup
@@ -42,10 +50,11 @@ Trigger.dev task that ingests Cursor’s public changelog (`https://cursor.com/c
 
 ### Phase 3: Parse
 - Use `node-html-parser` to extract:
-	- Title, permalink, datetime `<time>` attri1bute.
+	- Title from `h1`, `h2`, or `h3` (checks in order; Cursor switched from h2 to h1).
+	- Permalink and datetime from `<time>` attribute.
 	- Article HTML (`rawContent`) with normalized absolute URLs.
 	- Change candidates from `h3/h4` sections (fallback to list items / body text).
-- Generate deterministic `version` (`cursor-<slug>` or hash), `versionSort`, and `contentHash`.
+- Generate deterministic `version` (`cursor-<slug>`), `versionSort`, and `contentHash`.
 - Track the newest release (slug + content hash) for cache updates.
 
 ### Phase 4: Filter
@@ -74,9 +83,8 @@ sourceUrl: 'https://cursor.com/changelog',
 sourceConfig: {
   baseUrl: 'https://cursor.com',
   startPath: '/changelog',
-  articleSelector: '#main.section.section--longform article',
+  articleSelector: 'main#main.section.section--longform article',  // Uses main tag to avoid duplicate articles from React hydration
   bodySelector: '.prose',
-  nextLinkSelector: 'a.card--pagination',
   maxPagesPerRun: 6,
   initialPageCount: 40,
 }
@@ -87,9 +95,9 @@ Environment variables:
 # Optional – enables Redis-backed incremental caching (Upstash recommended)
 UPSTASH_REDIS_REST_URL=...
 UPSTASH_REDIS_REST_TOKEN=...
-# Optional – namespaces cache keys per environment
-CACHE_NAMESPACE=dev
 ```
+
+Cache keys use format `cursor:latest-release:<toolSlug>` (no namespace prefix; dev and prod share cache since they read from the same source).
 
 Without Redis the pipeline still works but always performs the configured page scan.
 

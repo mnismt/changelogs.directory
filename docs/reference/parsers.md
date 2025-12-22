@@ -158,56 +158,52 @@ export function parseGitHubReleases(
 
 **Example**: Cursor changelog scraper
 
-**File**: `src/trigger/ingest/cursor/steps/parse.ts`
+**File**: `src/lib/parsers/cursor-changelog.ts`
 
 **Format Expected**: HTML pages from custom changelog
 ```html
-<article class="changelog-entry">
-  <h2>November 30, 2024</h2>
-  <div class="content">
-    <p>New features in this release:</p>
-    <ul>
-      <li>AI autocomplete improvements</li>
-      <li>Better syntax highlighting</li>
-    </ul>
+<article>
+  <h1><a href="/changelog/2-2">Cursor 2.2</a></h1>
+  <time datetime="2024-11-30">November 30, 2024</time>
+  <div class="prose">
+    <h3>AI Autocomplete Improvements</h3>
+    <p>Better predictions and faster completions.</p>
+    <h3>Syntax Highlighting</h3>
+    <p>Enhanced support for more languages.</p>
   </div>
 </article>
 ```
 
 **Implementation**:
 ```typescript
-import * as cheerio from 'cheerio'
+import { parse } from 'node-html-parser'
 
-export function parseCursorChangelog(pages: Array<{ html: string }>, config: any) {
+export function parseCursorChangelog(html: string, options?: CursorParserOptions) {
+  const root = parse(html)
+  const articles = root.querySelectorAll('main#main.section.section--longform article')
   const releases: ParsedRelease[] = []
 
-  for (const page of pages) {
-    const $ = cheerio.load(page.html)
+  for (const article of articles) {
+    // Extract title from h1, h2, or h3 (Cursor switched from h2 to h1)
+    const title = article.querySelector('h1')?.text.trim() ||
+                  article.querySelector('h2')?.text.trim() ||
+                  article.querySelector('h3')?.text.trim()
 
-    $(config.articleSelector).each((_, article) => {
-      const $article = $(article)
+    // Extract slug from permalink (supports both version and named slugs)
+    // e.g., "2-2", "enterprise-dec-2025", "claude-support"
+    const slug = extractSlug(article.querySelector('h1 a')?.getAttribute('href'))
+    const version = `cursor-${slug}`
 
-      // Extract version/date from heading
-      const heading = $article.find('h2').text().trim()
-      const version = generateVersionSlug(heading) // "cursor-2024-11-30"
+    // Extract changes from h3/h4 sections (fallback to list items)
+    const changes = extractChanges(article.querySelector('.prose'))
 
-      // Extract body content
-      const body = $article.find(config.bodySelector).html() || ''
-
-      // Extract changes from list items
-      const changes = []
-      $article.find('li').each((_, li) => {
-        changes.push({ title: $(li).text().trim() })
-      })
-
-      releases.push({
-        version,
-        versionSort: createCursorVersionSort(version),
-        headline: heading,
-        rawContent: body,
-        contentHash: hashContent(body),
-        changes,
-      })
+    releases.push({
+      version,
+      versionSort: releaseDate?.toISOString() || `slug-${slug}`,
+      headline: generateHeadline(body),
+      rawContent: article.toString(),
+      contentHash: hashContent(body),
+      changes,
     })
   }
 
@@ -215,7 +211,12 @@ export function parseCursorChangelog(pages: Array<{ html: string }>, config: any
 }
 ```
 
-**Cross-reference**: See `src/trigger/ingest/cursor/steps/parse.ts` for full implementation.
+**Key behaviors**:
+- Selector `main#main...` avoids duplicate articles from React hydration divs
+- Slug pattern `/^[a-z0-9]+(?:-[a-z0-9]+)*$/i` accepts both version numbers (`2-2`) and named releases (`enterprise-dec-2025`)
+- Title extraction checks h1 → h2 → h3 in order
+
+**Cross-reference**: See `src/lib/parsers/cursor-changelog.ts` for full implementation.
 
 ---
 

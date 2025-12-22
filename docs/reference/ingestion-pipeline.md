@@ -105,32 +105,35 @@ while (page <= maxPages) {
 ### C. CUSTOM_API (Cursor pattern)
 ```typescript
 // Multi-page HTML crawler with Redis caching
-let currentPage = startPath
 const pages = []
+let pageNumber = 1
 
-while (pages.length < maxPagesPerRun) {
-  const response = await fetch(`${baseUrl}${currentPage}`)
+while (pageNumber <= maxPagesPerRun) {
+  const pageUrl = pageNumber === 1 
+    ? baseUrl 
+    : `${baseUrl}/page/${pageNumber}`
+  
+  const response = await fetch(pageUrl)
+  if (response.status === 404) break  // End of pagination
+  
   const html = await response.text()
-  pages.push({ url: currentPage, html })
+  pages.push({ url: pageUrl, pageNumber, html })
 
   // Check if reached cached release (incremental)
   const cachedSlug = await getCachedNewestRelease(toolSlug)
   if (foundInPage(html, cachedSlug)) break
 
-  // Find next page link
-  const nextLink = extractNextLink(html, config.nextLinkSelector)
-  if (!nextLink) break
-  currentPage = nextLink
+  pageNumber++
 }
 ```
 
-**Output**: `{ pages: Array<{ url, html }>, cachedSlug }`
+**Output**: `{ pages: Array<{ url, pageNumber, html }>, cachedSlug }`
 
 **Notes**:
-- Use ETags/conditional requests where supported
-- Respect rate limits (GitHub: 5000/hr with token, 60/hr without)
+- Selector `main#main.section.section--longform article` avoids duplicate articles from React hydration
+- Cache keys: `cursor:latest-release:<toolSlug>` (no namespace; dev/prod share cache)
+- User-Agent: `ChangelogsDirectoryBot/1.0 (+https://changelogs.directory)`
 - Timeout: 30 seconds per request
-- User-Agent: Always identify as "Changelogs.directory Bot"
 
 ---
 
