@@ -1,4 +1,4 @@
-import type { FetchLog, PrismaClient, Tool } from '@prisma/client'
+import type { FetchLog, PrismaClient, Tool } from '@/generated/prisma'
 import type { ParsedRelease } from '@/lib/parsers/changelog-md'
 import type { GitHubRelease } from '@/lib/parsers/github-releases'
 

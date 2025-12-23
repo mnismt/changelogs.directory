@@ -12,8 +12,7 @@
  *   DATABASE_URL="..." pnpm tsx scripts/cleanup-cursor-trash-versions.ts
  */
 
-import pkg from "@prisma/client"
-const { PrismaClient } = pkg
+import { PrismaClient } from "../src/generated/prisma"
 
 const prisma = new PrismaClient()
 

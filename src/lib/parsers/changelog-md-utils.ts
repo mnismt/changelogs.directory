@@ -1,4 +1,4 @@
-import type { ChangeType, ImpactLevel } from '@prisma/client'
+import type { ChangeType, ImpactLevel } from '@/generated/prisma'
 
 /**
  * Shared utility functions for parsing changelogs
