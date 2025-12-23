@@ -54,7 +54,9 @@ export function getPrisma(): PrismaClient {
 				log: ['error', 'warn'],
 			})
 		} else {
-			globalForPrisma.prisma = new PrismaClient()
+			globalForPrisma.prisma = new PrismaClient({
+				adapter: new PrismaPg({ connectionString }),
+			})
 		}
 	}
 

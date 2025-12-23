@@ -12,6 +12,14 @@ interface ChangeItemProps {
 	media?: Array<{ type: 'video' | 'image'; url: string; alt?: string }> | null
 }
 
+/**
+ * Clean display title by removing markdown heading prefixes.
+ * e.g., "#Layout customization" -> "Layout customization"
+ */
+function cleanDisplayTitle(title: string): string {
+	return title.replace(/^#+\s*/, '')
+}
+
 export function ChangeItem({
 	title,
 	description,
@@ -34,7 +42,7 @@ export function ChangeItem({
 
 						{/* Title */}
 						<span className="text-base font-mono text-foreground/80 group-hover:text-foreground transition-colors flex-1">
-							{title}
+							{cleanDisplayTitle(title)}
 						</span>
 
 						{/* Tags */}

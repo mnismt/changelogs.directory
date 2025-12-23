@@ -387,6 +387,8 @@ enum FetchStatus {
    pnpm prisma generate
    ```
 
+   > **Note (Prisma v7+)**: The generated client is output to `src/generated/prisma/client`. Import from `@/generated/prisma/client` instead of `@prisma/client`.
+
 4. **Seed Claude Code tool** in `prisma/seed.ts`:
 
    ```typescript

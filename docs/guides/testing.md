@@ -152,6 +152,10 @@ Server functions should be tested with a test database to verify query logic.
 import { PrismaClient } from '@/generated/prisma/client'
 import { beforeAll, afterAll } from 'vitest'
 
+// Note: For Prisma v7+, production code (especially Trigger.dev workers)
+// requires a driver adapter (e.g., @prisma/adapter-pg). Tests can use
+// the direct client if DATABASE_URL uses the native pg:// protocol.
+
 const prisma = new PrismaClient({
 	datasources: {
 		db: {
