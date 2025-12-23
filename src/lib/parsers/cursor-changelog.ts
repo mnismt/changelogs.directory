@@ -126,7 +126,7 @@ function extractChanges(body: HTMLElement): ParsedChange[] {
 	if (headings.length > 0) {
 		let order = 0
 		for (const heading of headings) {
-			const title = heading.text.trim()
+			const title = cleanHeadingText(heading.text.trim())
 			if (!title) continue
 
 			const { description, media } = collectDescriptionUntilNextHeading(
@@ -380,4 +380,13 @@ function getNodeText(node: HTMLElement | null | undefined): string {
 	}
 
 	return node.text ?? ''
+}
+
+/**
+ * Clean heading text by removing UI artifacts like arrow icons
+ * from Radix UI accordion buttons.
+ */
+function cleanHeadingText(text: string): string {
+	// Remove arrow glyphs commonly used in accordions/expand controls
+	return text.replace(/[↓↑←→↔↕⇐⇒⇑⇓⬆⬇⬅➡]/g, '').trim()
 }
