@@ -126,7 +126,7 @@ function extractChanges(body: HTMLElement): ParsedChange[] {
 	if (headings.length > 0) {
 		let order = 0
 		for (const heading of headings) {
-			const title = cleanHeadingText(heading.text.trim())
+			const title = cleanText(heading.text.trim())
 			if (!title) continue
 
 			const { description, media } = collectDescriptionUntilNextHeading(
@@ -145,7 +145,7 @@ function extractChanges(body: HTMLElement): ParsedChange[] {
 	if (listItems.length > 0) {
 		let order = 0
 		for (const li of listItems) {
-			const text = getNodeText(li).trim()
+			const text = cleanText(getNodeText(li))
 			if (!text) continue
 			changes.push(createChangeCandidate(text, order++))
 		}
@@ -195,15 +195,20 @@ function collectDescriptionUntilNextHeading(
 			break
 		}
 
+		// Skip Radix UI accordion containers (content is dynamically loaded)
+		if (isAccordionContainer(node)) {
+			node = node.nextElementSibling as HTMLElement | null
+			continue
+		}
+
 		if (tag === 'figure') {
-			const mediaFragments: string[] = []
 			const video = node.querySelector('video')
 			const img = node.querySelector('img')
 			if (video) {
 				const src = video.getAttribute('src')
 				if (src) {
 					media.push({ type: 'video', url: src })
-					mediaFragments.push(`Video: ${src}`)
+					// Don't add to descriptionParts - video is already in media array
 				}
 			}
 			if (img) {
@@ -215,14 +220,14 @@ function collectDescriptionUntilNextHeading(
 						url: src,
 						alt: alt || undefined,
 					})
-					mediaFragments.push(alt ? `![${alt}](${src})` : src)
+					// Only add image alt text to description (not the URL)
+					if (alt) {
+						descriptionParts.push(alt)
+					}
 				}
 			}
-			if (mediaFragments.length > 0) {
-				descriptionParts.push(mediaFragments.join('\n'))
-			}
 		} else {
-			const text = getNodeText(node).trim()
+			const text = cleanText(getNodeText(node))
 			if (text) {
 				descriptionParts.push(text)
 			}
@@ -383,10 +388,40 @@ function getNodeText(node: HTMLElement | null | undefined): string {
 }
 
 /**
- * Clean heading text by removing UI artifacts like arrow icons
- * from Radix UI accordion buttons.
+ * Decode common HTML entities to their character equivalents.
  */
-function cleanHeadingText(text: string): string {
+function decodeHtmlEntities(text: string): string {
+	return text
+		.replace(/&#x27;/g, "'")
+		.replace(/&#x26;/g, '&')
+		.replace(/&#x3C;/g, '<')
+		.replace(/&#x3E;/g, '>')
+		.replace(/&#x22;/g, '"')
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&quot;/g, '"')
+		.replace(/&apos;/g, "'")
+		.replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+		.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) =>
+			String.fromCharCode(Number.parseInt(hex, 16)),
+		)
+}
+
+/**
+ * Check if an element is a Radix UI accordion container.
+ * These have data-orientation="vertical" attribute.
+ */
+function isAccordionContainer(node: HTMLElement): boolean {
+	return node.getAttribute('data-orientation') === 'vertical'
+}
+
+/**
+ * Clean extracted text by removing UI artifacts and decoding HTML entities.
+ */
+function cleanText(text: string): string {
 	// Remove arrow glyphs commonly used in accordions/expand controls
-	return text.replace(/[↓↑←→↔↕⇐⇒⇑⇓⬆⬇⬅➡]/g, '').trim()
+	const withoutArrows = text.replace(/[↓↑←→↔↕⇐⇒⇑⇓⬆⬇⬅➡]/g, '')
+	// Decode HTML entities
+	return decodeHtmlEntities(withoutArrows).trim()
 }

@@ -14,7 +14,8 @@ describe('parseCursorChangelog', () => {
 		expect(latest.releaseDate?.toISOString()).toBe('2025-11-21T10:00:00.000Z')
 		expect(latest.changes).toHaveLength(2)
 		expect(latest.changes[0].title).toBe('Plan Mode')
-		expect(latest.changes[0].description).toContain(
+		expect(latest.changes[0].description).toContain('Plan screenshot')
+		expect(latest.changes[0].media?.[0].url).toBe(
 			'https://cursor.com/images/plan.png',
 		)
 		expect(latest.rawContent).toContain(
@@ -283,6 +284,67 @@ describe('parseCursorChangelog', () => {
 			const releases = parseCursorChangelog(html)
 			expect(releases[0].changes[0].title).toBe('Stability (7)')
 			expect(releases[0].changes[1].title).toBe('Agents (15)')
+		})
+
+		it('skips accordion containers when extracting descriptions', () => {
+			const html = `
+				<main id="main" class="section section--longform">
+					<article>
+						<h1><a href="/changelog/2-3">Bug Fixes</a></h1>
+						<div class="prose">
+							<h3>Improvements</h3>
+							<p>Some valid description.</p>
+							<div data-orientation="vertical">
+								<button>Stability (7)↓↑</button>
+								<button>Agents (15)↓↑</button>
+							</div>
+						</div>
+					</article>
+				</main>
+			`
+			const releases = parseCursorChangelog(html)
+			expect(releases[0].changes[0].description).toBe('Some valid description.')
+			expect(releases[0].changes[0].description).not.toContain('Stability')
+		})
+
+		it('decodes HTML entities in descriptions', () => {
+			const html = `
+				<main id="main" class="section section--longform">
+					<article>
+						<h1><a href="/changelog/2-3">Layout Update</a></h1>
+						<div class="prose">
+							<h3>Layout customization</h3>
+							<p>It&#x27;s now easier to customize. We&#x27;ve included four layouts.</p>
+						</div>
+					</article>
+				</main>
+			`
+			const releases = parseCursorChangelog(html)
+			expect(releases[0].changes[0].description).toContain("It's now easier")
+			expect(releases[0].changes[0].description).toContain("We've included")
+		})
+
+		it('excludes video URLs from description text', () => {
+			const html = `
+				<main id="main" class="section section--longform">
+					<article>
+						<h1><a href="/changelog/2-3">Layout Update</a></h1>
+						<div class="prose">
+							<h3>Layout customization</h3>
+							<p>You can customize layouts.</p>
+							<figure>
+								<video src="https://example.com/video.mp4"></video>
+							</figure>
+						</div>
+					</article>
+				</main>
+			`
+			const releases = parseCursorChangelog(html)
+			expect(releases[0].changes[0].description).toBe('You can customize layouts.')
+			expect(releases[0].changes[0].description).not.toContain('Video:')
+			expect(releases[0].changes[0].description).not.toContain('mp4')
+			expect(releases[0].changes[0].media).toHaveLength(1)
+			expect(releases[0].changes[0].media?.[0].type).toBe('video')
 		})
 
 		it('returns empty array for empty HTML', () => {

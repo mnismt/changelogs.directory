@@ -1,6 +1,6 @@
 # Parser Development Reference
 
-> **Last verified**: 2025-12-05
+> **Last verified**: 2025-12-23
 
 This document explains how to develop custom parsers for extracting structured changelog data from various sources.
 
@@ -215,6 +215,11 @@ export function parseCursorChangelog(html: string, options?: CursorParserOptions
 - Selector `main#main...` avoids duplicate articles from React hydration divs
 - Slug pattern `/^[a-z0-9]+(?:-[a-z0-9]+)*$/i` accepts both version numbers (`2-2`) and named releases (`enterprise-dec-2025`)
 - Title extraction checks h1 → h2 → h3 in order
+- Text cleanup via `cleanText()` handles:
+  - Arrow glyph removal (↓↑ from Radix UI accordions)
+  - HTML entity decoding (`&#x27;` → `'`)
+- Radix UI accordion containers (`data-orientation="vertical"`) are skipped during description extraction
+- Media (images/videos) are extracted to `media[]` array, not included in description text
 
 **Cross-reference**: See `src/lib/parsers/cursor-changelog.ts` for full implementation.
 
