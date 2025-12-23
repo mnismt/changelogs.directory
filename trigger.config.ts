@@ -33,8 +33,7 @@ export default defineConfig({
 				projectId: process.env.VERCEL_PROJECT_ID,
 			}),
 			prismaExtension({
-				schema: 'prisma/schema.prisma',
-				mode: 'legacy',
+				mode: 'modern',
 			}),
 		],
 	},
