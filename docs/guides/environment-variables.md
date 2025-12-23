@@ -42,12 +42,13 @@ DATABASE_URL="postgresql://postgres:password@db.project-ref.supabase.co:5432/pos
 **Used by**:
 - Prisma migrations and queries
 - All server functions
-- Trigger.dev ingestion tasks
+- Trigger.dev ingestion tasks (via `@prisma/adapter-pg` driver adapter)
 
 **Notes**:
 - Production connections **must** use SSL (`?sslmode=require`)
 - Connection pooling is handled by Prisma
 - Must be set in **both** web app and Trigger.dev environments
+- Prisma v7+ requires driver adapters in Trigger.dev workers
 
 ---
 

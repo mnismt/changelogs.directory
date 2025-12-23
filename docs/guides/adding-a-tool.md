@@ -348,6 +348,15 @@ src/trigger/ingest/google-antigravity/
 
 **File**: `src/trigger/ingest/google-antigravity/index.ts`
 
+> **Prisma v7+**: Workers must use a driver adapter. See the existing worker files for the pattern:
+> ```typescript
+> import { PrismaPg } from '@prisma/adapter-pg'
+> import { PrismaClient } from '@/generated/prisma/client'
+>
+> const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+> const prisma = new PrismaClient({ adapter })
+> ```
+
 **Changes to make**:
 
 ```typescript

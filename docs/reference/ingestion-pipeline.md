@@ -47,12 +47,19 @@ Every tool (Claude Code, Codex, Cursor) follows the same 7-phase pipeline:
 **Output** (`IngestionContext`):
 ```typescript
 {
-  prisma: PrismaClient,
+  prisma: PrismaClient,    // Prisma v7+ requires driver adapter in workers
   tool: Tool,              // slug, sourceType, sourceUrl, sourceConfig
   fetchLog: FetchLog,      // id, startedAt
   startTime: number        // Date.now() for duration calculation
 }
 ```
+
+> **Prisma v7+**: Trigger.dev workers must initialize PrismaClient with a driver adapter:
+> ```typescript
+> import { PrismaPg } from '@prisma/adapter-pg'
+> const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+> const prisma = new PrismaClient({ adapter })
+> ```
 
 **Error Handling**:
 - Tool not found → Return `{ skipped: true, reason: 'Tool not found' }`
