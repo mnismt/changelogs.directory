@@ -1,5 +1,5 @@
 import { logger } from '@trigger.dev/sdk'
-import type { Prisma } from '@/generated/prisma'
+import type { Prisma } from '@/generated/prisma/client'
 import type { EnrichResult, IngestionContext, UpsertResult } from '../types'
 
 /**

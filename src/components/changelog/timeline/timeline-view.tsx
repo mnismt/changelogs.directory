@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ChangeType } from '@/generated/prisma'
+import type { ChangeType } from '@/generated/prisma/client'
 import { toDate } from '@/lib/date-utils'
 import { TimelineItem } from './timeline-item'
 

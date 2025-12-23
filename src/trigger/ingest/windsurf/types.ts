@@ -1,4 +1,4 @@
-import type { FetchLog, PrismaClient, Tool } from '@/generated/prisma'
+import type { FetchLog, PrismaClient, Tool } from '@/generated/prisma/client'
 import type { ParsedRelease } from '@/lib/parsers/changelog-md'
 
 export interface WindsurfSourceConfig {

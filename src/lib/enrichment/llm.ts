@@ -1,6 +1,6 @@
 import { generateObject } from 'ai'
 import { z } from 'zod'
-import type { ChangeType, ImpactLevel } from '@/generated/prisma'
+import type { ChangeType, ImpactLevel } from '@/generated/prisma/client'
 import { llm } from '@/lib/llm'
 import { buildBraintrustTelemetry } from '@/lib/llm/telemetry'
 import type { ParsedRelease } from '@/lib/parsers/changelog-md'

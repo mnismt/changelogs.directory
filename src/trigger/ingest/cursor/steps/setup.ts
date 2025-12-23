@@ -1,5 +1,5 @@
 import { logger } from '@trigger.dev/sdk'
-import type { PrismaClient } from '@/generated/prisma'
+import type { PrismaClient } from '@/generated/prisma/client'
 import type { IngestionContext } from '../types'
 
 export async function setupStep(

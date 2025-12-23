@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { ChangeType } from '@/generated/prisma'
+import type { ChangeType } from '@/generated/prisma/client'
 
 interface ReleaseTOCProps {
 	sections: Array<{

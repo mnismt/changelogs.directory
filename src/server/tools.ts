@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { subDays, subMonths, subYears } from 'date-fns'
 import { z } from 'zod'
-import type { Prisma } from '@/generated/prisma'
+import type { Prisma } from '@/generated/prisma/client'
 import { captureServerException } from '@/integrations/sentry/server'
 import { formatVersionForDisplay } from '@/lib/version-formatter'
 import { getPrisma } from './db'
