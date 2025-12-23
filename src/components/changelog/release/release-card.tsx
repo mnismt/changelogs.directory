@@ -1,4 +1,3 @@
-import type { ChangeType } from '@prisma/client'
 import { Link } from '@tanstack/react-router'
 import { Package } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -8,6 +7,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
+import type { ChangeType } from '@/generated/prisma'
 import { formatDate, formatRelativeDate } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
 

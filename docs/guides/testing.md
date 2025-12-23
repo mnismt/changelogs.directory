@@ -149,7 +149,7 @@ Server functions should be tested with a test database to verify query logic.
 **File**: `tests/setup.ts`
 
 ```typescript
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@/generated/prisma'
 import { beforeAll, afterAll } from 'vitest'
 
 const prisma = new PrismaClient({

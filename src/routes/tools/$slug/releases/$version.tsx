@@ -1,4 +1,3 @@
-import type { Change, ChangeType } from '@prisma/client'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo } from 'react'
@@ -6,6 +5,7 @@ import { ChangeItem } from '@/components/changelog/release/change-item'
 import { ReleaseDetailSkeleton } from '@/components/changelog/release/release-detail-skeleton'
 import { VersionList } from '@/components/changelog/release/version-list'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
+import type { Change, ChangeType } from '@/generated/prisma'
 import { captureException } from '@/integrations/sentry'
 import {
 	getAdjacentVersions,

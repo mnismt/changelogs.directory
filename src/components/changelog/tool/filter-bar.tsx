@@ -1,7 +1,7 @@
-import type { ChangeType } from '@prisma/client'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
+import type { ChangeType } from '@/generated/prisma'
 import { cn } from '@/lib/utils'
 
 const FILTER_OPTIONS: Array<{ value: ChangeType; label: string }> = [

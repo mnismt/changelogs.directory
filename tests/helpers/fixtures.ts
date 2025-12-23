@@ -6,7 +6,7 @@ import type {
 	ImpactLevel,
 	PrismaClient,
 	SourceType,
-} from '@prisma/client'
+} from '@/generated/prisma'
 import type { ParsedRelease } from '@/lib/parsers/changelog-md'
 
 /**

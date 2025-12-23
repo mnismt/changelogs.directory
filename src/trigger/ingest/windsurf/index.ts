@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import { logger, schedules, task } from '@trigger.dev/sdk'
+import { PrismaClient } from '@/generated/prisma'
 import { enrichStep } from './steps/enrich'
 import { fetchPageStep } from './steps/fetch-page'
 import { filterStep } from './steps/filter'

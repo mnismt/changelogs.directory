@@ -29,7 +29,7 @@ vi.mock('@/lib/llm', () => ({
 
 const mockPrismaInstance = createMockPrisma()
 
-vi.mock('@prisma/client', () => {
+vi.mock('@/generated/prisma', () => {
 	const MockPrismaClient = vi.fn(() => mockPrismaInstance)
 	return {
 		PrismaClient: MockPrismaClient,

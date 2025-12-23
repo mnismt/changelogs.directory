@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import type { ChangeType, ImpactLevel } from '@prisma/client'
+import type { ChangeType, ImpactLevel } from '@/generated/prisma'
 import {
 	classifyChangeType,
 	detectBreaking,

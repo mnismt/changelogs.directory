@@ -1,4 +1,4 @@
-import type { ChangeType } from '@prisma/client'
+import type { ChangeType } from '@/generated/prisma'
 
 interface ChangeCountProps {
 	changeCount: number
