@@ -9,7 +9,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
-import type { ChangeType } from '@/generated/prisma'
+import type { ChangeType } from '@/generated/prisma/client'
 import { formatDate } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
 

@@ -5,7 +5,7 @@ import { ChangeItem } from '@/components/changelog/release/change-item'
 import { ReleaseDetailSkeleton } from '@/components/changelog/release/release-detail-skeleton'
 import { VersionList } from '@/components/changelog/release/version-list'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
-import type { Change, ChangeType } from '@/generated/prisma'
+import type { Change, ChangeType } from '@/generated/prisma/client'
 import { captureException } from '@/integrations/sentry'
 import {
 	getAdjacentVersions,
