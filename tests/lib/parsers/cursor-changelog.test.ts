@@ -266,6 +266,25 @@ describe('parseCursorChangelog', () => {
 	})
 
 	describe('edge cases', () => {
+		it('cleans arrow icons from accordion button text', () => {
+			const html = `
+				<main id="main" class="section section--longform">
+					<article>
+						<h1><a href="/changelog/2-3">Bug Fixes</a></h1>
+						<div class="prose">
+							<h3>Stability (7)↓↑</h3>
+							<p>Various stability improvements.</p>
+							<h3>Agents (15)↓↑</h3>
+							<p>Agent-related fixes.</p>
+						</div>
+					</article>
+				</main>
+			`
+			const releases = parseCursorChangelog(html)
+			expect(releases[0].changes[0].title).toBe('Stability (7)')
+			expect(releases[0].changes[1].title).toBe('Agents (15)')
+		})
+
 		it('returns empty array for empty HTML', () => {
 			expect(parseCursorChangelog('')).toHaveLength(0)
 			expect(parseCursorChangelog('   ')).toHaveLength(0)
