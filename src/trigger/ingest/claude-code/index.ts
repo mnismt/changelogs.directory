@@ -1,3 +1,4 @@
+import { PrismaPg } from '@prisma/adapter-pg'
 import { logger, schedules, task } from '@trigger.dev/sdk'
 import { PrismaClient } from '@/generated/prisma/client'
 import { enrichStep } from './steps/enrich'
@@ -9,7 +10,8 @@ import { parseStep } from './steps/parse'
 import { setupStep } from './steps/setup'
 import { upsertStep } from './steps/upsert'
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const prisma = new PrismaClient({ adapter })
 
 /**
  * Ingestion task for Claude Code changelog
