@@ -7,6 +7,56 @@ description: Verifies frontend and backend changes. Use when testing UI with Pla
 
 Verify implementations work correctly using browser automation (Playwright MCP), code quality tools (Biome), tests (Vitest), and SSR validation.
 
+## Parallel Verification Strategy
+
+For full-stack changes, run frontend and backend verification in parallel via subagents:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Verification                             │
+├─────────────────────────┬───────────────────────────────────┤
+│  Subagent A: Frontend   │  Subagent B: Backend              │
+│  - Playwright MCP       │  - SQL queries                    │
+│  - Console errors       │  - Server function tests          │
+│  - SSR validation       │  - Data integrity checks          │
+│  - Network requests     │  - Ingestion verification         │
+└─────────────────────────┴───────────────────────────────────┘
+```
+
+### When to Use Parallel Subagents
+
+| Scenario | Strategy |
+|----------|----------|
+| Full-stack feature | 2 subagents: frontend + backend |
+| Frontend-only | Single agent with Playwright |
+| Backend-only | Single agent with SQL/scripts |
+| Quick check | Direct commands (no subagent) |
+
+### Subagent Prompts
+
+**Frontend Subagent:**
+```
+Verify frontend changes using Playwright MCP:
+1. Navigate to http://localhost:5173/<route>
+2. Take snapshot, verify elements rendered
+3. Check console for JS errors
+4. Verify SSR (no client data fetch on load)
+5. Test client navigation works
+
+See frontend-playwright.md for patterns.
+```
+
+**Backend Subagent:**
+```
+Verify backend/database state:
+1. Run SQL queries to verify data exists
+2. Test server functions return expected data
+3. Check data integrity (no orphans, correct relationships)
+4. Verify ingestion results if applicable
+
+See backend-verification.md for patterns.
+```
+
 ## Quick Decision
 
 | Verifying... | Method | Reference |
@@ -16,7 +66,10 @@ Verify implementations work correctly using browser automation (Playwright MCP),
 | Logic/unit tests | `pnpm test <file>` | - |
 | Full build | `pnpm build` | - |
 | SSR data loading | Browser + network | `frontend-playwright.md` |
-| Ingestion pipeline | Trigger.dev dashboard | - |
+| Database state | SQL queries | `backend-verification.md` |
+| Server functions | tsx scripts / curl | `backend-verification.md` |
+| Ingestion results | SQL queries | `backend-verification.md` |
+| Data integrity | SQL queries | `backend-verification.md` |
 
 ## Frontend Verification (Playwright MCP)
 
@@ -157,35 +210,33 @@ function ToolsPage() {
 }
 ```
 
-## Ingestion Pipeline Verification
+## Backend Verification
 
-### Trigger.dev Dashboard
+Use SQL queries and tsx scripts to verify database state and server functions.
 
-1. Go to Trigger.dev dashboard
-2. Check task runs for the tool
-3. Verify success status and output
+### Quick SQL Query
 
-### Database Verification
-
-```sql
--- Check FetchLog for latest run
-SELECT * FROM "FetchLog"
-WHERE "toolId" = '<tool-id>'
-ORDER BY "fetchedAt" DESC
-LIMIT 1;
-
--- Check releases were created
-SELECT * FROM "Release"
-WHERE "toolId" = '<tool-id>'
-ORDER BY "publishedAt" DESC
-LIMIT 5;
+```bash
+pnpm prisma db execute --stdin <<< "SELECT COUNT(*) FROM \"Tool\";"
 ```
 
-### Parser Verification
+### Verification Script
 
-1. Check parser output structure matches schema
-2. Verify content hash is generated correctly
-3. Confirm LLM classification ran (check Change records)
+```bash
+pnpm tsx scripts/verify-tool.ts claude-code
+```
+
+### Key Checks
+
+| Check | Query/Command |
+|-------|---------------|
+| Tool exists | `SELECT * FROM "Tool" WHERE slug = '<slug>'` |
+| Has releases | `SELECT COUNT(*) FROM "Release" WHERE "toolId" = '<id>'` |
+| Changes parsed | `SELECT COUNT(*) FROM "Change" WHERE "releaseId" = '<id>'` |
+| Fetch status | `SELECT status FROM "FetchLog" ORDER BY "startedAt" DESC LIMIT 1` |
+| Server function | `pnpm tsx scripts/test-server-fn.ts` |
+
+For detailed patterns and reusable scripts, see `backend-verification.md`.
 
 ## Troubleshooting
 

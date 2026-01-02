@@ -16,6 +16,7 @@ export function formatVersionForDisplay(
 		cursor: formatCursorVersion,
 		'claude-code': formatClaudeCodeVersion,
 		windsurf: formatWindsurfVersion,
+		opencode: formatOpenCodeVersion,
 	}
 
 	const formatter = formatters[toolSlug]
@@ -67,6 +68,10 @@ function formatCursorVersion(version: string): string {
 function formatWindsurfVersion(version: string): string {
 	const versionPart = version.replace(/^windsurf-/, '')
 	return `v${versionPart}`
+}
+
+function formatOpenCodeVersion(version: string): string {
+	return version.startsWith('v') ? version : `v${version}`
 }
 
 /**

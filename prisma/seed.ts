@@ -1,6 +1,8 @@
-import { PrismaClient } from "../src/generated/prisma"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { PrismaClient } from "../src/generated/prisma/client"
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
 	console.log("Starting database seed...")
@@ -172,6 +174,46 @@ async function main() {
 	})
 
 	console.log(`✅ Seeded tool: ${windsurf.name} (${windsurf.slug})`)
+
+	// Seed OpenCode tool
+	const opencode = await prisma.tool.upsert({
+		where: { slug: "opencode" },
+		update: {
+			name: "OpenCode",
+			vendor: "SST",
+			description:
+				"The open source AI coding agent with free models and multi-provider support",
+			homepage: "https://opencode.ai",
+			repositoryUrl: "https://github.com/sst/opencode",
+			sourceType: "GITHUB_RELEASES",
+			sourceUrl: "https://api.github.com/repos/sst/opencode/releases",
+			sourceConfig: {
+				versionPrefix: "v",
+				includePreReleases: false,
+			},
+			tags: ["cli", "ai", "agent", "sst", "opencode", "terminal", "open-source"],
+			isActive: true,
+		},
+		create: {
+			slug: "opencode",
+			name: "OpenCode",
+			vendor: "SST",
+			description:
+				"The open source AI coding agent with free models and multi-provider support",
+			homepage: "https://opencode.ai",
+			repositoryUrl: "https://github.com/sst/opencode",
+			sourceType: "GITHUB_RELEASES",
+			sourceUrl: "https://api.github.com/repos/sst/opencode/releases",
+			sourceConfig: {
+				versionPrefix: "v",
+				includePreReleases: false,
+			},
+			tags: ["cli", "ai", "agent", "sst", "opencode", "terminal", "open-source"],
+			isActive: true,
+		},
+	})
+
+	console.log(`✅ Seeded tool: ${opencode.name} (${opencode.slug})`)
 
 	console.log("Database seed completed!")
 }

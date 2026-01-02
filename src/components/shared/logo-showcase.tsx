@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
 import { OpenAI } from '@/components/logo/openai'
+import { OpenCode } from '@/components/logo/opencode'
 import { Windsurf } from '@/components/logo/windsurf'
 import { cn } from '@/lib/utils'
 
@@ -41,6 +42,13 @@ const tools = [
 		url: 'https://openai.com/codex',
 		subtitle: 'by OpenAI',
 		isMonochrome: false,
+	},
+	{
+		name: 'OpenCode',
+		Logo: OpenCode,
+		url: 'https://opencode.ai',
+		subtitle: 'by SST',
+		isMonochrome: true,
 	},
 ]
 
