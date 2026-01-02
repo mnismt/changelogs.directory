@@ -20,7 +20,7 @@ function initializeLLM(): LanguageModel | null {
 			apiKey,
 		})
 
-		return google('gemini-3-flash-preview')
+		return google('gemini-2.5-flash-lite')
 	} catch (error) {
 		console.error('Failed to initialize LLM:', error)
 		return null
