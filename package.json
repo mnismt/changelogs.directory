@@ -13,6 +13,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "1.0.1",
+    "@react-email/render": "^2.0.1",
     "@sentry/browser": "^10.25.0",
     "@sentry/node": "^10.25.0",
     "@sentry/react": "^10.25.0",

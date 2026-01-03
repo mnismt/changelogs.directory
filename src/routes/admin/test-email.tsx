@@ -18,7 +18,11 @@ function EmailTestPage() {
 	const dataId = useId()
 
 	const [formData, setFormData] = useState({
-		template: 'welcome' as 'welcome' | 'tool-release-update' | 'release-digest',
+		template: 'welcome' as
+			| 'welcome'
+			| 'tool-release-update'
+			| 'release-digest'
+			| 'new-tool-announcement',
 		to: '',
 		data: '{}',
 	})
@@ -78,7 +82,8 @@ function EmailTestPage() {
 									template: e.target.value as
 										| 'welcome'
 										| 'tool-release-update'
-										| 'release-digest',
+										| 'release-digest'
+										| 'new-tool-announcement',
 								})
 							}
 							className="w-full rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 focus:outline-none focus:ring-2 focus:ring-neutral-700"
@@ -86,6 +91,9 @@ function EmailTestPage() {
 							<option value="welcome">Welcome Email</option>
 							<option value="tool-release-update">Tool Release Update</option>
 							<option value="release-digest">Release Digest</option>
+							<option value="new-tool-announcement">
+								New Tool Announcement
+							</option>
 						</select>
 					</div>
 

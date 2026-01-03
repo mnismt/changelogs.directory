@@ -40,23 +40,29 @@ export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
 		const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 		const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-		const [totalCount, recentSignups, last24h, last7d] = await Promise.all([
-			prisma.waitlist.count(),
-			prisma.waitlist.findMany({
-				take: 5,
-				orderBy: { createdAt: 'desc' },
-				select: { id: true, email: true, createdAt: true },
-			}),
-			prisma.waitlist.count({
-				where: { createdAt: { gte: twentyFourHoursAgo } },
-			}),
-			prisma.waitlist.count({
-				where: { createdAt: { gte: sevenDaysAgo } },
-			}),
-		])
+		const [totalCount, realCount, testCount, recentSignups, last24h, last7d] =
+			await Promise.all([
+				prisma.waitlist.count(),
+				prisma.waitlist.count({ where: { isTest: false } }),
+				prisma.waitlist.count({ where: { isTest: true } }),
+				prisma.waitlist.findMany({
+					take: 5,
+					where: { isTest: false },
+					orderBy: { createdAt: 'desc' },
+					select: { id: true, email: true, createdAt: true, isTest: true },
+				}),
+				prisma.waitlist.count({
+					where: { createdAt: { gte: twentyFourHoursAgo }, isTest: false },
+				}),
+				prisma.waitlist.count({
+					where: { createdAt: { gte: sevenDaysAgo }, isTest: false },
+				}),
+			])
 
 		return {
 			totalCount,
+			realCount,
+			testCount,
 			recentSignups,
 			last24h,
 			last7d,
