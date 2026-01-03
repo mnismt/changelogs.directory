@@ -18,6 +18,7 @@ export interface IngestionContext {
  */
 export interface FetchResult {
 	releases: GitHubRelease[]
+	etag?: string | null
 }
 
 /**

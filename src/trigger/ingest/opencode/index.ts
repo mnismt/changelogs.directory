@@ -79,7 +79,7 @@ export const ingestOpencode = task({
 			// ============================================================================
 			await finalizeStep(
 				ctx,
-				{ etag: null }, // GitHub Releases API doesn't return ETags like raw file fetches
+				fetchResult,
 				parseResult,
 				filterResult,
 				upsertResult,
