@@ -5,23 +5,27 @@ This file contains important information for AI coding assistants working in thi
 ## Framework
 
 This project uses **TanStack Start** - a full-stack React framework built on TanStack Router.
+
 - Documentation: https://tanstack.com/start/latest
 - TanStack Router Docs: https://tanstack.com/router/latest
 
 ## Commands
 
 ### Development
+
 ```bash
 pnpm dev              # Start development server on port 5173
 ```
 
 ### Building
+
 ```bash
 pnpm build            # Build for production
 pnpm serve            # Preview production build
 ```
 
 ### Testing
+
 ```bash
 pnpm test             # Run all tests with Vitest
 # Note: No single test command configured - add vitest CLI flags as needed
@@ -29,6 +33,7 @@ pnpm test             # Run all tests with Vitest
 ```
 
 ### Linting & Formatting
+
 ```bash
 pnpm lint             # Lint code with Biome
 pnpm format           # Format code with Biome (auto-fixes formatting issues)
@@ -37,6 +42,7 @@ pnpm biome check --write  # Auto-fix linting issues that Biome can fix
 ```
 
 ### Adding UI Components
+
 ```bash
 pnpx shadcn@latest add <component-name>    # Add shadcn/ui components
 ```
@@ -44,6 +50,7 @@ pnpx shadcn@latest add <component-name>    # Add shadcn/ui components
 ## Architecture & Structure
 
 ### Project Layout
+
 ```
 src/
 ├── components/          # React components (e.g., Header.tsx)
@@ -61,6 +68,7 @@ src/
 ```
 
 ### Routing System
+
 - **File-based routing** using TanStack Router
 - Routes are defined in `src/routes/` directory
 - Route structure automatically generates based on file names
@@ -68,6 +76,7 @@ src/
 - Root layout is in `src/routes/__root.tsx`
 
 ### Key Files
+
 - `src/routes/__root.tsx` - Root route with shell component, defines HTML structure, head metadata, and global layout
 - `src/router.tsx` - Router configuration
 - `vite.config.ts` - Vite configuration with TanStack Start plugin
@@ -75,6 +84,7 @@ src/
 - `biome.json` - Biome linting/formatting configuration
 
 ### Technologies
+
 - **Framework**: TanStack Start (React 19)
 - **Router**: TanStack Router (file-based)
 - **Styling**: Tailwind CSS v4 + shadcn/ui components
@@ -86,16 +96,19 @@ src/
 - **Package Manager**: pnpm (v9.11.0)
 
 ### Demo Files
+
 Files prefixed with `demo` can be safely deleted - they're examples only.
 
 ## Code Style & Conventions
 
 ### Formatting
+
 - **Indentation**: Tabs (configured in Biome)
 - **Quotes**: Double quotes for JavaScript/TypeScript
 - **Import Organization**: Auto-organized imports enabled (Biome)
 
 ### TypeScript
+
 - **Strict mode enabled**
 - `noUnusedLocals`: true
 - `noUnusedParameters`: true
@@ -105,27 +118,32 @@ Files prefixed with `demo` can be safely deleted - they're examples only.
 - Target: ES2022
 
 ### Path Aliases
+
 - Use `@/*` to reference `./src/*`
 - Example: `import { cn } from '@/lib/utils'`
 - Configured via `tsconfig.json` and `vite-tsconfig-paths` plugin
 
 ### Imports
+
 - Import from `@tanstack/react-router` for routing components (Link, Outlet, etc.)
 - Import from `@tanstack/react-query` only for mutations/subscriptions (not initial page data)
 - Use path aliases (`@/`) for local imports
 
 ### React Components
+
 - Use functional components with TypeScript
 - Export component as default when it's the primary export
 - Use named exports for utilities/helpers
 - Prefer `interface` for type definitions (see `MyRouterContext` in `__root.tsx`)
 
 ### File Naming
+
 - Routes: lowercase with hyphens or dots (e.g., `index.tsx`, `server-funcs.tsx`)
 - Components: kebab-case (e.g., `header.tsx`, `logo-showcase.tsx`)
 - Utilities: kebab-case (e.g., `utils.ts`)
 
 ### TanStack Router Patterns
+
 - Create routes with `createFileRoute()` for file-based routes
 - Create root route with `createRootRouteWithContext<YourContext>()`
 - Use `Route` as the export name for file-based routes
@@ -133,58 +151,62 @@ Files prefixed with `demo` can be safely deleted - they're examples only.
 - Use `head` property for meta tags and links
 
 ### Data Fetching with SSR
+
 **CRITICAL**: Always use SSR loaders for initial page data. Never use client-side `useQuery` for initial data fetching.
 
 #### Pattern: Use `loader` + `Route.useLoaderData()`
+
 ```tsx
 import { createFileRoute } from '@tanstack/react-router'
 import { getToolWithReleases } from '@/server/tools'
 
 export const Route = createFileRoute('/tools/claude-code/')({
-	loader: async () => {
-		return await getToolWithReleases({ data: { slug: 'claude-code' } })
-	},
-	component: ClaudeCodePage,
+  loader: async () => {
+    return await getToolWithReleases({ data: { slug: 'claude-code' } })
+  },
+  component: ClaudeCodePage,
 })
 
 function ClaudeCodePage() {
-	const tool = Route.useLoaderData()
-	// Use tool data directly - no loading states needed for SSR
+  const tool = Route.useLoaderData()
+  // Use tool data directly - no loading states needed for SSR
 }
 ```
 
 #### For Multiple Data Sources
+
 ```tsx
 export const Route = createFileRoute('/tools/claude-code/releases/$version')({
-	loader: async ({ params }) => {
-		const [release, adjacentVersions, allVersions] = await Promise.all([
-			getReleaseWithChanges({
-				data: { toolSlug: 'claude-code', version: params.version },
-			}),
-			getAdjacentVersions({
-				data: { toolSlug: 'claude-code', version: params.version },
-			}),
-			getAllVersions({
-				data: { slug: 'claude-code' },
-			}),
-		])
+  loader: async ({ params }) => {
+    const [release, adjacentVersions, allVersions] = await Promise.all([
+      getReleaseWithChanges({
+        data: { toolSlug: 'claude-code', version: params.version },
+      }),
+      getAdjacentVersions({
+        data: { toolSlug: 'claude-code', version: params.version },
+      }),
+      getAllVersions({
+        data: { slug: 'claude-code' },
+      }),
+    ])
 
-		return {
-			release,
-			adjacentVersions,
-			allVersions,
-		}
-	},
-	component: ReleaseDetailPage,
+    return {
+      release,
+      adjacentVersions,
+      allVersions,
+    }
+  },
+  component: ReleaseDetailPage,
 })
 
 function ReleaseDetailPage() {
-	const { release, adjacentVersions, allVersions } = Route.useLoaderData()
-	// All data is available immediately via SSR
+  const { release, adjacentVersions, allVersions } = Route.useLoaderData()
+  // All data is available immediately via SSR
 }
 ```
 
 #### Rules
+
 - ✅ **ALWAYS** use `loader` function in route definition for page data
 - ✅ **ALWAYS** use `Route.useLoaderData()` to access data in components
 - ✅ **ALWAYS** use `Promise.all()` for parallel data fetching in loaders
@@ -193,15 +215,18 @@ function ReleaseDetailPage() {
 - ❌ **NEVER** add error states (`error`) from React Query for SSR data
 
 #### Benefits
+
 - Data loads on the server, improving initial page load
 - Better SEO - content is available in initial HTML
 - No loading spinners on first render
 - Type-safe data access via `Route.useLoaderData()`
 
 ### Database Access Patterns
+
 **CRITICAL**: Never import `getPrisma()` or any database code directly in route files. This causes client-side bundling issues.
 
 #### ❌ WRONG: Direct Database Import in Routes
+
 ```tsx
 // BAD - Causes "DATABASE_URL environment variable is not set" on client navigation
 import { getPrisma } from '@/server/db'
@@ -210,13 +235,14 @@ export const Route = createFileRoute('/admin/')({
   loader: async () => {
     const prisma = getPrisma() // ⚠️ Gets bundled into client code
     return await prisma.user.count()
-  }
+  },
 })
 ```
 
 **Problem**: On client-side navigation, the loader code is bundled into the client JavaScript. When it tries to execute `getPrisma()`, `process.env.DATABASE_URL` doesn't exist in the browser.
 
 #### ✅ CORRECT: Server Functions for Database Access
+
 ```tsx
 // GOOD - Database code stays on server
 import { getAdminDashboardStats } from '@/server/admin'
@@ -224,29 +250,29 @@ import { getAdminDashboardStats } from '@/server/admin'
 export const Route = createFileRoute('/admin/')({
   loader: async () => {
     return await getAdminDashboardStats() // Server function always runs server-side
-  }
+  },
 })
 ```
 
 **In `src/server/admin.ts`:**
+
 ```tsx
 import { createServerFn } from '@tanstack/react-start'
 import { getPrisma } from './db'
 
-export const getAdminDashboardStats = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    const prisma = getPrisma() // Safe - server functions never bundle to client
-    const [userCount, toolCount, releaseCount] = await Promise.all([
-      prisma.user.count(),
-      prisma.tool.count(),
-      prisma.release.count(),
-    ])
-    return { userCount, toolCount, releaseCount }
-  }
-)
+export const getAdminDashboardStats = createServerFn({ method: 'GET' }).handler(async () => {
+  const prisma = getPrisma() // Safe - server functions never bundle to client
+  const [userCount, toolCount, releaseCount] = await Promise.all([
+    prisma.user.count(),
+    prisma.tool.count(),
+    prisma.release.count(),
+  ])
+  return { userCount, toolCount, releaseCount }
+})
 ```
 
 #### Rules
+
 - ✅ **ALWAYS** use `createServerFn()` for database queries
 - ✅ **ALWAYS** import server functions (not `getPrisma`) in route loaders
 - ✅ **ONLY** import `getPrisma` in `src/server/*` or `src/lib/auth/*` files
@@ -254,16 +280,18 @@ export const getAdminDashboardStats = createServerFn({ method: 'GET' }).handler(
 - ❌ **NEVER** import `getPrisma` in component files (`src/components/*`)
 
 #### Why This Matters
+
 - **F5 (full reload)**: Loader runs on server → works ✅
 - **Client navigation**: Loader code bundled to client → `process.env` undefined → error ❌
 - **Server functions**: TanStack Start ensures they always execute server-side, even during client navigation ✅
 
 ### Component Structure Example
+
 ```tsx
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/path')({ 
-  component: ComponentName 
+export const Route = createFileRoute('/path')({
+  component: ComponentName,
 })
 
 function ComponentName() {
@@ -272,6 +300,7 @@ function ComponentName() {
 ```
 
 ### Styling
+
 - Tailwind CSS utility classes
 - Use `className` with template strings for conditional classes
 - shadcn/ui components for UI primitives
@@ -282,28 +311,33 @@ function ComponentName() {
 **Complete documentation** is in the `docs/` directory organized into 4 categories:
 
 ### 📘 For Task-Oriented Work (Start Here)
+
 - **[docs/guides/adding-a-tool.md](docs/guides/adding-a-tool.md)** ⭐ - Step-by-step guide for adding new tools (most common task)
 - **[docs/guides/environment-variables.md](docs/guides/environment-variables.md)** - All environment variables reference
 - **[docs/guides/testing.md](docs/guides/testing.md)** - Testing strategies and commands
 - **[docs/guides/deployment.md](docs/guides/deployment.md)** - Production deployment procedures
 
 ### 📕 For Technical Deep Dives
+
 - **[docs/reference/database-schema.md](docs/reference/database-schema.md)** - Complete database schema and query patterns
 - **[docs/reference/ingestion-pipeline.md](docs/reference/ingestion-pipeline.md)** - 7-phase ingestion architecture
 - **[docs/reference/parsers.md](docs/reference/parsers.md)** - Parser development patterns
 - **[docs/reference/api-patterns.md](docs/reference/api-patterns.md)** - SSR loaders and server functions
 
 ### 🎨 For Design & UX
+
 - **[docs/design/design-rules.md](docs/design/design-rules.md)** - Core aesthetic principles (**READ BEFORE ANY UI WORK**)
 - **[docs/design/og-images.md](docs/design/og-images.md)** - Open Graph image generation
 - **[docs/design/animations/](docs/design/animations/)** - Page-by-page animation choreography
 
 ### 📋 For Project Context
+
 - **[docs/project/architecture.md](docs/project/architecture.md)** - System architecture and design decisions
 - **[docs/project/prd.md](docs/project/prd.md)** - Product vision and roadmap
 - **[docs/project/TASKS.md](docs/project/TASKS.md)** - MVP task tracking
 
 ### Quick Reference by Task
+
 - **Adding a new tool** → `docs/guides/adding-a-tool.md` (start here, it cross-references everything else)
 - **Understanding data model** → `docs/reference/database-schema.md`
 - **Setting up environment** → `docs/guides/environment-variables.md`
@@ -318,24 +352,29 @@ function ComponentName() {
 **CRITICAL**: Before implementing any UI/UX, you **MUST** read [docs/design/design-rules.md](docs/design/design-rules.md).
 
 This project follows a strict **"The Directory"** concept with a monochrome dev-vibe aesthetic:
--   **Concept**: Terminal Directory Listing (`~/tools`)
--   **Aesthetic**: Monochrome, Dark Mode, Glassmorphism
--   **Typography**: Inter (UI) + Fira Code (Technical Data)
--   **UX**: Cinematic animations, Global Background Effects
+
+- **Concept**: Terminal Directory Listing (`~/tools`)
+- **Aesthetic**: Monochrome, Dark Mode, Glassmorphism
+- **Typography**: Inter (UI) + Fira Code (Technical Data)
+- **UX**: Cinematic animations, Global Background Effects
 
 ## Cursor Rules
 
 From `.cursorrules`:
+
 - Use `pnpx shadcn@latest add <component>` to install new shadcn/ui components
 - Always use the latest version of shadcn
 
 ## Error Handling
+
 - TypeScript strict mode catches most errors at compile time
 - Use Biome for catching linting issues before runtime
 
 ## Notes for AI Assistants
 
 ### Code Quality
+
+- **Type Checking**: Always use the `get_diagnostics` (ide diagnostics native tool) to troubleshoot type errors. **NEVER** run `tsc` directly - it's too slow. The IDE diagnostics provide instant feedback on type issues.
 - After making code changes, run Biome **only on the files you modified** (not the entire codebase):
   ```bash
   pnpm biome check src/path/to/modified-file.tsx
@@ -356,6 +395,7 @@ From `.cursorrules`:
 - TypeScript is configured with strict mode - avoid `any` types and ensure type safety
 
 ### Task Management Workflow
+
 - After completing any work, refer to `docs/project/TASKS.md` to identify which task was addressed
 - **DO NOT automatically mark tasks as complete** - wait for user confirmation
 - When the user confirms work is complete, update the checkbox in `docs/project/TASKS.md` by changing `- [ ]` to `- [x]`

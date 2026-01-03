@@ -24,6 +24,7 @@ import { Route as AdminToolsRouteImport } from './routes/admin/tools'
 import { Route as AdminTestEmailRouteImport } from './routes/admin/test-email'
 import { Route as AdminIngestionRouteImport } from './routes/admin/ingestion'
 import { Route as AdminEmailsRouteImport } from './routes/admin/emails'
+import { Route as AdminBroadcastRouteImport } from './routes/admin/broadcast'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
 import { Route as OgToolsSlugRouteImport } from './routes/og/tools.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -106,6 +107,11 @@ const AdminEmailsRoute = AdminEmailsRouteImport.update({
   path: '/emails',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
+  id: '/broadcast',
+  path: '/broadcast',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ToolsSlugIndexRoute = ToolsSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/login'
     | '/unsubscribe'
+    | '/admin/broadcast'
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/test-email'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/login'
     | '/unsubscribe'
+    | '/admin/broadcast'
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/test-email'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/login'
     | '/unsubscribe'
+    | '/admin/broadcast'
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/test-email'
@@ -398,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmailsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/broadcast': {
+      id: '/admin/broadcast'
+      path: '/broadcast'
+      fullPath: '/admin/broadcast'
+      preLoaderRoute: typeof AdminBroadcastRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/tools/$slug/': {
       id: '/tools/$slug/'
       path: '/'
@@ -444,6 +463,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminBroadcastRoute: typeof AdminBroadcastRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminIngestionRoute: typeof AdminIngestionRoute
   AdminTestEmailRoute: typeof AdminTestEmailRoute
@@ -453,6 +473,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBroadcastRoute: AdminBroadcastRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminIngestionRoute: AdminIngestionRoute,
   AdminTestEmailRoute: AdminTestEmailRoute,
