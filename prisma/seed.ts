@@ -180,35 +180,35 @@ async function main() {
 		where: { slug: "opencode" },
 		update: {
 			name: "OpenCode",
-			vendor: "SST",
+			vendor: "anoma.ly",
 			description:
 				"The open source AI coding agent with free models and multi-provider support",
 			homepage: "https://opencode.ai",
-			repositoryUrl: "https://github.com/sst/opencode",
+			repositoryUrl: "https://github.com/anomalyco/opencode",
 			sourceType: "GITHUB_RELEASES",
-			sourceUrl: "https://api.github.com/repos/sst/opencode/releases",
+			sourceUrl: "https://api.github.com/repos/anomalyco/opencode/releases",
 			sourceConfig: {
 				versionPrefix: "v",
 				includePreReleases: false,
 			},
-			tags: ["cli", "ai", "agent", "sst", "opencode", "terminal", "open-source"],
+			tags: ["cli", "ai", "agent", "anomaly", "opencode", "terminal", "open-source"],
 			isActive: true,
 		},
 		create: {
 			slug: "opencode",
 			name: "OpenCode",
-			vendor: "SST",
+			vendor: "anoma.ly",
 			description:
 				"The open source AI coding agent with free models and multi-provider support",
 			homepage: "https://opencode.ai",
-			repositoryUrl: "https://github.com/sst/opencode",
+			repositoryUrl: "https://github.com/anomalyco/opencode",
 			sourceType: "GITHUB_RELEASES",
-			sourceUrl: "https://api.github.com/repos/sst/opencode/releases",
+			sourceUrl: "https://api.github.com/repos/anomalyco/opencode/releases",
 			sourceConfig: {
 				versionPrefix: "v",
 				includePreReleases: false,
 			},
-			tags: ["cli", "ai", "agent", "sst", "opencode", "terminal", "open-source"],
+			tags: ["cli", "ai", "agent", "anomaly", "opencode", "terminal", "open-source"],
 			isActive: true,
 		},
 	})
