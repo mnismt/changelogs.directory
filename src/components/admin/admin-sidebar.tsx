@@ -5,6 +5,7 @@ import {
 	ChevronRight,
 	LayoutDashboard,
 	Mail,
+	Radio,
 	Terminal,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -33,6 +34,12 @@ const MENU_ITEMS = [
 		href: '/admin/tools',
 		icon: Box,
 		shortcut: '⌘4',
+	},
+	{
+		label: 'Broadcast',
+		href: '/admin/broadcast',
+		icon: Radio,
+		shortcut: '⌘5',
 	},
 ]
 

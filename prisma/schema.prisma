@@ -10,6 +10,7 @@ datasource db {
 model Waitlist {
   id        String   @id @default(cuid())
   email     String   @unique
+  isTest    Boolean  @default(false) @map("is_test")
   createdAt DateTime @default(now()) @map("created_at")
 
   @@index([email])
