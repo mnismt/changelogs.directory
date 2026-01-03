@@ -67,6 +67,13 @@ export function getToolLogoSVG(
 					/>
 				</svg>
 			)
+		case 'opencode':
+			return (
+				<svg width={size} height={size} viewBox="0 0 32 40" style={commonStyle}>
+					<path fill="#4B4646" d="M24 32H8V16h16v16Z" />
+					<path fill="#F1ECEC" d="M24 8H8v24h16V8Zm8 32H0V0h32v40Z" />
+				</svg>
+			)
 		default:
 			return null
 	}
