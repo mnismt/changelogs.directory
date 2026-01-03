@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "setup": "cp $CONDUCTOR_ROOT_PATH/.env .env && pnpm i",
+        "setup": "cp $CONDUCTOR_ROOT_PATH/.env .env && cp $CONDUCTOR_ROOT_PATH/.env.production .env.production && pnpm i",
         "run": "pnpm dev"
     }
 }
