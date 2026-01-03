@@ -115,6 +115,20 @@ export function parseGitHubReleases(
 }
 
 /**
+ * Detects if a line marks the start of a contributor acknowledgment section
+ * Common patterns: "**Thank you to X contributors:**", "## New Contributors", etc.
+ */
+function isContributorSectionMarker(line: string): boolean {
+	const lowerLine = line.toLowerCase()
+	return (
+		(lowerLine.includes('thank you') && lowerLine.includes('contributor')) ||
+		lowerLine.includes('new contributors') ||
+		lowerLine.includes('community contributors') ||
+		/^\*{0,2}contributors?\*{0,2}:?\s*$/i.test(line)
+	)
+}
+
+/**
  * Parses GitHub release body markdown into changes
  * Simplified: extracts bullets and lets LLM handle classification
  * Keeps keyword-based fallbacks for when LLM is unavailable
@@ -128,6 +142,7 @@ function parseReleaseBody(
 	const changes: ParsedChange[] = []
 	let order = 0
 	let inCodeBlock = false
+	let inContributorSection = false
 
 	for (const rawLine of body.split('\n')) {
 		const line = rawLine.trim()
@@ -138,6 +153,20 @@ function parseReleaseBody(
 			continue
 		}
 		if (inCodeBlock) continue
+
+		// Detect contributor section markers (e.g., "**Thank you to 9 contributors:**")
+		if (isContributorSectionMarker(line)) {
+			inContributorSection = true
+			continue
+		}
+
+		// Reset contributor section on new markdown heading
+		if (line.startsWith('##')) {
+			inContributorSection = false
+		}
+
+		// Skip bullets in contributor section
+		if (inContributorSection) continue
 
 		// Match top-level bullets (- or *)
 		if (!/^[-*]\s+/.test(line)) continue

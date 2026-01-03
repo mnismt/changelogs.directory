@@ -399,3 +399,50 @@ After implementation, update:
 ---
 
 **Completed**: 2025-12-29 — All core implementation verified and working.
+
+---
+
+## Follow-up: Filter Contributor Section from Changes
+
+> **Status**: ✅ Completed
+> **Issue**: "Thank you to N contributors" sections parsed as individual changes, appearing messy in UI
+
+### Problem
+
+The `parseReleaseBody()` function treats all bullets equally, causing contributor acknowledgments to appear as `OTHER` type changes:
+
+```
+[v1.0.204] [OTHER] @JackNorris:
+[v1.0.204] [OTHER] @didier-durand:
+```
+
+**Impact**: 246 contributor changes polluting the changes list across OpenCode releases.
+
+### Solution
+
+Modify `src/lib/parsers/github-releases.ts` to detect and skip contributor sections:
+
+1. Add `inContributorSection` state tracking in `parseReleaseBody()`
+2. Add `isContributorSectionMarker()` helper to detect patterns like:
+   - `**Thank you to X community contributors:**`
+   - `## New Contributors`
+3. Skip all bullets after marker until next section
+
+### Files to Change
+
+| File | Change |
+|------|--------|
+| `src/lib/parsers/github-releases.ts` | Add contributor section filtering |
+
+### Post-Fix Cleanup
+
+Run cleanup script to delete existing contributor changes:
+
+```typescript
+await prisma.change.deleteMany({
+  where: {
+    release: { tool: { slug: 'opencode' } },
+    title: { startsWith: '@' }
+  }
+})
+```
