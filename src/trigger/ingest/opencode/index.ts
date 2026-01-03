@@ -22,7 +22,7 @@ export const ingestOpencode = task({
 	queue: {
 		concurrencyLimit: 1, // Prevent duplicate jobs
 	},
-	maxDuration: 300, // 5 minutes max
+	maxDuration: 1800, // 30 minutes max
 	run: async (payload: { toolSlug?: string } = {}) => {
 		const toolSlug = payload.toolSlug || 'opencode'
 		const startTime = Date.now()
