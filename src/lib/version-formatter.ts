@@ -17,6 +17,7 @@ export function formatVersionForDisplay(
 		'claude-code': formatClaudeCodeVersion,
 		windsurf: formatWindsurfVersion,
 		opencode: formatOpenCodeVersion,
+		antigravity: formatAntigravityVersion,
 	}
 
 	const formatter = formatters[toolSlug]
@@ -72,6 +73,15 @@ function formatWindsurfVersion(version: string): string {
 
 function formatOpenCodeVersion(version: string): string {
 	return version.startsWith('v') ? version : `v${version}`
+}
+
+/**
+ * Antigravity versions: "antigravity-1.13.3"
+ * Extract just the semantic version: "v1.13.3"
+ */
+function formatAntigravityVersion(version: string): string {
+	const versionPart = version.replace(/^antigravity-/, '')
+	return `v${versionPart}`
 }
 
 /**

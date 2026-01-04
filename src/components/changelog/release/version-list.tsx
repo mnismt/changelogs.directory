@@ -26,7 +26,7 @@ interface VersionListProps {
 	initialLimit?: number
 }
 
-const changeTypeLabels: Record<ChangeType, string> = {
+const changeTypeLabels: Partial<Record<ChangeType, string>> = {
 	BREAKING: '⚠️ Breaking',
 	SECURITY: '🔒 Security',
 	FEATURE: '✨ Features',

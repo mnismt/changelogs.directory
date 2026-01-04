@@ -225,6 +225,100 @@ export function parseCursorChangelog(html: string, options?: CursorParserOptions
 
 ---
 
+### 4. SPA HTML Parser with Playwright (CUSTOM_API + SPA)
+
+**Example**: Antigravity changelog parser
+
+**File**: `src/lib/parsers/antigravity-changelog.ts`
+
+**Use Case**: Client-side rendered Angular/React/Vue apps where content requires JavaScript execution.
+
+**Format Expected** (after Playwright renders):
+```html
+<div class="grid-body grid-container">
+  <!-- Sibling pairs: version + description -->
+  <div class="version">
+    <p class="body">1.13.3<br/>Dec 19, 2025</p>
+  </div>
+  <div class="description main-left-container">
+    <h3 class="heading-7">Google Workspace Support</h3>
+    <div class="expandable-items">
+      <details>
+        <summary>Improvements (1)</summary>
+        <ul><li class="caption">Better error handling</li></ul>
+      </details>
+    </div>
+  </div>
+</div>
+```
+
+**Key Pattern: Sibling-Pair Parsing**
+
+Unlike Cursor (nested structure), Antigravity uses sibling pairs where each release is two adjacent divs:
+
+```typescript
+import { parse } from 'node-html-parser'
+
+export function parseAntigravityChangelog(html: string): ParsedRelease[] {
+  const root = parse(html)
+  const gridBody = root.querySelector('.grid-body.grid-container')
+  if (!gridBody) return []
+
+  const releases: ParsedRelease[] = []
+  const versionDivs = gridBody.querySelectorAll('div.version')
+
+  for (const versionDiv of versionDivs) {
+    // Get adjacent description div (next sibling)
+    const descriptionDiv = versionDiv.nextElementSibling
+    if (!descriptionDiv?.classList.contains('description')) continue
+
+    const release = transformRelease(versionDiv, descriptionDiv)
+    if (release) releases.push(release)
+  }
+
+  return releases
+}
+```
+
+**Version + Date Extraction**:
+```typescript
+// Parse "1.13.3<br/>Dec 19, 2025" format
+function parseVersionAndDate(html: string) {
+  const parts = html.split(/<br\s*\/?>/i).map(p => p.trim())
+  const version = parts[0]?.replace(/<[^>]*>/g, '') || null
+  const dateStr = parts[1]?.replace(/<[^>]*>/g, '').trim()
+  const releaseDate = dateStr ? new Date(`${dateStr} UTC`) : undefined
+  return { version, releaseDate }
+}
+```
+
+**Category Mapping** (avoiding schema changes):
+```typescript
+function mapCategoryToChangeType(category: string): ChangeType {
+  switch (category.toLowerCase()) {
+    case 'improvements': return 'IMPROVEMENT'
+    case 'fixes': return 'BUGFIX'
+    case 'patches': return 'BUGFIX'  // Map to existing type
+    default: return 'OTHER'
+  }
+}
+```
+
+**Version Prefixing**:
+```typescript
+// Store as "antigravity-1.13.3" for uniqueness
+version: `antigravity-${version}`
+
+// Display as "v1.13.3" via version-formatter.ts
+function formatAntigravityVersion(version: string): string {
+  return `v${version.replace(/^antigravity-/, '')}`
+}
+```
+
+**Cross-reference**: See `src/lib/parsers/antigravity-changelog.ts` for full implementation.
+
+---
+
 ## Creating a Custom Parser
 
 ### Step 1: Analyze Source Format
