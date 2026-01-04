@@ -6,9 +6,8 @@ interface ChangeCountProps {
 }
 
 // Label mapping for each change type with singular/plural forms
-const changeTypeLabels: Record<
-	ChangeType,
-	{ singular: string; plural: string }
+const changeTypeLabels: Partial<
+	Record<ChangeType, { singular: string; plural: string }>
 > = {
 	BREAKING: { singular: 'breaking change', plural: 'breaking changes' },
 	SECURITY: { singular: 'security fix', plural: 'security fixes' },
@@ -54,8 +53,10 @@ export function ChangeCount({ changeCount, changesByType }: ChangeCountProps) {
 			const count = changesByType[type]
 			if (count && count > 0) {
 				const labels = changeTypeLabels[type]
-				const label = count === 1 ? labels.singular : labels.plural
-				parts.push(`${count} ${label}`)
+				if (labels) {
+					const label = count === 1 ? labels.singular : labels.plural
+					parts.push(`${count} ${label}`)
+				}
 			}
 		}
 

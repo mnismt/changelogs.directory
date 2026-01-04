@@ -31,6 +31,13 @@ export function loadWindsurfChangelogFixture(
 	return readFileSync(fixturePath, 'utf-8')
 }
 
+export function loadAntigravityChangelogFixture(
+	filename = 'antigravity-changelog/sample.html',
+): string {
+	const fixturePath = join(process.cwd(), 'tests', 'fixtures', filename)
+	return readFileSync(fixturePath, 'utf-8')
+}
+
 /**
  * Create a mock Tool record
  */

@@ -142,6 +142,69 @@ while (pageNumber <= maxPagesPerRun) {
 - User-Agent: `ChangelogsDirectoryBot/1.0 (+https://changelogs.directory)`
 - Timeout: 30 seconds per request
 
+### D. CUSTOM_API with Playwright (Antigravity pattern)
+
+For client-side rendered SPAs (Angular, React, Vue), use Playwright to render JavaScript before extracting HTML:
+
+```typescript
+// src/trigger/ingest/<tool>/browser.ts
+import { chromium } from 'playwright'
+
+export async function fetchRenderedPage(
+  url: string,
+  options: { waitForSelector?: string; waitForTimeout?: number } = {}
+): Promise<string> {
+  const { waitForSelector, waitForTimeout = 5000 } = options
+  const browser = await chromium.launch({ headless: true })
+
+  try {
+    const context = await browser.newContext({
+      userAgent: 'ChangelogsDirectoryBot/1.0 (+https://changelogs.directory)',
+    })
+    const page = await context.newPage()
+
+    await page.goto(url, {
+      waitUntil: 'networkidle',
+      timeout: 30000,
+    })
+
+    if (waitForSelector) {
+      await page.waitForSelector(waitForSelector, { timeout: 10000 })
+    } else {
+      await page.waitForTimeout(waitForTimeout)
+    }
+
+    return await page.content()
+  } finally {
+    await browser.close()
+  }
+}
+```
+
+**Configuration** in `trigger.config.ts`:
+```typescript
+import { playwright } from '@trigger.dev/build/extensions/playwright'
+
+build: {
+  external: [
+    'chromium-bidi/lib/cjs/bidiMapper/BidiMapper',
+    'chromium-bidi/lib/cjs/cdp/CdpConnection',
+  ],
+  extensions: [
+    playwright({ browsers: ['chromium'] }),
+  ],
+}
+```
+
+**Output**: `{ html: string, fetchedAt: Date }`
+
+**Notes**:
+- Tasks using Playwright should set `maxDuration: 1200` (20 minutes) for browser launch and rendering
+- Wait for specific selector (e.g., `.grid-body.grid-container`) to ensure content is rendered
+- Always close browser in `finally` block to prevent resource leaks
+
+**Reference**: See `src/trigger/ingest/antigravity/` for complete implementation.
+
 ---
 
 ## Phase 3: Parse
