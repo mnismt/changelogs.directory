@@ -20,10 +20,10 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { captureException } from '@/integrations/sentry'
 import {
+	FEED_FILTER_TOOLS,
 	getLogoHoverClasses,
-	getToolLogo,
 	isMonochromeLogo,
-} from '@/lib/tool-logos'
+} from '@/lib/tool-registry'
 import { cn } from '@/lib/utils'
 import { getLatestReleasesAcrossTools } from '@/server/tools'
 
@@ -58,10 +58,8 @@ type ReleaseData = {
 	formattedVersion?: string
 }
 
-const trackedToolSlugs = ['claude-code', 'codex', 'cursor', 'windsurf'] as const
-type TrackedToolSlug = (typeof trackedToolSlugs)[number]
 type ToolFilterOption = {
-	slug: TrackedToolSlug
+	slug: string
 	name: string
 	logo: ReactNode
 }
@@ -240,33 +238,18 @@ function HomePage() {
 		)
 	}
 
-	// Build tool metadata map from current releases
-	const toolMetadataMap = releases.reduce(
-		(map, release) => map.set(release.tool.slug, release.tool),
-		new Map<string, ReleaseData['tool']>(),
-	)
-
 	// Calculate stats
 	const filteredTools = pagination.matchingToolsCount ?? 0
 	const totalTools = initialData.pagination.matchingToolsCount ?? 0
 	const filteredReleases = pagination.totalCount
 	const totalReleases = initialData.pagination.totalCount
 
-	const toolFilterOptions: ToolFilterOption[] = trackedToolSlugs.flatMap(
-		(slug) => {
-			const toolMeta = toolMetadataMap.get(slug)
-			const logo = getToolLogo(slug)
-			if (!logo) {
-				return []
-			}
-			return [
-				{
-					slug,
-					name: toolMeta?.name ?? slug,
-					logo,
-				},
-			]
-		},
+	const toolFilterOptions: ToolFilterOption[] = FEED_FILTER_TOOLS.map(
+		(tool) => ({
+			slug: tool.slug,
+			name: tool.name,
+			logo: <tool.Logo />,
+		}),
 	)
 
 	// Handle animation transitions
