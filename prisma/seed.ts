@@ -241,6 +241,52 @@ async function main() {
 
   console.log(`✅ Seeded tool: ${opencode.name} (${opencode.slug})`);
 
+  // Seed Antigravity tool
+  const antigravity = await prisma.tool.upsert({
+    where: { slug: "antigravity" },
+    update: {
+      name: "Antigravity",
+      vendor: "Google",
+      description:
+        "Google's AI-powered IDE agent with Agent Manager, Chrome integration, and rich Artifacts",
+      homepage: "https://antigravity.google",
+      repositoryUrl: "https://antigravity.google",
+      sourceType: "CUSTOM_API",
+      sourceUrl: "https://antigravity.google/changelog",
+      sourceConfig: {
+        baseUrl: "https://antigravity.google",
+        startPath: "/changelog",
+        versionSelector: "div.version",
+        descriptionSelector: "div.description",
+        maxReleasesPerRun: 100,
+      },
+      tags: ["ide", "agent", "google", "gemini", "antigravity", "ai"],
+      isActive: true,
+    },
+    create: {
+      slug: "antigravity",
+      name: "Antigravity",
+      vendor: "Google",
+      description:
+        "Google's AI-powered IDE agent with Agent Manager, Chrome integration, and rich Artifacts",
+      homepage: "https://antigravity.google",
+      repositoryUrl: "https://antigravity.google",
+      sourceType: "CUSTOM_API",
+      sourceUrl: "https://antigravity.google/changelog",
+      sourceConfig: {
+        baseUrl: "https://antigravity.google",
+        startPath: "/changelog",
+        versionSelector: "div.version",
+        descriptionSelector: "div.description",
+        maxReleasesPerRun: 100,
+      },
+      tags: ["ide", "agent", "google", "gemini", "antigravity", "ai"],
+      isActive: true,
+    },
+  });
+
+  console.log(`✅ Seeded tool: ${antigravity.name} (${antigravity.slug})`);
+
   console.log("Database seed completed!");
 }
 

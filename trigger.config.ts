@@ -1,4 +1,5 @@
 import { syncVercelEnvVars } from '@trigger.dev/build/extensions/core'
+import { playwright } from '@trigger.dev/build/extensions/playwright'
 import { prismaExtension } from '@trigger.dev/build/extensions/prisma'
 import { defineConfig } from '@trigger.dev/sdk/v3'
 
@@ -22,6 +23,10 @@ export default defineConfig({
 	},
 	dirs: ['./src/trigger'],
 	build: {
+		external: [
+			'chromium-bidi/lib/cjs/bidiMapper/BidiMapper',
+			'chromium-bidi/lib/cjs/cdp/CdpConnection',
+		],
 		extensions: [
 			syncVercelEnvVars({
 				// A personal access token created in your Vercel account settings
@@ -34,6 +39,9 @@ export default defineConfig({
 			}),
 			prismaExtension({
 				mode: 'modern',
+			}),
+			playwright({
+				browsers: ['chromium'],
 			}),
 		],
 	},

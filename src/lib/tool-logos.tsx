@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { GoogleAntigravity } from '@/components/logo/antigravity'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
 import { OpenAI } from '@/components/logo/openai'
@@ -25,12 +26,17 @@ function createOpenCodeLogo(): ReactNode {
 	return <OpenCode />
 }
 
+function createAntigravityLogo(): ReactNode {
+	return <GoogleAntigravity />
+}
+
 const logoMap: Record<string, () => ReactNode> = {
 	'claude-code': createClaudeLogo,
 	codex: createOpenAILogo,
 	cursor: createCursorLogo,
 	windsurf: createWindsurfLogo,
 	opencode: createOpenCodeLogo,
+	antigravity: createAntigravityLogo,
 }
 
 export function getToolLogo(slug: string): ReactNode | null {
@@ -53,7 +59,12 @@ export function isMonochromeLogo(slug: string): boolean {
  * Cursor only scales (no rotation) since it's a simple icon
  */
 export function getLogoHoverClasses(slug: string): string {
-	if (slug === 'cursor' || slug === 'windsurf' || slug === 'opencode') {
+	if (
+		slug === 'cursor' ||
+		slug === 'windsurf' ||
+		slug === 'opencode' ||
+		slug === 'antigravity'
+	) {
 		return 'group-hover:scale-110'
 	}
 	return 'group-hover:rotate-45 group-hover:scale-110'
