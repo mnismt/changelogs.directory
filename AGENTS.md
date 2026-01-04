@@ -401,3 +401,118 @@ From `.cursorrules`:
 - When the user confirms work is complete, update the checkbox in `docs/project/TASKS.md` by changing `- [ ]` to `- [x]`
 - If work spans multiple tasks, note which tasks are affected and wait for user to decide which to mark complete
 - The TASKS.md file is the source of truth for MVP progress - keep it updated as you go
+
+## OpenCode Planning Agent
+
+**Location**: `.opencode/agent/plan.md`
+
+A specialized read-only planning agent designed for thorough feature design, architectural analysis, and implementation planning before code changes.
+
+### When to Use
+
+Use the planning agent when you need to:
+- Plan complex features or architectural changes
+- Design solutions before implementation
+- Think through cross-module dependencies
+- Analyze trade-offs between different approaches
+- Map out implementation timelines with parallel/sequential phases
+
+### Key Capabilities
+
+**Documentation-First Approach:**
+- Always reads relevant documentation before planning
+- Routes to task-specific docs automatically (e.g., `docs/guides/adding-a-tool.md` for tool additions)
+- Scales research depth based on request complexity (simple → direct reads, complex → parallel explore agents)
+
+**Parallel Research:**
+- Spawns explore/general subagents for complex multi-area research
+- Each subagent reads documentation first, then indexes code
+- Explores patterns across existing implementations
+- Gathers context from disparate parts of the codebase
+
+**Structured Implementation Plans:**
+- Provides sequential phases for dependent tasks
+- Identifies parallel tasks for simultaneous implementation via subagents
+- Includes specific files to change with rationale
+- Documents verification strategy (code quality, SSR, design system compliance)
+- Delegates documentation updates with full context
+
+**Enforces Critical Patterns:**
+- ✅ SSR loaders (`loader` + `Route.useLoaderData()`) for initial page data
+- ✅ Server functions (`createServerFn()`) for database access
+- ✅ Design system compliance (`docs/design/design-rules.md` mandatory before UI work)
+- ✅ 7-phase ingestion pipeline for tool parsers
+- ❌ Never `useQuery` for initial page data
+- ❌ Never import `getPrisma()` in routes/components
+
+### Read-Only Constraints
+
+The planning agent **cannot**:
+- Create, edit, or delete files
+- Run commands that modify state
+- Implement solutions directly
+
+The planning agent **can**:
+- Read all files and documentation
+- Search codebase with glob/grep
+- Run read-only bash commands (`git status`, `git log`, `git diff`, `ls`)
+- Browse the web for research (TanStack, Trigger.dev, Prisma docs)
+- Spawn explore/general subagents for parallel research
+- Ask clarifying questions before planning
+
+### Integration with Documentation
+
+The planning agent is deeply integrated with the existing documentation structure:
+
+| Task Type | Required Reading |
+|-----------|------------------|
+| Adding a tool | `docs/guides/adding-a-tool.md` ⭐ |
+| Database/schema changes | `docs/reference/database-schema.md` |
+| Ingestion pipeline | `docs/reference/ingestion-pipeline.md` |
+| Parser development | `docs/reference/parsers.md` |
+| API/server functions | `docs/reference/api-patterns.md` |
+| **UI/components** | `docs/design/design-rules.md` (**MANDATORY FIRST**) |
+| Animations | `docs/design/animations/<page>.md` |
+| Deployment | `docs/guides/deployment.md` |
+| Environment setup | `docs/guides/environment-variables.md` |
+| Testing | `docs/guides/testing.md` |
+
+### Example Usage
+
+```bash
+# Simple planning request
+"Plan how to add a new field to the Tool model"
+
+# Complex feature planning
+"Plan adding Windsurf tool with ingestion pipeline and UI"
+
+# Architectural analysis
+"Design the approach for adding real-time changelog notifications"
+
+# UI/UX planning
+"Plan the redesign of the analytics page following design system rules"
+```
+
+### Plan Output Format
+
+Plans include:
+- **Summary**: One-sentence solution description
+- **Approach**: Step-by-step implementation with file references and code patterns
+- **Implementation Timeline**: 
+  - Phase 1 (Sequential): Dependencies that must complete first
+  - Phase 2 (Parallel): Independent tasks for simultaneous implementation
+  - Phase 3 (Integration): Final tasks requiring all parallel work complete
+- **Files to Change**: Complete list with change descriptions
+- **Documentation Updates**: Delegation strategy for updating relevant docs
+- **Risks & Mitigations**: Potential issues and solutions
+- **Verification Strategy**: Code quality, SSR, design system, integration testing checklists
+- **Open Questions**: User input needed with recommended options
+
+### Best Practices
+
+- ✅ Use for any non-trivial feature before implementing
+- ✅ Let the agent spawn parallel explore agents for complex tasks
+- ✅ Review the plan before implementation to catch issues early
+- ✅ Use the verification checklist after implementation
+- ❌ Don't skip planning for "quick fixes" that touch multiple files
+- ❌ Don't implement before understanding the full scope

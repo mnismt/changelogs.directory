@@ -94,7 +94,7 @@
   "name": "changelogs-directory",
   "packageManager": "pnpm@10.20.0",
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "bun prisma/seed.ts"
   },
   "private": true,
   "scripts": {
@@ -111,6 +111,10 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
+    "seed-admin:local": "bun prisma/seed-admin.ts",
+    "seed-admin:prod": "bun --env-file=.env.production prisma/seed-admin.ts",
+    "seed:local": "bun prisma/seed.ts",
+    "seed:prod": "bun --env-file=.env.production prisma/seed.ts",
     "serve": "vite preview",
     "start": "node .output/server/index.mjs",
     "test": "vitest run"
