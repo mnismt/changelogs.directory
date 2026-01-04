@@ -343,7 +343,7 @@ function BroadcastPage() {
 
 			{/* Subscribers Table */}
 			<div className="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden">
-				<div className="max-h-[400px] overflow-y-auto">
+				<div className="max-h-[400px] overflow-auto">
 					<table className="w-full">
 						<thead className="sticky top-0 bg-neutral-900 border-b border-neutral-800">
 							<tr>

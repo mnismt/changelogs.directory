@@ -35,12 +35,18 @@ export class AppErrorBoundary extends Component<
 
 	override render(): ReactNode {
 		if (this.state.hasError) {
+			// Only show technical details in development mode
+			const showDetail =
+				typeof window !== 'undefined' &&
+				(window.location.hostname === 'localhost' ||
+					window.location.hostname === '127.0.0.1')
+
 			return (
 				<div className="px-4 py-24">
 					<ErrorBoundaryCard
 						title="Unexpected error"
 						message="The interface crashed unexpectedly."
-						detail={this.state.errorMessage}
+						detail={showDetail ? this.state.errorMessage : undefined}
 						onRetry={this.handleRetry}
 					/>
 				</div>
