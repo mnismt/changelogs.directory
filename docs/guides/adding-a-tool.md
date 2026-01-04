@@ -8,6 +8,7 @@ This guide walks you through adding a new tool (like "Google Antigravity") to th
 
 - [ ] **Step 1: Database Setup** (5 min) - Add tool record to `prisma/seed.ts`
 - [ ] **Step 2: Logo Component** (10 min) - Create SVG component and register in logoMap
+- [ ] **Step 2.5: Tool Registry** (2 min) - Register tool in unified registry
 - [ ] **Step 3: Version Formatter** (Optional, 5 min) - Add custom version display logic if needed
 - [ ] **Step 4: Ingestion Pipeline** (60-180 min) - Copy and customize trigger task
 - [ ] **Step 5: Testing** (15 min) - Test locally and verify results
@@ -277,6 +278,56 @@ const monochromeLogos = new Set(['cursor', 'google-antigravity'])
 ```
 
 **Verify**: The logo should now appear on `/tools/google-antigravity` page automatically.
+
+---
+
+## Step 2.5: Register in Tool Registry (2 minutes)
+
+After creating the logo component, register the tool in the unified registry. This single entry automatically configures all frontend UI components.
+
+**File**: `src/lib/tool-registry.tsx`
+
+Add an entry to the `TOOL_REGISTRY` array:
+
+```typescript
+{
+  slug: 'google-antigravity',
+  name: 'Google Antigravity',
+  vendor: 'Google',
+  url: 'https://antigravity.google.dev',
+  Logo: GoogleAntigravity,
+  isMonochrome: false,  // true if logo uses currentColor
+  showInFeedFilter: true,  // show in homepage filter buttons
+  showInShowcase: true,  // show in hero carousel
+},
+```
+
+Don't forget to add the logo import at the top of the file:
+
+```typescript
+import { GoogleAntigravity } from '@/components/logo/google-antigravity'
+```
+
+**This single registry entry automatically**:
+- ✅ Adds tool to homepage feed filter buttons
+- ✅ Adds tool to hero logo carousel  
+- ✅ Registers logo for tool pages
+- ✅ Configures hover animations based on `isMonochrome`
+
+**Field Reference**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `slug` | string | URL-friendly ID (must match database slug) |
+| `name` | string | Display name |
+| `vendor` | string | Company name (shown as "by Vendor") |
+| `url` | string | Official website URL |
+| `Logo` | Component | React logo component from Step 2 |
+| `isMonochrome` | boolean | `true` if logo uses `currentColor` |
+| `showInFeedFilter` | boolean | Show in homepage filter buttons |
+| `showInShowcase` | boolean | Show in hero logo carousel |
+
+**Cross-reference**: See [reference/tool-registry.md](../reference/tool-registry.md) for full registry documentation.
 
 ---
 
@@ -842,6 +893,8 @@ After completing all steps, verify:
 
 - ✅ Tool appears in database (`pnpm prisma studio`)
 - ✅ Tool logo shows on `/tools/google-antigravity` page
+- ✅ Tool appears in homepage feed filter buttons
+- ✅ Tool appears in hero logo carousel
 - ✅ Releases are ingested successfully (check database)
 - ✅ Changes are classified correctly (not all "OTHER")
 - ✅ LLM summaries are generated (or fallback to keywords)
@@ -849,7 +902,7 @@ After completing all steps, verify:
 - ✅ First scheduled run completes successfully
 - ✅ Tool appears in homepage feed (if added to tracked tools)
 
-**Next**: Consider adding your tool to the homepage filter by editing `src/routes/index.tsx` line 57.
+**Next**: The tool is now fully integrated. Run `pnpm dev` to verify it appears in the homepage carousel and filter buttons.
 
 ---
 

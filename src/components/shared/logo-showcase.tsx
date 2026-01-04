@@ -1,56 +1,15 @@
 import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { ClaudeAI } from '@/components/logo/claude'
-import { Cursor } from '@/components/logo/cursor'
-import { OpenAI } from '@/components/logo/openai'
-import { OpenCode } from '@/components/logo/opencode'
-import { Windsurf } from '@/components/logo/windsurf'
+import { SHOWCASE_TOOLS } from '@/lib/tool-registry'
 import { cn } from '@/lib/utils'
 
-const tools = [
-	// {
-	// 	name: 'Amp',
-	// 	Logo: Ampcode,
-	// 	url: 'https://ampcode.com',
-	// 	subtitle: 'by Sourcegraph',
-	// 	isMonochrome: false,
-	// },
-	{
-		name: 'Claude Code',
-		Logo: ClaudeAI,
-		url: 'https://www.claude.com/product/claude-code',
-		subtitle: 'by Anthropic',
-		isMonochrome: false,
-	},
-	{
-		name: 'Cursor',
-		Logo: Cursor,
-		url: 'https://cursor.com',
-		subtitle: 'by Anysphere',
-		isMonochrome: true,
-	},
-	{
-		name: 'Windsurf',
-		Logo: Windsurf,
-		url: 'https://windsurf.com',
-		subtitle: 'by Cognition',
-		isMonochrome: false,
-	},
-	{
-		name: 'Codex',
-		Logo: OpenAI,
-		url: 'https://openai.com/codex',
-		subtitle: 'by OpenAI',
-		isMonochrome: false,
-	},
-	{
-		name: 'OpenCode',
-		Logo: OpenCode,
-		url: 'https://opencode.ai',
-		subtitle: 'by SST',
-		isMonochrome: true,
-	},
-]
+const tools = SHOWCASE_TOOLS.map((tool) => ({
+	name: tool.name,
+	Logo: tool.Logo,
+	url: tool.url,
+	subtitle: `by ${tool.vendor}`,
+	isMonochrome: tool.isMonochrome,
+}))
 
 export function LogoShowcase() {
 	const [isMounted, setIsMounted] = useState(false)

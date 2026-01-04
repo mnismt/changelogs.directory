@@ -5,9 +5,16 @@ import {
 	useMotionValueEvent,
 	useScroll,
 } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
+
+// Context to signal that filter sections should be collapsed
+const StickyFilterContext = createContext(false)
+
+export function useStickyFilterCollapsed() {
+	return useContext(StickyFilterContext)
+}
 
 export function StickyFilterBar({ children }: { children: React.ReactNode }) {
 	const ref = useRef<HTMLDivElement>(null)
@@ -119,7 +126,9 @@ export function StickyFilterBar({ children }: { children: React.ReactNode }) {
 										</button>
 									</div>
 								)}
-								{children}
+								<StickyFilterContext.Provider value={true}>
+									{children}
+								</StickyFilterContext.Provider>
 							</motion.div>
 						)}
 					</>

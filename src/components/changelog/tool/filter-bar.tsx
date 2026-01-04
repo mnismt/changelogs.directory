@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import type { ChangeType } from '@/generated/prisma/client'
 import { cn } from '@/lib/utils'
+import { useStickyFilterCollapsed } from './sticky-filter-bar'
 
 const FILTER_OPTIONS: Array<{ value: ChangeType; label: string }> = [
 	{ value: 'FEATURE', label: 'Features' },
@@ -32,9 +33,15 @@ interface FilterSectionProps {
 	title: string
 	children: React.ReactNode
 	colorClass: string
+	forceCollapsed?: boolean
 }
 
-function FilterSection({ title, children, colorClass }: FilterSectionProps) {
+function FilterSection({
+	title,
+	children,
+	colorClass,
+	forceCollapsed,
+}: FilterSectionProps) {
 	const [isOpen, setIsOpen] = useState(true)
 
 	useEffect(() => {
@@ -42,6 +49,13 @@ function FilterSection({ title, children, colorClass }: FilterSectionProps) {
 		const isMobile = window.innerWidth < 768
 		setIsOpen(!isMobile)
 	}, [])
+
+	// Force collapse when prop changes
+	useEffect(() => {
+		if (forceCollapsed) {
+			setIsOpen(false)
+		}
+	}, [forceCollapsed])
 
 	return (
 		<div className="space-y-3">
@@ -78,6 +92,7 @@ function FilterSection({ title, children, colorClass }: FilterSectionProps) {
 
 export function FilterBar({ hoveredTypes }: FilterBarProps) {
 	const navigate = useNavigate()
+	const forceCollapsed = useStickyFilterCollapsed()
 	const search = useSearch({ strict: false }) as {
 		type?: string | string[]
 		datePreset?: string
@@ -186,7 +201,11 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 	return (
 		<div className="space-y-8">
 			{/* Type Filters */}
-			<FilterSection title="FILTER_BY_TYPE" colorClass="text-green-500/50">
+			<FilterSection
+				title="FILTER_BY_TYPE"
+				colorClass="text-green-500/50"
+				forceCollapsed={forceCollapsed}
+			>
 				<div className="flex flex-wrap gap-2">
 					{FILTER_OPTIONS.map((option) => {
 						const isActive = selectedTypes.includes(option.value)
@@ -226,7 +245,11 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 			</FilterSection>
 
 			{/* Date Filters */}
-			<FilterSection title="FILTER_BY_DATE" colorClass="text-blue-500/50">
+			<FilterSection
+				title="FILTER_BY_DATE"
+				colorClass="text-blue-500/50"
+				forceCollapsed={forceCollapsed}
+			>
 				<div className="flex flex-wrap items-center gap-2">
 					{DATE_PRESETS.map((preset) => {
 						const isActive =
@@ -333,7 +356,11 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 			</FilterSection>
 
 			{/* Stable Only Toggle */}
-			<FilterSection title="FILTER_BY_VERSION" colorClass="text-purple-500/50">
+			<FilterSection
+				title="FILTER_BY_VERSION"
+				colorClass="text-purple-500/50"
+				forceCollapsed={forceCollapsed}
+			>
 				<motion.button
 					type="button"
 					onClick={togglePrereleases}
