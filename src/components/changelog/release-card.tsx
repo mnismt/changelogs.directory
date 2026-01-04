@@ -38,7 +38,7 @@ interface ReleaseCardProps
 		'rightAccessory' | 'bodyFooter' | 'summaryLineClamp' | 'className'
 	> {}
 
-const changeTypeLabels: Record<ChangeType, string> = {
+const changeTypeLabels: Partial<Record<ChangeType, string>> = {
 	BREAKING: '⚠️ Breaking',
 	SECURITY: '🔒 Security',
 	FEATURE: '✨ Features',
@@ -206,6 +206,7 @@ export function ReleaseCard({
 
 	const cardContent = (
 		<ReleaseCardBase
+			toolSlug={toolSlug}
 			version={version}
 			formattedVersion={formattedVersion}
 			releaseDate={releaseDate}

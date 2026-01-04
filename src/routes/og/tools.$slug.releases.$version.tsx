@@ -32,7 +32,7 @@ export const Route = createFileRoute('/og/tools/$slug/releases/$version')({
 						},
 					)
 
-					const changesByType: Record<ChangeType, number> = {
+					const changesByType: Partial<Record<ChangeType, number>> = {
 						FEATURE: 0,
 						BUGFIX: 0,
 						IMPROVEMENT: 0,
@@ -49,7 +49,8 @@ export const Route = createFileRoute('/og/tools/$slug/releases/$version')({
 					let hasDeprecation = false
 
 					for (const change of release.changes) {
-						changesByType[change.type]++
+						const currentCount = changesByType[change.type] ?? 0
+						changesByType[change.type] = currentCount + 1
 						if (change.isBreaking) hasBreaking = true
 						if (change.isSecurity) hasSecurity = true
 						if (change.isDeprecation) hasDeprecation = true

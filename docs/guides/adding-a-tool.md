@@ -28,6 +28,7 @@ First, determine how the tool publishes changelogs:
 | `CHANGELOG_MD` | Tool has a CHANGELOG.md file in their GitHub repo | Claude Code | Simple ⭐ |
 | `GITHUB_RELEASES` | Tool publishes via GitHub Releases API | Codex | Medium ⭐⭐ |
 | `CUSTOM_API` | Tool has a custom changelog webpage (HTML scraping) | Cursor | Complex ⭐⭐⭐ |
+| `CUSTOM_API` + Playwright | Tool has a JavaScript SPA changelog | Antigravity | Very Complex ⭐⭐⭐⭐ |
 | `RSS_FEED` | Tool publishes via RSS/Atom feed | (Not yet implemented) | Simple ⭐ |
 
 **Decision Tree**:
@@ -39,7 +40,9 @@ Does the tool have a GitHub repository?
 │       ├─ Yes → Use GITHUB_RELEASES
 │       └─ No → Use CUSTOM_API (HTML scraping)
 └─ No: Does it have a custom changelog page?
-    ├─ Yes → Use CUSTOM_API
+    ├─ Yes: Is it a JavaScript SPA (React/Angular/Vue)?
+    │   ├─ Yes → Use CUSTOM_API with Playwright
+    │   └─ No → Use CUSTOM_API (standard HTML scraping)
     └─ No → Not suitable for aggregation
 ```
 
@@ -618,6 +621,132 @@ Wait for the schedule to trigger (or manually trigger via dashboard):
 - `steps/fetch-pages.ts` - Multi-page crawler
 - `cache.ts` - Redis caching for incremental crawls (optional)
 - `config.ts` - Selector configuration
+
+### Pattern 4: CUSTOM_API with Playwright (SPA) ⭐⭐⭐⭐
+
+**Example**: Antigravity
+**Source**: Client-side rendered Angular/React/Vue app
+**Parser**: Custom HTML extraction after JS rendering
+**Complexity**: Very High - requires Playwright browser automation
+**Time**: 4-6 hours
+
+**When to use**:
+- Tool has a changelog page that requires JavaScript to render
+- Initial HTTP fetch returns empty HTML shell or loading spinner
+- Content is dynamically loaded via API calls
+
+**Detection**:
+```bash
+# If this returns empty/minimal content, it's likely a SPA
+curl -s https://example.com/changelog | grep -c "actual-content"
+```
+
+**Setup Steps**:
+
+#### 1. Add Dependencies
+
+```bash
+pnpm add playwright chromium-bidi
+```
+
+#### 2. Configure Trigger.dev
+
+**File**: `trigger.config.ts`
+
+```typescript
+import { playwright } from '@trigger.dev/build/extensions/playwright'
+
+export default defineConfig({
+  // ...
+  build: {
+    external: [
+      'chromium-bidi/lib/cjs/bidiMapper/BidiMapper',
+      'chromium-bidi/lib/cjs/cdp/CdpConnection',
+    ],
+    extensions: [
+      // ... other extensions
+      playwright({ browsers: ['chromium'] }),
+    ],
+  },
+})
+```
+
+#### 3. Create Browser Utility
+
+**File**: `src/trigger/ingest/<tool>/browser.ts`
+
+```typescript
+import { chromium } from 'playwright'
+
+export async function fetchRenderedPage(
+  url: string,
+  options: { waitForSelector?: string; waitForTimeout?: number } = {}
+): Promise<string> {
+  const { waitForSelector, waitForTimeout = 5000 } = options
+  const browser = await chromium.launch({ headless: true })
+
+  try {
+    const context = await browser.newContext({
+      userAgent: 'ChangelogsDirectoryBot/1.0 (+https://changelogs.directory)',
+    })
+    const page = await context.newPage()
+
+    await page.goto(url, {
+      waitUntil: 'networkidle',
+      timeout: 30000,
+    })
+
+    if (waitForSelector) {
+      await page.waitForSelector(waitForSelector, { timeout: 10000 })
+    } else {
+      await page.waitForTimeout(waitForTimeout)
+    }
+
+    return await page.content()
+  } finally {
+    await browser.close()
+  }
+}
+```
+
+#### 4. Use in Fetch Step
+
+**File**: `src/trigger/ingest/<tool>/steps/fetch-page.ts`
+
+```typescript
+import { fetchRenderedPage } from '../browser'
+
+export async function fetchPageStep(sourceUrl: string) {
+  const html = await fetchRenderedPage(sourceUrl, {
+    waitForSelector: '.your-content-selector',
+  })
+
+  return { html, fetchedAt: new Date() }
+}
+```
+
+#### 5. Configure Higher Timeout
+
+Playwright tasks need more time for browser launch and rendering:
+
+```typescript
+export const ingestYourTool = task({
+  id: 'ingest-your-tool',
+  maxDuration: 1200,  // 20 minutes (vs typical 120-300 seconds)
+  // ...
+})
+```
+
+**Troubleshooting**:
+
+| Issue | Solution |
+|-------|----------|
+| `chromium-bidi` esbuild error | Add to `build.external` in trigger.config.ts |
+| Timeout waiting for selector | Increase timeout or use `waitForTimeout` fallback |
+| Empty HTML returned | Check if selector exists after JS renders |
+| Browser fails to launch | Ensure Playwright extension is configured |
+
+**Reference**: See `src/trigger/ingest/antigravity/` for complete implementation.
 
 ---
 

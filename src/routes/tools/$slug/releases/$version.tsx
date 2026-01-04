@@ -98,8 +98,8 @@ function ReleaseDetailPage() {
 	const { release, adjacentVersions, allVersions } = Route.useLoaderData()
 
 	// Group changes by type and apply filters
-	const groupedChanges = useMemo((): Record<ChangeType, Change[]> => {
-		const empty: Record<ChangeType, Change[]> = {
+	const groupedChanges = useMemo((): Partial<Record<ChangeType, Change[]>> => {
+		const empty: Partial<Record<ChangeType, Change[]>> = {
 			FEATURE: [],
 			BUGFIX: [],
 			IMPROVEMENT: [],
@@ -114,7 +114,7 @@ function ReleaseDetailPage() {
 		if (!release?.changes) return empty
 
 		// Group by type
-		const grouped: Record<ChangeType, Change[]> = {
+		const grouped: Partial<Record<ChangeType, Change[]>> = {
 			FEATURE: [],
 			BUGFIX: [],
 			IMPROVEMENT: [],
@@ -127,8 +127,9 @@ function ReleaseDetailPage() {
 		}
 
 		release.changes.forEach((change) => {
-			if (grouped[change.type]) {
-				grouped[change.type].push(change)
+			const arr = grouped[change.type]
+			if (arr) {
+				arr.push(change)
 			}
 		})
 
