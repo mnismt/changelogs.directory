@@ -15,6 +15,7 @@ import { Footer } from '@/components/shared/footer'
 import { Header } from '@/components/shared/header'
 import { MobileDock } from '@/components/shared/mobile-dock'
 import { NotFound } from '@/components/shared/not-found'
+import { WhatsNewToast } from '@/components/shared/whats-new-toast'
 import { PostHogPageView } from '@/integrations/posthog/page-view'
 import { PostHogProvider } from '@/integrations/posthog/provider'
 import { SentryProvider } from '@/integrations/sentry/provider'
@@ -104,6 +105,7 @@ function RootComponent() {
 			<PostHogProvider>
 				<PostHogPageView />
 				<ScrollRestoration />
+				<WhatsNewToast />
 				<AppErrorBoundary>
 					<Outlet />
 				</AppErrorBoundary>

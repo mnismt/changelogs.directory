@@ -24,6 +24,7 @@ import {
 	isMonochromeLogo,
 } from '@/lib/tool-registry'
 import { cn } from '@/lib/utils'
+import { getPlatformChangelog } from '@/server/platform'
 import {
 	getLatestReleasesAcrossTools,
 	getReleasesGroupedByTool,
@@ -112,16 +113,21 @@ export const Route = createFileRoute('/')({
 		}
 	},
 	loader: async () => {
-		// Fetch both hero release and grouped releases in parallel
-		const [heroData, groupedData] = await Promise.all([
+		// Fetch hero release, grouped releases, and platform version in parallel
+		const [heroData, groupedData, platformChangelog] = await Promise.all([
 			getLatestReleasesAcrossTools({
 				data: { limit: 1, offset: 0 },
 			}),
 			getReleasesGroupedByTool({
 				data: { releasesPerTool: 8 },
 			}),
+			getPlatformChangelog(),
 		])
-		return { heroData, groupedData }
+		return {
+			heroData,
+			groupedData,
+			platformVersion: platformChangelog.latestVersion,
+		}
 	},
 	pendingComponent: HomePageSkeleton,
 	errorComponent: HomePageError,
@@ -129,7 +135,11 @@ export const Route = createFileRoute('/')({
 })
 
 function HomePage() {
-	const { heroData, groupedData: initialGroupedData } = Route.useLoaderData()
+	const {
+		heroData,
+		groupedData: initialGroupedData,
+		platformVersion,
+	} = Route.useLoaderData()
 	const fetchGroupedReleases = useServerFn(getReleasesGroupedByTool)
 
 	// State
@@ -246,6 +256,7 @@ function HomePage() {
 				heroRelease={heroRelease}
 				isMounted={isMounted}
 				onAnimationComplete={handleHeroAnimationComplete}
+				platformVersion={platformVersion}
 			/>
 
 			{/* Connector & Prompt Section */}

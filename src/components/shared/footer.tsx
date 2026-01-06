@@ -1,21 +1,40 @@
 import { Link } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import type { PlatformChangelog } from '@/lib/parsers/platform-changelog'
+import { getPlatformChangelog } from '@/server/platform'
 
 const NAV_LINKS = [
 	{ label: 'Home', href: '/' },
 	{ label: 'Tools', href: '/tools' },
 	{ label: 'Analytics', href: '/analytics' },
+	{ label: 'Changelog', href: '/changelog' },
 ] as const
 
 export function Footer() {
+	const [changelog, setChangelog] = useState<PlatformChangelog | null>(null)
+
+	useEffect(() => {
+		if (!changelog) {
+			getPlatformChangelog().then(setChangelog)
+		}
+	}, [changelog])
+
+	const version = changelog ? `v${changelog.latestVersion}` : 'v0.0.0'
+
 	return (
 		<footer className="border-t border-border/40 bg-background">
 			<div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:px-6 lg:px-8 md:flex-row">
 				<div className="flex items-center gap-4">
-					<p className="font-mono text-xs text-muted-foreground">
+					<Link
+						to="/changelog"
+						className="group flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
+					>
 						<span className="text-foreground">changelogs.directory</span>
 						<span className="mx-2 text-border">::</span>
-						<span>v1.0.0</span>
-					</p>
+						<span className="group-hover:text-primary transition-colors">
+							{version}
+						</span>
+					</Link>
 				</div>
 
 				<nav className="flex items-center gap-6">
