@@ -43,28 +43,76 @@ The page is driven by a strict React state machine:
 -   **Visual**: The main content area (The Feed) "unfolds" from the prompt.
 -   **Animation**:
     -   **Grid Expansion**: The feed container uses CSS Grid `grid-template-rows: 0fr -> 1fr` for a smooth height transition.
-    -   **Connector Extension**: A second vertical line grows from the prompt into the feed (`h-0 -> h-8`).
+    -   **Connector Extension**: A second vertical line grows from the prompt into the feed (`h-0 -> h-12`).
 -   **Duration**: `1000ms`.
 -   **Transition**: Sets state to `done`.
 
-### Phase 5: System Ready (`done`)
--   **State**: The feed is fully visible and interactive.
--   **Scroll Reveal**: As the user scrolls down, individual release cards fade in and slide up using `useScrollReveal`.
+### Phase 5: Tool Lanes Stagger (`done`)
+-   **State**: The feed container is expanded; Tool Lanes begin their entrance.
+-   **Visual**: Each tool lane (horizontal row of release cards) appears with a staggered delay.
+-   **Animation**:
+    -   **Lane Entrance**: Each `ToolLane` uses `animate-in fade-in slide-in-from-bottom-2 duration-500`.
+    -   **Stagger Delay**: Lanes are staggered with `animationDelay: 200 + index * 100` (first lane at 200ms, second at 300ms, etc.).
+    -   **Card Layout**: Release cards within each lane are laid out horizontally with `snap-x snap-mandatory` scroll behavior.
+-   **Interaction**: Desktop users see navigation arrows on lane hover (visible only when `releases.length > 4`).
 
-## 3. Aesthetic Details
+### Phase 6: System Ready
+-   **State**: All lanes are visible and interactive.
+-   **Interaction**:
+    -   **Horizontal Scroll**: Users swipe/scroll horizontally through releases within each lane.
+    -   **Navigation Arrows**: Desktop shows left/right arrows on lane hover for keyboard-friendly navigation.
+    -   **Velocity Badge**: Lanes with releases published today show a "🔥 X today" indicator.
+
+## 3. Tool Lanes Layout
+
+The homepage feed uses a **Tool Lanes** layout where each tool gets its own horizontal lane.
+
+### Component Hierarchy
+```
+ToolLanesFeed
+├── ToolLane (Claude Code)
+│   ├── Lane Header (logo, name, vendor, velocity badge, "View all" link)
+│   ├── LaneNavigation (left/right arrows, desktop only)
+│   └── Scroll Container
+│       ├── LaneReleaseCard (v1.0.20)
+│       ├── LaneReleaseCard (v1.0.19)
+│       └── ...
+├── ToolLane (Codex)
+│   └── ...
+└── ToolLane (Cursor)
+    └── ...
+```
+
+### Lane Features
+-   **Horizontal Scroll**: CSS `overflow-x-auto` with `snap-x snap-mandatory` for smooth card snapping.
+-   **Hidden Scrollbar**: `scrollbar-hide` class + inline styles for cross-browser support.
+-   **Desktop Navigation**: Arrow buttons appear on lane hover when more than 4 cards exist.
+-   **Velocity Badge**: Shows "🔥 X today" when a tool has releases published today.
+-   **Tool Logo**: Monochrome by default, colorizes on lane hover (tool-specific brand colors).
+
+### Card Design
+-   **Minimal**: Fixed width (`w-52`), shows version, date, change count, and semantic indicators.
+-   **Semantic Indicators**: Badges for breaking changes (red), security updates (amber), deprecations (yellow).
+-   **Hover State**: Border highlights and subtle scale transform.
+
+## 4. Aesthetic Details
 
 ### The "Dev-Vibe" Elements
--   **Monochrome Palette**: Strictly black, white, and gray. No brand colors except for semantic indicators (green cursor).
--   **Fira Code**: Used for the prompt (`$ view releases`) and stats to reinforce the terminal aesthetic.
+-   **Monochrome Palette**: Strictly black, white, and gray. No brand colors except for semantic indicators (green cursor) and tool logo hover states.
+-   **Fira Code**: Used for the prompt (`$ view releases`), version numbers, and stats to reinforce the terminal aesthetic.
 -   **Sparkles**: Used sparingly to add "magic" to the otherwise rigid terminal interface.
+-   **Tool Logos**: Monochrome by default; colorize on lane hover to add visual interest without breaking the aesthetic.
 
 ### Technical Implementation
--   **State Management**: `useState<AnimationStep>` controls the flow.
+-   **State Management**: `useState<AnimationStep>` controls the boot sequence flow.
 -   **Timing**: `setTimeout` is used to sequence the phases (Connector -> Prompt -> Expanding).
 -   **CSS Transitions**: Used for high-performance layout changes (opacity, height, grid-rows).
--   **Scroll Observer**: `IntersectionObserver` (via `useScrollReveal` hook) handles the lazy-loading animations of the feed cards.
+-   **Lane Staggering**: Each lane uses `animationDelay` based on its index for sequential entrance.
+-   **Horizontal Scroll State**: `useRef` + `onScroll` callback tracks scroll position for navigation arrow visibility.
 
-## 4. Why It Works
--   **Narrative**: It tells a story: "System Start" -> "Command Input" -> "Data Output".
--   **Pacing**: The sequence is fast enough to not be annoying (approx. 2.5s total) but slow enough to be appreciated.
+## 5. Why It Works
+-   **Narrative**: It tells a story: "System Start" -> "Command Input" -> "Data Output" -> "Organized by Tool".
+-   **Pacing**: The boot sequence is fast enough to not be annoying (approx. 2.5s total) but slow enough to be appreciated.
 -   **Focus**: It guides the user's eye vertically down the page, landing exactly where the content begins.
+-   **Scanability**: Tool Lanes allow users to quickly scan recent activity per tool without information overload.
+-   **Discoverability**: Horizontal scroll within lanes encourages exploration; velocity badges highlight active tools.
