@@ -1,6 +1,6 @@
 # API Patterns Reference
 
-> **Last verified**: 2025-12-05
+> **Last verified**: 2026-01-06
 
 This document explains server-side data fetching patterns used in Changelogs.directory, specifically TanStack Start SSR loaders and server functions.
 
@@ -293,7 +293,60 @@ export const getToolReleases = createServerFn({ method: 'GET' })
 
 ---
 
-#### Pattern C: With Middleware (Auth)
+#### Pattern C: Aggregation with Parallel Fetching
+
+**Use Case**: Grouped data with per-item sub-queries (e.g., Tool Lanes on homepage)
+
+```typescript
+// Returns tools with their latest releases, sorted by activity
+export const getReleasesGroupedByTool = createServerFn({ method: 'GET' })
+  .inputValidator(groupedReleasesSchema)
+  .handler(async ({ data }) => {
+    const prisma = getPrisma()
+
+    // 1. Get all tools
+    const tools = await prisma.tool.findMany({
+      where: { isActive: true },
+      select: { id: true, slug: true, name: true, vendor: true },
+    })
+
+    // 2. Fetch releases per tool in parallel
+    const toolsWithReleases = await Promise.all(
+      tools.map(async (tool) => {
+        const [releases, releasesToday] = await Promise.all([
+          prisma.release.findMany({
+            where: { toolId: tool.id },
+            orderBy: { releaseDate: 'desc' },
+            take: data.releasesPerTool,
+          }),
+          prisma.release.count({
+            where: { toolId: tool.id, releaseDate: { gte: today } },
+          }),
+        ])
+
+        return {
+          ...tool,
+          releases,
+          velocity: { today: releasesToday },
+        }
+      })
+    )
+
+    // 3. Sort by most recent activity
+    toolsWithReleases.sort((a, b) => /* by latestReleaseDate */)
+
+    return { tools: toolsWithReleases }
+  })
+```
+
+**Key Points**:
+- ✅ Use `Promise.all()` to parallelize per-item fetches
+- ✅ Return aggregated/computed data (e.g., `velocity`)
+- ✅ Sort/transform on server to reduce client work
+
+---
+
+#### Pattern D: With Middleware (Auth)
 
 ```typescript
 import { adminMiddleware } from '@/lib/auth/middleware'

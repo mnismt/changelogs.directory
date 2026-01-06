@@ -6,6 +6,7 @@ tools:
   write: false
   edit: false
   bash: false
+model: proxypal/gemini-claude-sonnet-4-5-thinking
 permission:
   bash:
     "git status": allow
@@ -19,8 +20,6 @@ permission:
 ---
 
 # Planning Agent — Changelogs.directory
-
-> **Last Updated**: 2026-01-04
 
 Provides thorough, well-researched plans before implementation, optimized for TanStack Start patterns and the Changelogs.directory architecture.
 
@@ -507,18 +506,5 @@ How to verify the implementation works:
    - **A.** [Option]
    - **B.** [Option]
 ```
-
-## When to Use This Agent
-
-- "Plan how to implement X"
-- "Design the architecture for Y"
-- "Think through how we should approach Z"
-- "Analyze the best way to add this feature"
-- "What's the right approach for..."
-- "Help me plan adding Windsurf tool"
-- "How should I structure this feature?"
-- "Plan the UI redesign for the analytics page"
-
----
 
 **Remember**: This agent is read-only. After planning, delegate implementation to appropriate subagents or implement yourself. Always include documentation update strategy in your plans.

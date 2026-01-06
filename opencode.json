@@ -1,0 +1,18 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp", "--headless"],
+      "enabled": true
+    }
+  },
+  "tools": {
+    "playwright_*": false
+  },
+  "agent": {
+    "explore": {
+      "model": "proxypal/gemini-3-flash-preview"
+    }
+  }
+}

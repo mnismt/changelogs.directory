@@ -48,6 +48,27 @@ const latestReleasesSchema = z.object({
 	includePrereleases: z.boolean().default(true),
 })
 
+const groupedReleasesSchema = z.object({
+	releasesPerTool: z.number().int().min(1).max(20).default(8),
+	changeTypes: z
+		.array(
+			z.enum([
+				'FEATURE',
+				'BUGFIX',
+				'IMPROVEMENT',
+				'BREAKING',
+				'SECURITY',
+				'DEPRECATION',
+				'PERFORMANCE',
+				'DOCUMENTATION',
+				'OTHER',
+			]),
+		)
+		.optional(),
+	toolSlugs: z.array(z.string().min(1)).optional(),
+	includePrereleases: z.boolean().default(true),
+})
+
 const getDateRange = (preset?: string) => {
 	if (!preset || preset === 'all') {
 		return {}
@@ -684,3 +705,161 @@ export const getAllTools = createServerFn({ method: 'GET' }).handler(
 		}
 	},
 )
+
+/**
+ * Get releases grouped by tool for lane layout
+ * Each tool gets its own lane with N most recent releases
+ * Sorted by most recent activity (latest release date)
+ */
+export const getReleasesGroupedByTool = createServerFn({ method: 'GET' })
+	.inputValidator((data) => {
+		const result = groupedReleasesSchema.safeParse(data)
+		if (!result.success) {
+			const message = result.error.issues[0]?.message || 'Invalid parameters'
+			throw new Error(message)
+		}
+		return result.data
+	})
+	.handler(async ({ data }) => {
+		const prisma = getPrisma()
+
+		try {
+			// 1. Get all active tools
+			const tools = await prisma.tool.findMany({
+				where: {
+					isActive: true,
+					...(data.toolSlugs?.length ? { slug: { in: data.toolSlugs } } : {}),
+				},
+				select: {
+					id: true,
+					slug: true,
+					name: true,
+					vendor: true,
+					_count: { select: { releases: true } },
+				},
+			})
+
+			// 2. For each tool, fetch latest N releases + velocity (parallel)
+			const today = new Date()
+			today.setHours(0, 0, 0, 0)
+
+			const toolsWithReleases = await Promise.all(
+				tools.map(async (tool) => {
+					// Build where clause for releases
+					const releaseWhere: Prisma.ReleaseWhereInput = {
+						toolId: tool.id,
+						...(data.includePrereleases ? {} : { isPrerelease: false }),
+						...(data.changeTypes?.length
+							? {
+									changes: { some: { type: { in: data.changeTypes } } },
+								}
+							: {}),
+					}
+
+					// Fetch releases with change type data
+					const releases = await prisma.release.findMany({
+						where: releaseWhere,
+						orderBy: { releaseDate: 'desc' },
+						take: data.releasesPerTool,
+						select: {
+							id: true,
+							version: true,
+							releaseDate: true,
+							summary: true,
+							headline: true,
+							_count: { select: { changes: true } },
+							changes: {
+								select: {
+									type: true,
+									isBreaking: true,
+									isSecurity: true,
+									isDeprecation: true,
+								},
+							},
+						},
+					})
+
+					// Calculate velocity (releases today)
+					const releasesToday = await prisma.release.count({
+						where: {
+							toolId: tool.id,
+							releaseDate: { gte: today },
+						},
+					})
+
+					// Get most recent release date for sorting
+					const latestReleaseDate = releases[0]?.releaseDate || null
+
+					// Process releases to add metadata
+					const processedReleases = releases.map((release) => {
+						const changesByType: Record<string, number> = {}
+						let hasBreaking = false
+						let hasSecurity = false
+						let hasDeprecation = false
+
+						for (const change of release.changes) {
+							changesByType[change.type] = (changesByType[change.type] || 0) + 1
+							if (change.isBreaking) hasBreaking = true
+							if (change.isSecurity) hasSecurity = true
+							if (change.isDeprecation) hasDeprecation = true
+						}
+
+						const { changes: _changes, ...releaseWithoutChanges } = release
+
+						return {
+							...releaseWithoutChanges,
+							summary: release.summary,
+							headline: release.headline,
+							formattedVersion: formatVersionForDisplay(
+								release.version,
+								tool.slug,
+							),
+							changesByType,
+							hasBreaking,
+							hasSecurity,
+							hasDeprecation,
+						}
+					})
+
+					return {
+						id: tool.id,
+						slug: tool.slug,
+						name: tool.name,
+						vendor: tool.vendor,
+						totalReleases: tool._count.releases,
+						velocity: { today: releasesToday },
+						latestReleaseDate,
+						releases: processedReleases,
+					}
+				}),
+			)
+
+			// 3. Sort by most recent activity
+			toolsWithReleases.sort((a, b) => {
+				if (!a.latestReleaseDate) return 1
+				if (!b.latestReleaseDate) return -1
+				return (
+					new Date(b.latestReleaseDate).getTime() -
+					new Date(a.latestReleaseDate).getTime()
+				)
+			})
+
+			// 4. Calculate totals
+			const totalReleases = toolsWithReleases.reduce(
+				(sum, t) => sum + t.totalReleases,
+				0,
+			)
+
+			return {
+				tools: toolsWithReleases,
+				pagination: {
+					totalTools: toolsWithReleases.length,
+					totalReleases,
+				},
+			}
+		} catch (error: unknown) {
+			console.error('Error fetching grouped releases:', error)
+			captureServerException(error)
+			throw new Error('Failed to fetch grouped releases')
+		}
+	})
