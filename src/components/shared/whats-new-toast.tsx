@@ -1,0 +1,109 @@
+import { Link } from '@tanstack/react-router'
+import { AnimatePresence, motion } from 'motion/react'
+import { useEffect, useState } from 'react'
+import type { PlatformRelease } from '@/lib/parsers/platform-changelog'
+import { getPlatformChangelog } from '@/server/platform'
+
+const STORAGE_KEY = 'changelog:lastSeenVersion'
+
+export function WhatsNewToast() {
+	const [showToast, setShowToast] = useState(false)
+	const [latestRelease, setLatestRelease] = useState<PlatformRelease | null>(
+		null,
+	)
+
+	useEffect(() => {
+		// Only run on client
+		if (typeof window === 'undefined') return
+
+		getPlatformChangelog().then((changelog) => {
+			const lastSeen = localStorage.getItem(STORAGE_KEY)
+			const latest = changelog.releases[0]
+
+			if (lastSeen !== latest.version) {
+				setLatestRelease(latest)
+				// Delay to not interrupt initial page load
+				const timer = setTimeout(() => setShowToast(true), 2000)
+				return () => clearTimeout(timer)
+			}
+		})
+	}, [])
+
+	const dismiss = () => {
+		if (latestRelease) {
+			localStorage.setItem(STORAGE_KEY, latestRelease.version)
+		}
+		setShowToast(false)
+	}
+
+	const handleSeeWhatsNew = () => {
+		if (latestRelease) {
+			localStorage.setItem(STORAGE_KEY, latestRelease.version)
+		}
+		setShowToast(false)
+	}
+
+	return (
+		<AnimatePresence>
+			{showToast && latestRelease && (
+				<motion.div
+					initial={{ y: 100, opacity: 0 }}
+					animate={{ y: 0, opacity: 1 }}
+					exit={{ y: 100, opacity: 0 }}
+					transition={{
+						type: 'spring',
+						damping: 25,
+						stiffness: 300,
+					}}
+					className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-48px)]"
+				>
+					<div className="relative overflow-hidden rounded-xl border border-border/40 bg-black/80 backdrop-blur-xl shadow-2xl">
+						{/* Glow effect */}
+						<div className="absolute -top-20 -right-20 size-40 bg-primary/20 blur-3xl rounded-full pointer-events-none" />
+
+						{/* Header */}
+						<div className="border-b border-border/40 px-4 py-2 bg-muted/10">
+							<span className="font-mono text-[10px] uppercase tracking-widest text-primary/60">
+								NEW_RELEASE
+							</span>
+						</div>
+
+						{/* Content */}
+						<div className="p-4">
+							<div className="flex items-center gap-2 mb-2">
+								<span className="font-mono text-sm font-semibold text-foreground">
+									v{latestRelease.version}
+								</span>
+								<span className="text-muted-foreground">—</span>
+								<span className="font-mono text-sm text-muted-foreground truncate">
+									{latestRelease.title}
+								</span>
+							</div>
+
+							<p className="font-mono text-xs text-muted-foreground/80 line-clamp-2 mb-4">
+								{latestRelease.changes[0]}
+							</p>
+
+							<div className="flex gap-2">
+								<Link
+									to="/changelog"
+									onClick={handleSeeWhatsNew}
+									className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 font-mono text-xs text-primary hover:bg-primary/20 transition-colors"
+								>
+									See what's new
+								</Link>
+								<button
+									type="button"
+									onClick={dismiss}
+									className="px-3 py-2 rounded-lg border border-border/40 font-mono text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+								>
+									Dismiss
+								</button>
+							</div>
+						</div>
+					</div>
+				</motion.div>
+			)}
+		</AnimatePresence>
+	)
+}

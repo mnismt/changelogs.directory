@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { HeroRelease } from '@/components/home/hero-release'
 import { LogoShowcase } from '@/components/shared/logo-showcase'
@@ -26,25 +27,34 @@ interface HeroSectionProps {
 	heroRelease: HeroReleaseData
 	isMounted: boolean
 	onAnimationComplete?: () => void
+	platformVersion?: string
 }
 
 export function HeroSection({
 	heroRelease,
 	isMounted,
 	onAnimationComplete,
+	platformVersion,
 }: HeroSectionProps) {
 	const fullText = 'changelogs.directory'
+	const STORAGE_KEY = 'changelogs-hero-animated'
+
 	// Start with full text on server, then animate on client
 	const [text, setText] = useState(fullText)
-	const [hasAnimated, setHasAnimated] = useState(false)
 
-	// Typewriter effect - only runs on client after mount
+	// Typewriter effect - only runs once per session
 	useEffect(() => {
-		if (!isMounted || hasAnimated) return
+		if (!isMounted) return
+
+		// Check if animation has already played this session
+		const hasPlayedThisSession = sessionStorage.getItem(STORAGE_KEY)
+		if (hasPlayedThisSession) {
+			// Skip animation, keep full text
+			return
+		}
 
 		// Reset to empty and start typing
 		setText('')
-		setHasAnimated(true)
 
 		let currentIndex = 0
 		const interval = setInterval(() => {
@@ -53,11 +63,13 @@ export function HeroSection({
 				currentIndex++
 			} else {
 				clearInterval(interval)
+				// Mark animation as played for this session
+				sessionStorage.setItem(STORAGE_KEY, 'true')
 			}
 		}, 100)
 
 		return () => clearInterval(interval)
-	}, [isMounted, hasAnimated, fullText])
+	}, [isMounted, fullText])
 
 	// Notify parent when all animations are complete
 	useEffect(() => {
@@ -85,13 +97,15 @@ export function HeroSection({
 								: 'translate-y-8 opacity-0',
 						)}
 					>
-						<Badge
-							variant="outline"
-							className="border-border bg-secondary/50 font-mono text-xs uppercase tracking-widest text-muted-foreground backdrop-blur-sm"
-						>
-							<span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-green-500" />
-							v1.0 Public Beta
-						</Badge>
+						<Link to="/changelog">
+							<Badge
+								variant="outline"
+								className="border-border bg-secondary/50 font-mono text-xs uppercase tracking-widest text-muted-foreground backdrop-blur-sm hover:bg-secondary/80 hover:text-foreground transition-colors cursor-pointer"
+							>
+								<span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-green-500" />
+								v{platformVersion || '1.0'}
+							</Badge>
+						</Link>
 					</div>
 
 					{/* Main Title with Typewriter */}
