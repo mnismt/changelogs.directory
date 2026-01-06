@@ -6,7 +6,7 @@ tools:
   write: false
   edit: false
   bash: false
-model: proxypal/gpt-5.2
+model: proxypal/gemini-claude-sonnet-4-5-thinking
 permission:
   bash:
     "git status": allow

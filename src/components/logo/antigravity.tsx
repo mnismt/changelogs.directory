@@ -92,9 +92,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="12.8393"
 				height="11.383"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="0.722959"
@@ -108,9 +108,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="25.1763"
 				height="24.96"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="3.49513"
@@ -124,9 +124,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="26.5068"
 				height="23.6338"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="2.97119"
@@ -140,9 +140,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="26.5068"
 				height="23.6338"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="2.97119"
@@ -156,9 +156,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="23.709"
 				height="23.6846"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="2.97119"
@@ -172,9 +172,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="21.7027"
 				height="22.0616"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="2.82351"
@@ -188,9 +188,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="23.2857"
 				height="22.8313"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="2.5589"
@@ -204,9 +204,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="29.1982"
 				height="30.1105"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="2.2852"
@@ -220,9 +220,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="16.2415"
 				height="15.5681"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="2.04485"
@@ -236,9 +236,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="21.687"
 				height="19.4212"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="1.72712"
@@ -252,9 +252,9 @@ const GoogleAntigravity = (props: SVGProps<SVGSVGElement>) => (
 				width="14.3639"
 				height="16.9254"
 				filterUnits="userSpaceOnUse"
-				color-interpolation-filters="sRGB"
+				colorInterpolationFilters="sRGB"
 			>
-				<feFlood flood-opacity="0" result="BackgroundImageFix" />
+				<feFlood floodOpacity="0" result="BackgroundImageFix" />
 				<feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
 				<feGaussianBlur
 					stdDeviation="2.1376"

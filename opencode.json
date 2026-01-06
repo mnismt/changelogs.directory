@@ -9,5 +9,10 @@
   },
   "tools": {
     "playwright_*": false
+  },
+  "agent": {
+    "explore": {
+      "model": "proxypal/gemini-3-flash-preview"
+    }
   }
 }
