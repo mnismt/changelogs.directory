@@ -33,12 +33,18 @@ export function HeroSection({
 	isMounted,
 	onAnimationComplete,
 }: HeroSectionProps) {
-	const [text, setText] = useState('')
 	const fullText = 'changelogs.directory'
+	// Start with full text on server, then animate on client
+	const [text, setText] = useState(fullText)
+	const [hasAnimated, setHasAnimated] = useState(false)
 
-	// Typewriter effect
+	// Typewriter effect - only runs on client after mount
 	useEffect(() => {
-		if (!isMounted) return
+		if (!isMounted || hasAnimated) return
+
+		// Reset to empty and start typing
+		setText('')
+		setHasAnimated(true)
 
 		let currentIndex = 0
 		const interval = setInterval(() => {
@@ -51,7 +57,7 @@ export function HeroSection({
 		}, 100)
 
 		return () => clearInterval(interval)
-	}, [isMounted])
+	}, [isMounted, hasAnimated, fullText])
 
 	// Notify parent when all animations are complete
 	useEffect(() => {

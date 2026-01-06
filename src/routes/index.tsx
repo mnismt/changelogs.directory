@@ -10,14 +10,13 @@ import {
 	useState,
 } from 'react'
 import { FeedFilters } from '@/components/home/feed-filters'
-import { FeedReleaseCard } from '@/components/home/feed-release-card'
 import { HeroSection } from '@/components/home/hero-section'
 import { HomePageSkeleton } from '@/components/home/home-skeleton'
+import { ToolLanesFeed } from '@/components/home/tool-lanes-feed'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import { AnimatedNumber } from '@/components/ui/animated-number'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { useDebounce } from '@/hooks/use-debounce'
-import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { captureException } from '@/integrations/sentry'
 import {
 	FEED_FILTER_TOOLS,
@@ -25,7 +24,10 @@ import {
 	isMonochromeLogo,
 } from '@/lib/tool-registry'
 import { cn } from '@/lib/utils'
-import { getLatestReleasesAcrossTools } from '@/server/tools'
+import {
+	getLatestReleasesAcrossTools,
+	getReleasesGroupedByTool,
+} from '@/server/tools'
 
 type ChangeType =
 	| 'FEATURE'
@@ -38,34 +40,11 @@ type ChangeType =
 	| 'DOCUMENTATION'
 	| 'OTHER'
 
-type ReleaseData = {
-	id: string
-	version: string
-	releaseDate: Date | string | null
-	headline: string | null
-	summary: string | null
-	_count: { changes: number }
-	tool: {
-		slug: string
-		name: string
-		vendor: string | null
-		tags: string[]
-	}
-	changesByType: Record<string, number>
-	hasBreaking: boolean
-	hasSecurity: boolean
-	hasDeprecation: boolean
-	formattedVersion?: string
-}
-
 type ToolFilterOption = {
 	slug: string
 	name: string
 	logo: ReactNode
 }
-
-const MAX_FEED_RELEASES = 12
-const INITIAL_RELEASE_LIMIT = MAX_FEED_RELEASES + 1
 
 export const Route = createFileRoute('/')({
 	head: () => {
@@ -133,10 +112,16 @@ export const Route = createFileRoute('/')({
 		}
 	},
 	loader: async () => {
-		const data = await getLatestReleasesAcrossTools({
-			data: { limit: INITIAL_RELEASE_LIMIT, offset: 0 },
-		})
-		return data
+		// Fetch both hero release and grouped releases in parallel
+		const [heroData, groupedData] = await Promise.all([
+			getLatestReleasesAcrossTools({
+				data: { limit: 1, offset: 0 },
+			}),
+			getReleasesGroupedByTool({
+				data: { releasesPerTool: 8 },
+			}),
+		])
+		return { heroData, groupedData }
 	},
 	pendingComponent: HomePageSkeleton,
 	errorComponent: HomePageError,
@@ -144,8 +129,8 @@ export const Route = createFileRoute('/')({
 })
 
 function HomePage() {
-	const initialData = Route.useLoaderData()
-	const fetchReleases = useServerFn(getLatestReleasesAcrossTools)
+	const { heroData, groupedData: initialGroupedData } = Route.useLoaderData()
+	const fetchGroupedReleases = useServerFn(getReleasesGroupedByTool)
 
 	// State
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
@@ -155,8 +140,6 @@ function HomePage() {
 	const debouncedSearchQuery = useDebounce(searchQuery, 300)
 	const isSearching = searchQuery !== debouncedSearchQuery
 	const [isMounted, setIsMounted] = useState(false)
-	const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
-	const [hoveredTool, setHoveredTool] = useState<string | null>(null)
 
 	const viewReleasesSparkles = useMemo(
 		() => (
@@ -181,54 +164,25 @@ function HomePage() {
 		setIsMounted(true)
 	}, [])
 
-	// Fetch releases with React Query
-	const { data } = useQuery({
-		queryKey: [
-			'releases',
-			{ types: selectedTypes, tools: selectedTools, showPrereleases },
-		],
+	// Fetch grouped releases with React Query (for filter changes)
+	const { data: groupedData } = useQuery({
+		queryKey: ['groupedReleases', { types: selectedTypes, showPrereleases }],
 		queryFn: () =>
-			fetchReleases({
+			fetchGroupedReleases({
 				data: {
-					limit: INITIAL_RELEASE_LIMIT,
-					offset: 0,
+					releasesPerTool: 8,
 					changeTypes:
 						selectedTypes.length > 0
 							? (selectedTypes as ChangeType[])
 							: undefined,
-					toolSlugs: selectedTools.length > 0 ? selectedTools : undefined,
 					includePrereleases: showPrereleases,
 				},
 			}),
-		initialData: initialData,
+		initialData: initialGroupedData,
 	})
 
-	const releases = data.releases
-	const pagination = data.pagination
-
-	// Extract hero release (first one)
-	const heroRelease = releases[0]
-
-	// Apply client-side search filter to feed releases
-	const feedReleases = releases.slice(1).filter((release) => {
-		if (!debouncedSearchQuery) return true
-
-		const query = debouncedSearchQuery.toLowerCase()
-		const matchesToolName = release.tool.name.toLowerCase().includes(query)
-		const matchesVendor = release.tool.vendor?.toLowerCase().includes(query)
-		const matchesVersion = release.version.toLowerCase().includes(query)
-		const matchesHeadline = release.headline?.toLowerCase().includes(query)
-		const matchesSummary = release.summary?.toLowerCase().includes(query)
-
-		return (
-			matchesToolName ||
-			matchesVendor ||
-			matchesVersion ||
-			matchesHeadline ||
-			matchesSummary
-		)
-	})
-	const limitedFeedReleases = feedReleases.slice(0, MAX_FEED_RELEASES)
+	// Extract hero release (first one from heroData)
+	const heroRelease = heroData.releases[0]
 
 	const handleToolToggle = (slug: string) => {
 		setSelectedTools((prev) =>
@@ -239,10 +193,17 @@ function HomePage() {
 	}
 
 	// Calculate stats
-	const filteredTools = pagination.matchingToolsCount ?? 0
-	const totalTools = initialData.pagination.matchingToolsCount ?? 0
-	const filteredReleases = pagination.totalCount
-	const totalReleases = initialData.pagination.totalCount
+	const visibleTools =
+		selectedTools.length > 0
+			? groupedData.tools.filter((t) => selectedTools.includes(t.slug))
+			: groupedData.tools
+	const filteredToolsCount = visibleTools.length
+	const totalToolsCount = groupedData.pagination.totalTools
+	const filteredReleasesCount = visibleTools.reduce(
+		(sum, t) => sum + t.releases.length,
+		0,
+	)
+	const totalReleasesCount = groupedData.pagination.totalReleases
 
 	const toolFilterOptions: ToolFilterOption[] = FEED_FILTER_TOOLS.map(
 		(tool) => ({
@@ -362,10 +323,10 @@ function HomePage() {
 										<div className="relative flex-1 sm:max-w-xs">
 											<input
 												type="search"
-												placeholder="Search tools, versions, or release notes..."
+												placeholder="Search tools, versions..."
 												value={searchQuery}
 												onChange={(e) => setSearchQuery(e.target.value)}
-												aria-label="Search releases by tool, version, or release notes"
+												aria-label="Search releases by tool or version"
 												className="w-full rounded border border-border bg-secondary px-3 py-1.5 pr-8 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none focus:ring-1 focus:ring-foreground/20 focus-visible:border-foreground/40 focus-visible:ring-2"
 											/>
 											{isSearching && (
@@ -398,10 +359,6 @@ function HomePage() {
 																	onClick={() => handleToolToggle(slug)}
 																	aria-pressed={isSelected}
 																	aria-label={`Filter by ${name}`}
-																	onMouseEnter={() => setHoveredTool(slug)}
-																	onMouseLeave={() => setHoveredTool(null)}
-																	onFocus={() => setHoveredTool(slug)}
-																	onBlur={() => setHoveredTool(null)}
 																	className={`group flex flex-col items-center gap-1 rounded border bg-secondary px-3 py-2 text-center transition-all duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 hover:border-foreground/40 hover:bg-card/80 ${
 																		isSelected
 																			? 'border-foreground/60 text-foreground'
@@ -432,56 +389,35 @@ function HomePage() {
 								<div className="border-b border-border/40 flex items-center gap-4 px-4 py-3 text-sm text-muted-foreground">
 									<div className="flex items-center gap-2">
 										<span className="font-mono font-semibold text-foreground flex items-center gap-1">
-											<AnimatedNumber value={filteredTools} />
+											<AnimatedNumber value={filteredToolsCount} />
 											<span className="text-muted-foreground/50">/</span>
-											<AnimatedNumber value={totalTools} />
+											<AnimatedNumber value={totalToolsCount} />
 										</span>
 										<span>tools tracked</span>
 									</div>
 									<span className="text-muted-foreground/50">•</span>
 									<div className="flex items-center gap-2">
 										<span className="font-mono font-semibold text-foreground flex items-center gap-1">
-											<AnimatedNumber value={filteredReleases} />
+											<AnimatedNumber value={filteredReleasesCount} />
 											<span className="text-muted-foreground/50">/</span>
-											<AnimatedNumber value={totalReleases} />
+											<AnimatedNumber value={totalReleasesCount} />
 										</span>
 										<span>total releases</span>
 									</div>
 								</div>
 
-								{/* Feed Grid */}
-								<div className="p-6">
-									{limitedFeedReleases.length > 0 ? (
-										<div
-											className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-300 ease-out ${
-												isSearching ? 'opacity-60' : 'opacity-100'
-											}`}
-										>
-											{limitedFeedReleases.map((release, index) => (
-												<FeedReleaseCardWithReveal
-													key={release.id}
-													release={release}
-													index={index}
-													isMounted={true} // Always mounted once expanded
-													hoveredCardId={hoveredCardId}
-													hoveredTool={hoveredTool}
-													setHoveredCardId={setHoveredCardId}
-													setHoveredTool={setHoveredTool}
-													isSearching={isSearching}
-												/>
-											))}
-										</div>
-									) : (
-										<div
-											className={`py-12 text-center transition-opacity duration-300 ease-out ${
-												isSearching ? 'opacity-60' : 'opacity-100'
-											}`}
-										>
-											<p className="text-muted-foreground">
-												No releases found matching your filters.
-											</p>
-										</div>
+								{/* Tool Lanes Feed */}
+								<div
+									className={cn(
+										'p-6 transition-opacity duration-300 ease-out',
+										isSearching ? 'opacity-60' : 'opacity-100',
 									)}
+								>
+									<ToolLanesFeed
+										data={groupedData}
+										selectedTools={selectedTools}
+										searchQuery={debouncedSearchQuery}
+									/>
 								</div>
 							</div>
 
@@ -522,81 +458,6 @@ function TypewriterText({ text }: { text: string }) {
 	}, [text])
 
 	return <>{displayedText}</>
-}
-
-// Component wrapper with scroll reveal for each feed card
-function FeedReleaseCardWithReveal({
-	release,
-	index,
-	isMounted,
-	hoveredCardId,
-	hoveredTool,
-	setHoveredCardId,
-	setHoveredTool,
-	isSearching,
-}: {
-	release: ReleaseData
-	index: number
-	isMounted: boolean
-	hoveredCardId: string | null
-	hoveredTool: string | null
-	setHoveredCardId: (cardId: string | null) => void
-	setHoveredTool: (toolSlug: string | null) => void
-	isSearching: boolean
-}) {
-	const { ref, isVisible } = useScrollReveal({ threshold: 0.1 })
-
-	// Calculate stagger delay for initial load (stagger by 50ms for smoother entrance)
-	const initialDelay = 450 + index * 50
-
-	// Determine if this card should be dimmed
-	const isDimmed = hoveredTool !== null && hoveredTool !== release.tool.slug
-	// Only the specific hovered card gets border highlight
-	const isThisCardHovered = hoveredCardId === release.id
-	// Cards of same tool get colored dots
-	const isSameToolHovered = hoveredTool === release.tool.slug
-
-	return (
-		<div
-			ref={ref}
-			className={`h-full transition-all ease-out ${
-				index >= 4 ? 'hidden sm:block' : ''
-			} ${
-				isMounted && (isVisible || isSearching)
-					? 'translate-y-0 opacity-100 duration-400'
-					: 'translate-y-4 opacity-0 duration-600'
-			}`}
-			style={{
-				transitionDelay: isSearching ? '0ms' : `${initialDelay}ms`,
-			}}
-		>
-			<FeedReleaseCard
-				toolSlug={release.tool.slug}
-				toolName={release.tool.name}
-				vendor={release.tool.vendor}
-				version={release.version}
-				formattedVersion={release.formattedVersion}
-				releaseDate={release.releaseDate}
-				headline={release.headline}
-				changeCount={release._count.changes}
-				changesByType={release.changesByType}
-				hasBreaking={release.hasBreaking}
-				hasSecurity={release.hasSecurity}
-				hasDeprecation={release.hasDeprecation}
-				isThisCardHovered={isThisCardHovered}
-				isSameToolHovered={isSameToolHovered}
-				isDimmed={isDimmed}
-				onHoverStart={() => {
-					setHoveredCardId(release.id)
-					setHoveredTool(release.tool.slug)
-				}}
-				onHoverEnd={() => {
-					setHoveredCardId(null)
-					setHoveredTool(null)
-				}}
-			/>
-		</div>
-	)
 }
 
 function HomePageError({
