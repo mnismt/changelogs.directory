@@ -11,6 +11,9 @@
     "playwright_*": false
   },
   "agent": {
+    "plan": {
+      "model": "proxypal/gemini-claude-opus-4-5-thinking"
+    },
     "explore": {
       "model": "proxypal/gemini-3-flash-preview"
     }

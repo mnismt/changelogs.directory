@@ -1,5 +1,6 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useId, useState } from 'react'
+import { captureException, Sentry } from '@/integrations/sentry'
 import { authClient } from '@/lib/auth/client'
 import { cn } from '@/lib/utils'
 import { getSessionFn } from '@/server/auth'
@@ -37,11 +38,15 @@ function LoginPage() {
 						router.navigate({ to: '/admin' })
 					},
 					onError: (ctx) => {
+						Sentry.setContext('login', { email })
+						captureException(ctx.error)
 						setError(ctx.error.message)
 					},
 				},
 			})
-		} catch {
+		} catch (err) {
+			Sentry.setContext('login', { email })
+			captureException(err)
 			setError('An unexpected error occurred')
 		} finally {
 			setIsLoading(false)
