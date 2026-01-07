@@ -3,6 +3,15 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.4.3
+
+> **2026-01-07** — Mobile UX Improvements
+
+<img src="/changelog-assets/v0.4.3.png" alt="Mobile UX Improvements" width="60%" />
+
+- Fixed "What's New" toast overlapping with mobile navigation dock
+- Swipe-to-dismiss gesture and relative dates on changelog page
+
 ## 0.4.2
 
 > **2026-01-06** — Meta Changelog

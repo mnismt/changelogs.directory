@@ -2,6 +2,7 @@ import { motion, useInView } from 'motion/react'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
 import { EncryptedText } from '@/components/ui/encrypted-text'
+import { formatRelativeDate } from '@/lib/date-utils'
 import type { PlatformRelease } from '@/lib/parsers/platform-changelog'
 import { cn } from '@/lib/utils'
 
@@ -83,7 +84,7 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 			</div>
 
 			{/* Card */}
-			<GlassCard className="overflow-hidden">
+			<GlassCard className="group overflow-hidden">
 				{/* Version Header */}
 				<div className="border-b border-border/40 bg-muted/20 px-6 py-4">
 					<div className="flex flex-wrap items-center gap-3">
@@ -106,7 +107,10 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 							</span>
 						)}
 						<span className="font-mono text-xs text-muted-foreground">
-							{release.date} — {release.title}
+							{formatRelativeDate(release.date)} — {release.title}
+						</span>
+						<span className="ml-auto font-mono text-xs text-muted-foreground/30 transition-colors group-hover:text-muted-foreground">
+							{release.date}
 						</span>
 					</div>
 				</div>
@@ -115,7 +119,12 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 				<div className="p-6">
 					{/* Image (if present) */}
 					{release.image && (
-						<div className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20">
+						<div
+							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto"
+							style={
+								release.imageWidth ? { width: release.imageWidth } : undefined
+							}
+						>
 							<img
 								src={release.image}
 								alt={`Screenshot for v${release.version}`}

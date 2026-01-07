@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, type PanInfo } from 'motion/react'
 import { useEffect, useState } from 'react'
 import type { PlatformRelease } from '@/lib/parsers/platform-changelog'
 import { getPlatformChangelog } from '@/server/platform'
 
 const STORAGE_KEY = 'changelog:lastSeenVersion'
+const SWIPE_THRESHOLD = 50
 
 export function WhatsNewToast() {
 	const [showToast, setShowToast] = useState(false)
@@ -43,6 +44,13 @@ export function WhatsNewToast() {
 		setShowToast(false)
 	}
 
+	const handleDragEnd = (_: unknown, info: PanInfo) => {
+		// Dismiss if swiped down past threshold
+		if (info.offset.y > SWIPE_THRESHOLD) {
+			dismiss()
+		}
+	}
+
 	return (
 		<AnimatePresence>
 			{showToast && latestRelease && (
@@ -55,14 +63,26 @@ export function WhatsNewToast() {
 						damping: 25,
 						stiffness: 300,
 					}}
-					className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-48px)]"
+					drag="y"
+					dragConstraints={{ top: 0, bottom: 0 }}
+					dragElastic={0.3}
+					onDragEnd={handleDragEnd}
+					className="fixed z-50 bottom-24 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:w-[360px]"
 				>
-					<div className="relative overflow-hidden rounded-xl border border-border/40 bg-black/80 backdrop-blur-xl shadow-2xl">
+					<div className="relative overflow-hidden rounded-xl border border-border/40 bg-black/80 backdrop-blur-xl shadow-2xl touch-pan-x">
 						{/* Glow effect */}
 						<div className="absolute -top-20 -right-20 size-40 bg-primary/20 blur-3xl rounded-full pointer-events-none" />
 
+						{/* Swipe indicator - mobile only */}
+						<div className="flex flex-col items-center gap-1 pt-2 pb-1 md:hidden">
+							<div className="h-1 w-8 rounded-full bg-white/20" />
+							<span className="font-mono text-[9px] text-white/30 uppercase tracking-wider">
+								Swipe to dismiss
+							</span>
+						</div>
+
 						{/* Header */}
-						<div className="border-b border-border/40 px-4 py-2 bg-muted/10">
+						<div className="border-b border-border/40 px-4 py-2 bg-muted/10 md:mt-0 -mt-1">
 							<span className="font-mono text-[10px] uppercase tracking-widest text-primary/60">
 								NEW_RELEASE
 							</span>

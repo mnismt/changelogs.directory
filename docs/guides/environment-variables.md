@@ -428,6 +428,30 @@ VERCEL_PROJECT_ID="prj_abc123def456ghi789"
 
 ---
 
+## Development
+
+#### `VITE_DEVTOOLS_ENABLED` (optional)
+
+Enable TanStack DevTools (Router + Query) in the browser.
+
+**Options**: `true` | `false`
+
+**Example**:
+```bash
+VITE_DEVTOOLS_ENABLED="true"
+```
+
+**Used by**: `src/routes/__root.tsx` - Renders TanStack DevTools panel
+
+**Default**: Not set (devtools disabled)
+
+**Notes**:
+- Only works in development mode (Vite dev server)
+- Set to `"true"` to enable the floating devtools panel
+- Useful for debugging routing and query state
+
+---
+
 ## Configuration by Environment
 
 ### Local Development (`.env`)

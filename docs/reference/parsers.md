@@ -319,6 +319,73 @@ function formatAntigravityVersion(version: string): string {
 
 ---
 
+### 5. Platform Changelog Parser (PLATFORM_CHANGELOG)
+
+**File**: `src/lib/parsers/platform-changelog.ts`
+
+**Use Case**: The platform's own CHANGELOG.md with frontmatter and custom metadata format.
+
+**Format Expected**:
+```markdown
+---
+title: changelogs.directory Changelog
+description: Track updates to the changelog aggregation platform itself
+---
+
+## 0.4.3
+
+> **2026-01-07** — Mobile UX Improvements
+
+<img src="/changelog-assets/v0.4.3.png" alt="Mobile UX Improvements" width="75%" />
+
+- Fixed toast overlapping with mobile navigation dock
+- Swipe-to-dismiss gesture and relative dates
+
+## 0.4.2
+
+> **2026-01-06** — Meta Changelog
+
+![Meta Changelog](/changelog-assets/v0.4.2.png)
+
+- New `/changelog` page
+- "What's New" toast notification
+```
+
+**Key Features**:
+- **Frontmatter**: Uses `gray-matter` to parse YAML frontmatter (title, description)
+- **Metadata Line**: Extracts date and title from `> **YYYY-MM-DD** — Title` format
+- **Dual Image Syntax**: Supports both Markdown and HTML images
+
+**Interface**:
+```typescript
+interface PlatformRelease {
+  version: string        // "0.4.3"
+  date: string           // "2026-01-07"
+  title: string          // "Mobile UX Improvements"
+  image?: string         // "/changelog-assets/v0.4.3.png"
+  imageWidth?: string    // "75%" (from HTML width attribute)
+  changes: string[]      // ["Fixed toast overlapping...", ...]
+}
+```
+
+**Image Extraction**:
+```typescript
+// Markdown image: ![alt](path)
+const mdImageMatch = content.match(/!\[.*?\]\(([^)]+)\)/)
+
+// HTML image: <img src="path" width="75%" />
+const htmlImageMatch = content.match(
+  /<img\s+[^>]*src=["']([^"']+)["'][^>]*\/?>/i
+)
+
+// Extract width attribute if present
+const widthMatch = htmlImageMatch[0].match(/width=["']([^"']+)["']/i)
+```
+
+**Cross-reference**: See `src/lib/parsers/platform-changelog.ts` for full implementation.
+
+---
+
 ## Creating a Custom Parser
 
 ### Step 1: Analyze Source Format

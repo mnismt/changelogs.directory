@@ -5,6 +5,7 @@ export interface PlatformRelease {
 	date: string
 	title: string
 	image?: string
+	imageWidth?: string
 	changes: string[]
 }
 
@@ -38,9 +39,28 @@ export function parsePlatformChangelog(content: string): PlatformChangelog {
 		const date = metaMatch?.[1] || ''
 		const title = metaMatch?.[2]?.trim() || ''
 
-		// Extract image: ![alt](/path/to/image.png)
-		const imageMatch = sectionContent.match(/!\[.*?\]\(([^)]+)\)/)
-		const image = imageMatch?.[1]
+		// Extract image: ![alt](/path/to/image.png) or <img src="/path/to/image.png" ... />
+		let image: string | undefined
+		let imageWidth: string | undefined
+
+		// Try markdown image first: ![alt](path)
+		const mdImageMatch = sectionContent.match(/!\[.*?\]\(([^)]+)\)/)
+		if (mdImageMatch) {
+			image = mdImageMatch[1]
+		}
+
+		// Try HTML image: <img src="path" ... />
+		const htmlImageMatch = sectionContent.match(
+			/<img\s+[^>]*src=["']([^"']+)["'][^>]*\/?>/i,
+		)
+		if (htmlImageMatch) {
+			image = htmlImageMatch[1]
+			// Extract width if present: width="75%" or width='75%'
+			const widthMatch = htmlImageMatch[0].match(/width=["']([^"']+)["']/i)
+			if (widthMatch) {
+				imageWidth = widthMatch[1]
+			}
+		}
 
 		// Extract bullet points
 		const changes = sectionContent
@@ -48,7 +68,7 @@ export function parsePlatformChangelog(content: string): PlatformChangelog {
 			.filter((line) => /^[-*]\s+/.test(line))
 			.map((line) => line.replace(/^[-*]\s+/, '').trim())
 
-		releases.push({ version, date, title, image, changes })
+		releases.push({ version, date, title, image, imageWidth, changes })
 	}
 
 	return {
