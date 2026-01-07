@@ -321,13 +321,15 @@ import { GoogleAntigravity } from '@/components/logo/google-antigravity'
 | `slug` | string | URL-friendly ID (must match database slug) |
 | `name` | string | Display name |
 | `vendor` | string | Company name (shown as "by Vendor") |
-| `url` | string | Official website URL |
+| `url` | string | Official website URL (for reference) |
 | `Logo` | Component | React logo component from Step 2 |
 | `isMonochrome` | boolean | `true` if logo uses `currentColor` |
 | `showInFeedFilter` | boolean | Show in homepage filter buttons |
 | `showInShowcase` | boolean | Show in hero logo carousel |
 
 **Cross-reference**: See [reference/tool-registry.md](../reference/tool-registry.md) for full registry documentation.
+
+> **Note on the `url` field**: While the `url` field is required in the registry, the logo showcase component links to internal tool pages (`/tools/$slug`) rather than external URLs. The `url` field is kept for potential future features like "Visit official site" buttons on tool detail pages.
 
 ---
 

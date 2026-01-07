@@ -1,18 +1,24 @@
 import { Link } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SHOWCASE_TOOLS } from '@/lib/tool-registry'
 import { cn } from '@/lib/utils'
 
 const tools = SHOWCASE_TOOLS.map((tool) => ({
+	slug: tool.slug,
 	name: tool.name,
 	Logo: tool.Logo,
-	url: tool.url,
 	subtitle: `by ${tool.vendor}`,
 	isMonochrome: tool.isMonochrome,
 }))
 
+// Pixels per second - controls scroll speed feel
+const SCROLL_SPEED = 35
+
 export function LogoShowcase() {
 	const [isMounted, setIsMounted] = useState(false)
+	const containerRef = useRef<HTMLDivElement>(null)
+	const [scrollDistance, setScrollDistance] = useState(0)
+	const [duration, setDuration] = useState(15) // fallback duration
 
 	useEffect(() => {
 		// Delay to sync with parent component's fade-in (700ms delay from index.tsx)
@@ -22,14 +28,65 @@ export function LogoShowcase() {
 		return () => clearTimeout(timer)
 	}, [])
 
-	// Triple the array for seamless infinite scroll
-	const allTools = [...tools, ...tools, ...tools]
+	useEffect(() => {
+		const container = containerRef.current
+		if (!container) return
+
+		const measure = () => {
+			const children = Array.from(container.children)
+			let width = 0
+
+			// Measure first set of tools only (first N children = one complete set)
+			for (let i = 0; i < tools.length && i < children.length; i++) {
+				const child = children[i] as HTMLElement
+				const style = getComputedStyle(child)
+				width +=
+					child.offsetWidth +
+					Number.parseFloat(style.marginLeft) +
+					Number.parseFloat(style.marginRight)
+			}
+
+			if (width > 0) {
+				setScrollDistance(width)
+				setDuration(width / SCROLL_SPEED)
+			}
+		}
+
+		// Measure after a short delay to ensure layout is complete
+		const measureTimer = setTimeout(measure, 100)
+
+		const resizeObserver = new ResizeObserver(() => {
+			// Debounce resize measurements
+			clearTimeout(measureTimer)
+			setTimeout(measure, 100)
+		})
+		resizeObserver.observe(container)
+
+		return () => {
+			clearTimeout(measureTimer)
+			resizeObserver.disconnect()
+		}
+	}, [])
+
+	// Only need 2 copies for seamless infinite loop
+	const allTools = [...tools, ...tools]
 
 	return (
 		<div className="group/showcase relative w-full overflow-hidden border-y border-border bg-background py-6">
 			{/* Single row - Scrolls left to right */}
-			{/* Removed gap-4, using mx-4 on items instead for smooth math */}
-			<div className="flex animate-scroll group-hover/showcase:animation-play-state-paused">
+			<div
+				ref={containerRef}
+				className="flex animate-scroll group-hover/showcase:[animation-play-state:paused]"
+				style={
+					{
+						'--scroll-distance': `${scrollDistance}px`,
+						animation:
+							scrollDistance > 0
+								? `scroll ${duration}s linear infinite`
+								: 'none',
+					} as React.CSSProperties
+				}
+			>
 				{allTools.map((tool, index) => {
 					// Calculate stagger delay based on position in the original tools array
 					const toolIndex = index % tools.length
@@ -37,8 +94,8 @@ export function LogoShowcase() {
 
 					return (
 						<Link
-							to={tool.url}
-							target="_blank"
+							to="/tools/$slug"
+							params={{ slug: tool.slug }}
 							key={`${tool.name}-${index}`}
 							className={`group/item mx-4 flex min-w-[240px] shrink-0 items-center gap-4 rounded-lg border border-transparent px-6 py-3 transition-all duration-500 hover:scale-105 hover:border-border hover:bg-card sm:min-w-[260px] ${
 								isMounted

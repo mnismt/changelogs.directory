@@ -24,6 +24,23 @@ The page is driven by a strict React state machine:
 -   **Trigger**: `onAnimationComplete` callback from `HeroSection`.
 -   **Transition**: Sets state to `connector`.
 
+#### Logo Showcase Implementation
+
+The `LogoShowcase` component within the Hero section uses a **pixel-perfect infinite marquee** animation:
+
+-   **Technique**: Duplicates the tool list 2× and measures the exact width of one set using `ResizeObserver`.
+-   **Animation**: CSS `@keyframes scroll` with dynamically calculated `--scroll-distance` custom property.
+-   **Speed**: Constant scroll speed controlled by `SCROLL_SPEED` constant (default: 50px/s).
+-   **Duration**: Dynamically calculated as `scrollDistance / SCROLL_SPEED` seconds.
+-   **Responsive**: Recalculates on viewport resize to maintain seamless loop.
+-   **Interaction**: Pauses on hover via `animation-play-state: paused`.
+-   **Links**: Each logo links to `/tools/$slug` (internal navigation, not external URLs).
+
+**Why JavaScript measurement instead of pure CSS?**
+-   Previous percentage-based animation (`translateX(-100% / 3)`) failed due to margin/padding inconsistencies.
+-   JavaScript measurement ensures pixel-perfect alignment regardless of content width.
+-   Dynamic duration keeps scroll speed consistent when tools are added/removed.
+
 ### Phase 2: The Connector (`connector`)
 -   **Visual**: A vertical line (`1px` wide) grows downwards from the Hero section.
 -   **Animation**: CSS transition `height: 0 -> 12` (h-12), `opacity: 0 -> 1`.

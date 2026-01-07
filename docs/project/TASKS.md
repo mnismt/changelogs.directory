@@ -18,10 +18,10 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 - [x] Create Trigger.dev ingestion task (`src/trigger/ingest-codex.ts`)
 - [x] Test ingestion manually - verify Codex data in database
 - [x] Schedule Trigger.dev task (every 6 hours) for Codex
-- [ ] Seed Cursor tool record and HTML changelog connector
-- [ ] Create Trigger.dev ingestion task (`src/trigger/ingest/cursor`)
-- [ ] Test HTML crawler manually - verify Cursor articles in database
-- [ ] Schedule Trigger.dev task (every 6 hours) for Cursor
+- [x] Seed Cursor tool record and HTML changelog connector
+- [x] Create Trigger.dev ingestion task (`src/trigger/ingest/cursor`)
+- [x] Test HTML crawler manually - verify Cursor articles in database
+- [x] Schedule Trigger.dev task (every 6 hours) for Cursor
 
 **Success metric**: Claude Code and OpenAI Codex releases appear in database after ingestion runs; Cursor changelog is ingested via HTML crawler.
 
@@ -58,14 +58,14 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 
 **Goal**: Production-ready deployment with monitoring.
 
-- [ ] Add loading states and error boundaries
-- [ ] Add a footer
-- [ ] Set up error monitoring (Sentry or similar)
+- [x] Add loading states and error boundaries
+- [x] Add a footer
+- [x] Set up error monitoring (Sentry or similar)
 - [x] Design email subscription flow for product updates (UI + backend using existing waitlist data)
-- [ ] Implement generic email provider factory (`lib/email`) with Resend provider for MVP and ZeptoMail as drop-in replacement
-- [ ] Configure environment toggles (`EMAIL_PROVIDER`, provider API keys) and document provider switching process
-- [ ] Deploy to production (Vercel or Cloudflare)
-- [ ] Test ingestion in production environment
+- [x] Implement generic email provider factory (`lib/email`) with Resend provider for MVP and ZeptoMail as drop-in replacement
+- [x] Configure environment toggles (`EMAIL_PROVIDER`, provider API keys) and document provider switching process
+- [x] Deploy to production (Vercel or Cloudflare)
+- [x] Test ingestion in production environment
 - [x] Write basic docs (README, how to add a tool)
 - [x] Document design rules and transition flows (`docs/transition-flow`)
 
@@ -96,14 +96,18 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 - Monochrome dark design system
 - Trigger.dev integration configured
 - Database schema designed (`docs/DATABASE_SCHEMA.md`)
+- Phase 1: Database & Ingestion Pipeline (Claude Code, Codex, Cursor)
+- Phase 2: Core UI Pages (tools hub, tool pages, release pages, filtering)
+- Phase 3: Homepage & Feed (latest releases, subscribe CTA)
+- Phase 4: Polish & Launch Prep (error boundaries, footer, Sentry, email provider, deployment)
 
-**In Progress** 🚧:
+**MVP Complete** 🎉:
 
-- Phase 1: Database & Ingestion Pipeline
+All Phase 1-4 tasks are complete. The MVP is live and operational.
 
 **Next Up** ⏭️:
 
-- Implement Prisma schema migration
+- Post-MVP features (see below)
 
 ---
 
