@@ -23,7 +23,7 @@ export function Footer() {
 
 	return (
 		<footer className="border-t border-border/40 bg-background">
-			<div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:px-6 lg:px-8 md:flex-row">
+			<div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 pb-24 sm:px-6 md:flex-row md:pb-6 lg:px-8">
 				<div className="flex items-center gap-4">
 					<Link
 						to="/changelog"

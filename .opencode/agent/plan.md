@@ -6,7 +6,7 @@ tools:
   write: false
   edit: false
   bash: false
-model: proxypal/gemini-claude-sonnet-4-5-thinking
+model: proxypal/gemini-claude-opus-4-5-thinking
 permission:
   bash:
     "git status": allow
