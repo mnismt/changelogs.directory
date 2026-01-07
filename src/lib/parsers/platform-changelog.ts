@@ -33,8 +33,9 @@ export function parsePlatformChangelog(content: string): PlatformChangelog {
 		const sectionContent = sections[i + 1] || ''
 
 		// Extract date and title: > **2026-01-06** — Tool Lanes Layout
+		// Also supports ISO 8601 datetime: > **2026-01-07T10:30:00+07:00** — Title
 		const metaMatch = sectionContent.match(
-			/>\s*\*\*(\d{4}-\d{2}-\d{2})\*\*\s*—\s*(.+)/,
+			/>\s*\*\*(\d{4}-\d{2}-\d{2}(?:T[\d:]+(?:[+-]\d{2}:\d{2}|Z)?)?)\*\*\s*—\s*(.+)/,
 		)
 		const date = metaMatch?.[1] || ''
 		const title = metaMatch?.[2]?.trim() || ''
