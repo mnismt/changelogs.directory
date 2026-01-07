@@ -34,7 +34,7 @@ interface ToolConfig {
 | `slug` | `string` | ✅ | URL-friendly ID. Must match the `slug` in `prisma/seed.ts` |
 | `name` | `string` | ✅ | Display name shown in UI (e.g., "Claude Code") |
 | `vendor` | `string` | ✅ | Company name, displayed as "by {vendor}" in carousel |
-| `url` | `string` | ✅ | Official website URL for external links |
+| `url` | `string` | ✅ | Official website URL (for reference; showcase uses internal links) |
 | `Logo` | `ComponentType` | ✅ | React component from `src/components/logo/` |
 | `isMonochrome` | `boolean` | ✅ | `true` if logo uses `currentColor` (stroke-based) |
 | `showInFeedFilter` | `boolean` | ✅ | `true` to show in homepage feed filter buttons |
@@ -101,7 +101,7 @@ These components consume from the registry:
 | Component | Uses |
 |-----------|------|
 | `src/routes/index.tsx` | `FEED_FILTER_TOOLS` for homepage filter buttons |
-| `src/components/shared/logo-showcase.tsx` | `SHOWCASE_TOOLS` for hero carousel |
+| `src/components/shared/logo-showcase.tsx` | `SHOWCASE_TOOLS` for hero carousel (links to `/tools/$slug`) |
 | Tool pages | `getToolLogo()` for tool headers |
 
 ## Backward Compatibility
