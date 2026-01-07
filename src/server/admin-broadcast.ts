@@ -112,57 +112,54 @@ export const sendBroadcast = createServerFn({ method: 'POST' })
 		console.log(`[Broadcast] Email template rendered, subject: ${subject}`)
 
 		const results = { success: 0, failed: 0, errors: [] as string[] }
-		const BATCH_SIZE = 10
-		const DELAY_BETWEEN_BATCHES = 1000
-		const totalBatches = Math.ceil(recipients.length / BATCH_SIZE)
+		const DELAY_BETWEEN_EMAILS = 500 // 500ms = 2 emails/sec (Resend free tier limit)
 
-		for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
-			const batchNumber = Math.floor(i / BATCH_SIZE) + 1
-			const batch = recipients.slice(i, i + BATCH_SIZE)
+		for (let i = 0; i < recipients.length; i++) {
+			const recipient = recipients[i]
 			console.log(
-				`[Broadcast] Batch ${batchNumber}/${totalBatches}: sending ${batch.length} emails...`,
+				`[Broadcast] Sending ${i + 1}/${recipients.length} to ${recipient.email}...`,
 			)
 
-			const batchResults = await Promise.allSettled(
-				batch.map(async (recipient) => {
-					return emailProvider.sendEmail({
-						from: {
-							email: 'system@changelogs.directory',
-							name: 'Changelogs Directory',
-						},
-						to: recipient.email,
-						subject,
-						html,
-					})
-				}),
-			)
+			try {
+				const result = await emailProvider.sendEmail({
+					from: {
+						email: 'system@changelogs.directory',
+						name: 'Changelogs Directory',
+					},
+					to: recipient.email,
+					subject,
+					html,
+				})
 
-			for (const result of batchResults) {
-				if (result.status === 'fulfilled' && result.value.success) {
+				if (result.success) {
 					results.success++
+					console.log(`[Broadcast] ✓ Sent ${i + 1}/${recipients.length}`)
 				} else {
 					results.failed++
-					if (result.status === 'rejected') {
-						results.errors.push(String(result.reason))
-					} else if (result.status === 'fulfilled' && result.value.error) {
-						results.errors.push(result.value.error)
-					}
+					results.errors.push(result.error || 'Unknown error')
+					console.error(
+						`[Broadcast] ✗ Failed ${i + 1}/${recipients.length}: ${result.error}`,
+					)
 				}
+			} catch (error) {
+				results.failed++
+				const errorMsg = error instanceof Error ? error.message : String(error)
+				results.errors.push(errorMsg)
+				console.error(
+					`[Broadcast] ✗ Exception ${i + 1}/${recipients.length}: ${errorMsg}`,
+				)
 			}
 
-			console.log(
-				`[Broadcast] Batch ${batchNumber}/${totalBatches} complete (✓${results.success} ✗${results.failed})`,
-			)
-
-			if (i + BATCH_SIZE < recipients.length) {
+			// Wait before next email (except for last one)
+			if (i < recipients.length - 1) {
 				await new Promise((resolve) =>
-					setTimeout(resolve, DELAY_BETWEEN_BATCHES),
+					setTimeout(resolve, DELAY_BETWEEN_EMAILS),
 				)
 			}
 		}
 
 		console.log(
-			`[Broadcast] Complete: ${results.success} sent, ${results.failed} failed`,
+			`[Broadcast] Complete: ${results.success}/${recipients.length} sent, ${results.failed} failed`,
 		)
 		return results
 	})
