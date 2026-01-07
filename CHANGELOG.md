@@ -5,7 +5,7 @@ description: Track updates to the changelog aggregation platform itself
 
 ## 0.4.3
 
-> **2026-01-07** — Mobile UX Improvements
+> **2026-01-07T14:30:00+07:00** — Mobile UX Improvements
 
 <img src="/changelog-assets/v0.4.3.png" alt="Mobile UX Improvements" width="60%" />
 
@@ -14,7 +14,7 @@ description: Track updates to the changelog aggregation platform itself
 
 ## 0.4.2
 
-> **2026-01-06** — Meta Changelog
+> **2026-01-06T23:00:00+07:00** — Meta Changelog
 
 ![Meta Changelog](/changelog-assets/v0.4.2.png)
 
@@ -23,7 +23,7 @@ description: Track updates to the changelog aggregation platform itself
 
 ## 0.4.1
 
-> **2026-01-06** — Tool Lanes Layout
+> **2026-01-06T12:00:00+07:00** — Tool Lanes Layout
 
 ![Tool Lanes Layout](/changelog-assets/v0.4.1.png)
 

@@ -2,7 +2,7 @@ import { motion, useInView } from 'motion/react'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
 import { EncryptedText } from '@/components/ui/encrypted-text'
-import { formatRelativeDate } from '@/lib/date-utils'
+import { formatDate, formatRelativeDate } from '@/lib/date-utils'
 import type { PlatformRelease } from '@/lib/parsers/platform-changelog'
 import { cn } from '@/lib/utils'
 
@@ -110,7 +110,7 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 							{formatRelativeDate(release.date)} — {release.title}
 						</span>
 						<span className="ml-auto font-mono text-xs text-muted-foreground/30 transition-colors group-hover:text-muted-foreground">
-							{release.date}
+							{formatDate(release.date, 'dd MMM yyyy')}
 						</span>
 					</div>
 				</div>
