@@ -44,6 +44,12 @@ The palette is strictly monochrome, inspired by high-end developer tools (Cursor
             -   **Active State**: Smooth sliding background (`layoutId`) and a glowing green dot indicator.
             -   **Animations**: Spring-based entry (`y: 100` -> `0`) and scale effects on tap/hover.
         -   **Content**: Essential navigation icons + primary action (Subscribe).
+    -   **Toast Notifications**:
+        -   **Position**: Fixed at `bottom-24` on mobile (to clear the Floating Dock), `bottom-6 right-6` on desktop.
+        -   **Aesthetic**: Glassmorphism matching the dock (`bg-black/80`, `backdrop-blur-xl`, `border-border/40`).
+        -   **Mobile Gestures**: Support swipe-to-dismiss (swipe down 50px+ to dismiss).
+        -   **Swipe Indicator**: Show a subtle drag handle bar and "Swipe to dismiss" hint on mobile.
+        -   **Animation**: Spring-based entry (`y: 100` → `0`), elastic snap-back on drag.
 
 ## UX & Animation
 

@@ -132,7 +132,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					<Footer />
 					<MobileDock />
 				</div>
-				{import.meta.env.DEV && (
+				{import.meta.env.VITE_DEVTOOLS_ENABLED === 'true' && (
 					<TanStackDevtools
 						config={{
 							position: 'bottom-right',
