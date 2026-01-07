@@ -31,6 +31,7 @@ function BroadcastPage() {
 	})
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 	const [searchQuery, setSearchQuery] = useState('')
+	const [filterType, setFilterType] = useState<'all' | 'test' | 'real'>('all')
 	const [isSending, setIsSending] = useState(false)
 	const [sendResult, setSendResult] = useState<{
 		success: number
@@ -56,10 +57,25 @@ function BroadcastPage() {
 	const selectedTemplate = templates.find((t) => t.id === selectedTemplateId)
 
 	const filteredSubscribers = useMemo(() => {
-		if (!searchQuery.trim()) return subscribers
-		const query = searchQuery.toLowerCase()
-		return subscribers.filter((sub) => sub.email.toLowerCase().includes(query))
-	}, [subscribers, searchQuery])
+		let filtered = subscribers
+
+		// Filter by type
+		if (filterType === 'test') {
+			filtered = filtered.filter((sub) => sub.isTest)
+		} else if (filterType === 'real') {
+			filtered = filtered.filter((sub) => !sub.isTest)
+		}
+
+		// Filter by search query
+		if (searchQuery.trim()) {
+			const query = searchQuery.toLowerCase()
+			filtered = filtered.filter((sub) =>
+				sub.email.toLowerCase().includes(query),
+			)
+		}
+
+		return filtered
+	}, [subscribers, filterType, searchQuery])
 
 	const handleSelectAll = () => {
 		setSelectedIds(new Set(filteredSubscribers.map((sub) => sub.id)))
@@ -302,6 +318,43 @@ function BroadcastPage() {
 				</div>
 			)}
 
+			{/* Filter by Type */}
+			<div className="flex gap-2">
+				<button
+					type="button"
+					onClick={() => setFilterType('all')}
+					className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+						filterType === 'all'
+							? 'bg-neutral-700 text-white'
+							: 'border border-neutral-700 text-neutral-300 hover:bg-neutral-800'
+					}`}
+				>
+					All ({subscribers.length})
+				</button>
+				<button
+					type="button"
+					onClick={() => setFilterType('test')}
+					className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+						filterType === 'test'
+							? 'bg-neutral-700 text-white'
+							: 'border border-neutral-700 text-neutral-300 hover:bg-neutral-800'
+					}`}
+				>
+					Test ({subscribers.filter((s) => s.isTest).length})
+				</button>
+				<button
+					type="button"
+					onClick={() => setFilterType('real')}
+					className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+						filterType === 'real'
+							? 'bg-neutral-700 text-white'
+							: 'border border-neutral-700 text-neutral-300 hover:bg-neutral-800'
+					}`}
+				>
+					Real ({subscribers.filter((s) => !s.isTest).length})
+				</button>
+			</div>
+
 			{/* Controls */}
 			<div className="flex items-center gap-4 flex-wrap">
 				<div className="flex-1 min-w-[200px]">
@@ -432,7 +485,8 @@ function BroadcastPage() {
 
 				{isSending && (
 					<span className="text-sm text-neutral-400">
-						Sending emails in batches...
+						Sending {selectedIds.size} emails sequentially (check server logs
+						for progress)...
 					</span>
 				)}
 			</div>
