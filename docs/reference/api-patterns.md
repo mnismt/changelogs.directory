@@ -426,29 +426,22 @@ function ToolReleasesPage() {
 
 ### Error Boundaries
 
+#### Route-Level Error Handling
+
+Use `errorComponent` in route definitions to handle errors thrown in loaders.
+
 **File**: `src/routes/tools/$slug/index.tsx`
 
-```typescript
-export const Route = createFileRoute('/tools/$slug/')({
-  loader: async ({ params }) => {
-    const tool = await getToolMetadata({ data: { slug: params.slug } })
-    return { tool }
-  },
-  errorComponent: ({ error }) => {
-    if (error.message.includes('not found')) {
-      return (
-        <div>
-          <h1>404 - Tool Not Found</h1>
-          <p>The tool "{params.slug}" does not exist.</p>
-        </div>
-      )
-    }
+#### Global Error Boundaries
 
-    return <div>Error: {error.message}</div>
-  },
-  component: ToolPage,
-})
-```
+**File**: `src/components/shared/app-error-boundary.tsx`
+
+The `AppErrorBoundary` class component wraps `<Outlet />` and catches React errors globally.
+
+**Key Details**:
+- Layout: Centered with `min-h-[calc(100vh-4rem)]` + flexbox
+- "Go home" uses `window.location.href = '/'` (full reload) because client navigation doesn't remount the boundary
+- Design follows "System Fault" aesthetic — see [design/animations/system-errors.md](../design/animations/system-errors.md)
 
 ---
 

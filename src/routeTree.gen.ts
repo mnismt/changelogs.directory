@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as CrashRouteImport } from './routes/crash'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
@@ -42,11 +41,6 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CrashRoute = CrashRouteImport.update({
-  id: '/crash',
-  path: '/crash',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -163,7 +157,6 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
-  '/crash': typeof CrashRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
@@ -188,7 +181,6 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
-  '/crash': typeof CrashRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
@@ -214,7 +206,6 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
-  '/crash': typeof CrashRoute
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
@@ -242,7 +233,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/changelog'
     | '/compare'
-    | '/crash'
     | '/login'
     | '/unsubscribe'
     | '/admin/broadcast'
@@ -267,7 +257,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/changelog'
     | '/compare'
-    | '/crash'
     | '/login'
     | '/unsubscribe'
     | '/admin/broadcast'
@@ -292,7 +281,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/changelog'
     | '/compare'
-    | '/crash'
     | '/login'
     | '/unsubscribe'
     | '/admin/broadcast'
@@ -319,7 +307,6 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   ChangelogRoute: typeof ChangelogRoute
   CompareRoute: typeof CompareRoute
-  CrashRoute: typeof CrashRoute
   LoginRoute: typeof LoginRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   OgToolsRoute: typeof OgToolsRouteWithChildren
@@ -343,13 +330,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/crash': {
-      id: '/crash'
-      path: '/crash'
-      fullPath: '/crash'
-      preLoaderRoute: typeof CrashRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -567,7 +547,6 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   ChangelogRoute: ChangelogRoute,
   CompareRoute: CompareRoute,
-  CrashRoute: CrashRoute,
   LoginRoute: LoginRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   OgToolsRoute: OgToolsRouteWithChildren,

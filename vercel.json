@@ -1,5 +1,0 @@
-{
-	"buildCommand": "pnpm prisma:generate && pnpm build",
-	"installCommand": "pnpm install"
-}
-

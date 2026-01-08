@@ -46,6 +46,7 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
   - [tools-detail.md](design/animations/tools-detail.md) - Tool page animations
   - [release-detail.md](design/animations/release-detail.md) - Release page transitions
   - [analytics.md](design/animations/analytics.md) - Analytics page animations
+  - [system-errors.md](design/animations/system-errors.md) - Error page choreography (404/500)
 
 ### 📋 project/
 **Project planning, vision, and strategic decisions.**
