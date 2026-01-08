@@ -33,6 +33,11 @@ export class AppErrorBoundary extends Component<
 		this.setState({ hasError: false, errorMessage: undefined })
 	}
 
+	private handleGoHome = () => {
+		this.setState({ hasError: false, errorMessage: undefined })
+		window.location.href = '/'
+	}
+
 	override render(): ReactNode {
 		if (this.state.hasError) {
 			// Only show technical details in development mode
@@ -42,12 +47,13 @@ export class AppErrorBoundary extends Component<
 					window.location.hostname === '127.0.0.1')
 
 			return (
-				<div className="px-4 py-24">
+				<div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
 					<ErrorBoundaryCard
 						title="Unexpected error"
 						message="The interface crashed unexpectedly."
 						detail={showDetail ? this.state.errorMessage : undefined}
 						onRetry={this.handleRetry}
+						onGoHome={this.handleGoHome}
 					/>
 				</div>
 			)
