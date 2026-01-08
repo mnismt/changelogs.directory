@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, notFound, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { ToolHero } from '@/components/changelog/tool/tool-hero'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
@@ -8,6 +8,9 @@ import { getToolMetadata } from '@/server/tools'
 export const Route = createFileRoute('/tools/$slug')({
 	loader: async ({ params }) => {
 		const tool = await getToolMetadata({ data: { slug: params.slug } })
+		if (!tool) {
+			throw notFound()
+		}
 		return { tool }
 	},
 	errorComponent: ToolLayoutError,
