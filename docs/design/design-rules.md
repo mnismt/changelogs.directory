@@ -80,6 +80,35 @@ The application features an immersive global background system.
     -   **Blur & Fade**: Apply a subtle blur (`blur(10px)`) during exit/enter to mask the transition.
     -   **Active Indicator**: Use `layoutId` to smoothly animate the active state background between pagination buttons.
 
+### 4. System States & Feedback
+
+The application uses distinct visual states to communicate system status.
+
+#### Normal State (Default)
+-   **Background**: `bg-black/40` with `backdrop-blur-xl` (glassmorphism)
+-   **Accents**: Green (`#22c55e`) for success, active states
+-   **Borders**: `border-white/10`
+-   **Typography**: `Inter` for UI, `Fira Code` for technical data
+
+#### Fault State (Errors)
+-   **Background**: Maintains `bg-black/40` but adds red accents
+-   **Accents**: Red (`#ef4444`) for critical errors
+-   **Borders**: `border-red-950/30` for error containers
+-   **Effects**: Glitch, scanlines, hex dumps
+
+#### Component Usage for System States
+
+| Component | Purpose | When to Use |
+|-----------|---------|-------------|
+| **GlitchText** | Visual instability to signal error severity | Critical errors, status codes (404, 500), high-impact headers |
+| **TerminalWindow** | Frames content as terminal output | Error logs, CLI simulation, technical data presentation |
+| **ScanlineOverlay** | CRT monitor aesthetic for retro-tech immersion | Full-page utility screens (404, 500, Analytics) |
+
+**Guidelines**:
+-   **Glitch effects**: Reserved for error pages only — avoid overuse to maintain impact
+-   **Red accents**: Use sparingly for semantic meaning (errors, warnings, critical actions)
+-   **Scanlines**: Apply to "system monitor" interfaces (errors, analytics, data-heavy views)
+
 ## Implementation Checklist
 
 When implementing new UI features, ask:
@@ -94,9 +123,11 @@ When implementing new UI features, ask:
 
 For detailed documentation on how specific pages implement these design rules, including animation choreography and state machines, see:
 
--   **[Homepage Flow](transition-flow/index.md)**: The "Terminal Boot Sequence" with its multi-stage animation.
--   **[Tools Page Flow](transition-flow/tools.$slug.md)**: The "Directory Listing" with staggered entrance and global background effects.
--   **[Release Page Flow](transition-flow/tools.$slug/releases.$version.md)**: The "Deep Dive" with context persistence and cinematic data stream.
--   **[Analytics Page Flow](transition-flow/analytics.md)**: The "Network Operations Center" with real-time data streams and system status monitoring.
+-   **[Homepage Flow](animations/homepage.md)**: The "Terminal Boot Sequence" with its multi-stage animation.
+-   **[Tools Page Flow](animations/tools-index.md)**: The "Directory Listing" with staggered entrance and global background effects.
+-   **[Tool Detail Flow](animations/tools-detail.md)**: Tool-specific page with release feed.
+-   **[Release Page Flow](animations/release-detail.md)**: The "Deep Dive" with context persistence and cinematic data stream.
+-   **[Analytics Page Flow](animations/analytics.md)**: The "Network Operations Center" with real-time data streams and system status monitoring.
+-   **[Error Pages Flow](animations/system-errors.md)**: The "System Fault" sequence with glitch effects and terminal aesthetics for 404/500 pages.
 
 These documents provide concrete examples of how the abstract principles above are applied in practice.

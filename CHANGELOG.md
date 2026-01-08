@@ -3,6 +3,15 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.4.4
+
+> **2026-01-08T18:00:00+07:00** — Error Pages Got a Glow-Up
+
+![Error Pages Redesign](/changelog-assets/v0.4.4.png)
+
+- 404 and 500 pages now look like they belong in a sci-fi terminal 👾
+- Glitchy text effects, scanlines, and hexdump aesthetics - getting lost never looked this good
+
 ## 0.4.3
 
 > **2026-01-07T14:30:00+07:00** — Mobile UX Improvements
