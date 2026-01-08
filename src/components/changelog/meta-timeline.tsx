@@ -117,8 +117,29 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 
 				{/* Content */}
 				<div className="p-6">
-					{/* Image (if present) */}
-					{release.image && (
+					{/* Video (if present) */}
+					{release.video && (
+						<div
+							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto"
+							style={
+								release.videoWidth ? { width: release.videoWidth } : undefined
+							}
+						>
+							<video
+								src={release.video}
+								autoPlay
+								loop
+								muted
+								playsInline
+								className="w-full h-auto"
+							>
+								<track kind="captions" />
+							</video>
+						</div>
+					)}
+
+					{/* Image (if present and no video) */}
+					{release.image && !release.video && (
 						<div
 							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto"
 							style={

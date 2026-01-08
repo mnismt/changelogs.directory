@@ -6,6 +6,8 @@ export interface PlatformRelease {
 	title: string
 	image?: string
 	imageWidth?: string
+	video?: string
+	videoWidth?: string
 	changes: string[]
 }
 
@@ -63,13 +65,38 @@ export function parsePlatformChangelog(content: string): PlatformChangelog {
 			}
 		}
 
+		// Extract video: <video src="/path/to/video.mp4" ... />
+		let video: string | undefined
+		let videoWidth: string | undefined
+
+		const htmlVideoMatch = sectionContent.match(
+			/<video\s+[^>]*src=["']([^"']+)["'][^>]*\/?>/i,
+		)
+		if (htmlVideoMatch) {
+			video = htmlVideoMatch[1]
+			// Extract width if present
+			const widthMatch = htmlVideoMatch[0].match(/width=["']([^"']+)["']/i)
+			if (widthMatch) {
+				videoWidth = widthMatch[1]
+			}
+		}
+
 		// Extract bullet points
 		const changes = sectionContent
 			.split('\n')
 			.filter((line) => /^[-*]\s+/.test(line))
 			.map((line) => line.replace(/^[-*]\s+/, '').trim())
 
-		releases.push({ version, date, title, image, imageWidth, changes })
+		releases.push({
+			version,
+			date,
+			title,
+			image,
+			imageWidth,
+			video,
+			videoWidth,
+			changes,
+		})
 	}
 
 	return {

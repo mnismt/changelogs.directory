@@ -3,6 +3,16 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.5.0
+
+> **2026-01-08T23:45:00+07:00** — Mobile Version Picker
+
+<video src="/changelog-assets/v0.5.0.mp4" autoplay loop muted playsinline width="50%"></video>
+
+- New version picker with search and month grouping 🔍
+- Fuzzy search to quickly find any version
+- Auto-scrolls to current version on open
+
 ## 0.4.4
 
 > **2026-01-08T18:00:00+07:00** — Error Pages Got a Glow-Up
