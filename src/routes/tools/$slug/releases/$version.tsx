@@ -1,11 +1,18 @@
 import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router'
+import { Layers } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ChangeItem } from '@/components/changelog/release/change-item'
+import { CollapsibleSection } from '@/components/changelog/release/collapsible-section'
 import { ReleaseDetailSkeleton } from '@/components/changelog/release/release-detail-skeleton'
+// TODO: Enable SectionNav in next release
+// import { SectionNav } from '@/components/changelog/release/section-nav'
 import { VersionList } from '@/components/changelog/release/version-list'
+import { VersionPickerSheet } from '@/components/changelog/release/version-picker-sheet'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import type { Change, ChangeType } from '@/generated/prisma/client'
+// TODO: Enable useSectionObserver in next release
+// import { useSectionObserver } from '@/hooks/use-section-observer'
 import { captureException } from '@/integrations/sentry'
 import {
 	getAdjacentVersions,
@@ -106,10 +113,21 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 function ReleaseDetailPage() {
 	const { slug, version } = Route.useParams()
 	const navigate = useNavigate()
-
 	const { release, adjacentVersions, allVersions } = Route.useLoaderData()
 
-	// Group changes by type and apply filters
+	// Version picker state
+	const [isVersionPickerOpen, setIsVersionPickerOpen] = useState(false)
+
+	// TODO: Enable section observer in next release
+	// Section refs for scroll observation
+	// const sectionRefsMap = useRef<Map<ChangeType, HTMLDivElement | null>>(
+	// 	new Map(),
+	// )
+	// const { activeSection, scrollToSection } = useSectionObserver(
+	// 	sectionRefsMap.current,
+	// )
+
+	// Group changes by type
 	const groupedChanges = useMemo((): Partial<Record<ChangeType, Change[]>> => {
 		const empty: Partial<Record<ChangeType, Change[]>> = {
 			FEATURE: [],
@@ -125,7 +143,6 @@ function ReleaseDetailPage() {
 
 		if (!release?.changes) return empty
 
-		// Group by type
 		const grouped: Partial<Record<ChangeType, Change[]>> = {
 			FEATURE: [],
 			BUGFIX: [],
@@ -148,7 +165,7 @@ function ReleaseDetailPage() {
 		return grouped
 	}, [release?.changes])
 
-	// Section titles and order
+	// Section definitions
 	const sections: Array<{ type: ChangeType; title: string }> = [
 		{ type: 'BREAKING', title: '⚠️ Breaking Changes' },
 		{ type: 'SECURITY', title: '🔒 Security Updates' },
@@ -161,10 +178,33 @@ function ReleaseDetailPage() {
 		{ type: 'OTHER', title: '📦 Other Changes' },
 	]
 
+	// TODO: Enable activeSections in next release
+	// Active sections (only those with changes)
+	// const activeSections = useMemo(() => {
+	// 	return sections
+	// 		.filter((section) => {
+	// 			const changes = groupedChanges[section.type]
+	// 			return changes && changes.length > 0
+	// 		})
+	// 		.map((section) => ({
+	// 			type: section.type,
+	// 			title: section.title,
+	// 			count: groupedChanges[section.type]?.length ?? 0,
+	// 		}))
+	// }, [groupedChanges, sections])
+
+	// TODO: Enable ref setter in next release
+	// Ref setter callback
+	// const setSectionRef = useCallback(
+	// 	(type: ChangeType) => (el: HTMLDivElement | null) => {
+	// 		sectionRefsMap.current.set(type, el)
+	// 	},
+	// 	[],
+	// )
+
 	// Keyboard navigation
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			// Only trigger on n/p keys (not in input fields)
 			if (
 				e.target instanceof HTMLInputElement ||
 				e.target instanceof HTMLTextAreaElement
@@ -189,159 +229,201 @@ function ReleaseDetailPage() {
 		return () => window.removeEventListener('keydown', handleKeyDown)
 	}, [adjacentVersions, navigate, slug])
 
+	const hasChanges = !Object.values(groupedChanges).every(
+		(changes) => changes.length === 0,
+	)
+
 	return (
-		<motion.div
-			initial="hidden"
-			animate="visible"
-			variants={{
-				hidden: { opacity: 0 },
-				visible: {
-					opacity: 1,
-					transition: {
-						staggerChildren: 0.1,
-						delayChildren: 0.05,
+		<>
+			<motion.div
+				initial="hidden"
+				animate="visible"
+				variants={{
+					hidden: { opacity: 0 },
+					visible: {
+						opacity: 1,
+						transition: {
+							staggerChildren: 0.1,
+							delayChildren: 0.05,
+						},
 					},
-				},
-			}}
-			className="space-y-8"
-		>
-			{/* Changes by Type */}
-			<AnimatePresence mode="wait">
-				{Object.values(groupedChanges).every(
-					(changes) => changes.length === 0,
-				) ? (
+				}}
+				className="space-y-8 pb-24 md:pb-8"
+			>
+				{/* Changes by Type */}
+				<AnimatePresence mode="wait">
+					{!hasChanges ? (
+						<motion.div
+							key={`empty-${version}`}
+							initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+							animate={{
+								opacity: 1,
+								y: 0,
+								filter: 'blur(0px)',
+								transition: { duration: 0.4, ease: 'easeOut' },
+							}}
+							exit={{
+								opacity: 0,
+								y: -20,
+								filter: 'blur(10px)',
+								transition: { duration: 0.3, ease: 'easeIn' },
+							}}
+							className="rounded-lg border border-dashed border-white/10 bg-white/5 p-12 text-center"
+						>
+							<p className="font-mono text-muted-foreground">
+								No changes found in this release.
+							</p>
+						</motion.div>
+					) : (
+						<motion.div
+							key={`content-${version}`}
+							initial="hidden"
+							animate="visible"
+							exit="exit"
+							variants={{
+								hidden: { opacity: 0 },
+								visible: {
+									opacity: 1,
+									transition: {
+										staggerChildren: 0.1,
+										delayChildren: 0.05,
+									},
+								},
+								exit: {
+									opacity: 0,
+									transition: { duration: 0.2 },
+								},
+							}}
+							className="space-y-10"
+						>
+							{sections.map((section) => {
+								const changes = groupedChanges[section.type]
+								if (!changes || changes.length === 0) return null
+
+								return (
+									<motion.div
+										key={`${section.type}-${version}`}
+										layout
+										variants={{
+											hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+											visible: {
+												opacity: 1,
+												y: 0,
+												filter: 'blur(0px)',
+												transition: { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] },
+											},
+											exit: {
+												opacity: 0,
+												y: -10,
+												filter: 'blur(5px)',
+												transition: { duration: 0.3, ease: 'easeInOut' },
+											},
+										}}
+									>
+										<CollapsibleSection
+											type={section.type}
+											title={section.title}
+											changes={changes}
+										>
+											{changes.map((change) => (
+												<ChangeItem
+													key={change.id}
+													title={change.title}
+													description={change.description}
+													platform={change.platform}
+													isBreaking={change.isBreaking}
+													isSecurity={change.isSecurity}
+													isDeprecation={change.isDeprecation}
+													links={
+														change.links
+															? (change.links as Array<{
+																	url: string
+																	text: string
+																	type?: string
+																}>)
+															: null
+													}
+													media={
+														change.media
+															? (change.media as Array<{
+																	type: 'video' | 'image'
+																	url: string
+																	alt?: string
+																}>)
+															: null
+													}
+												/>
+											))}
+										</CollapsibleSection>
+									</motion.div>
+								)
+							})}
+						</motion.div>
+					)}
+				</AnimatePresence>
+
+				{/* Version List at Bottom - Desktop only */}
+				{allVersions && (
 					<motion.div
-						key={`empty-${version}`}
-						initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-						animate={{
-							opacity: 1,
-							y: 0,
-							filter: 'blur(0px)',
-							transition: { duration: 0.4, ease: 'easeOut' },
-						}}
-						exit={{
-							opacity: 0,
-							y: -20,
-							filter: 'blur(10px)',
-							transition: { duration: 0.3, ease: 'easeIn' },
-						}}
-						className="rounded-lg border border-dashed border-white/10 bg-white/5 p-12 text-center"
-					>
-						<p className="font-mono text-muted-foreground">
-							No changes found in this release.
-						</p>
-					</motion.div>
-				) : (
-					<motion.div
-						key={`content-${version}`}
-						initial="hidden"
-						animate="visible"
-						exit="exit"
 						variants={{
 							hidden: { opacity: 0 },
 							visible: {
 								opacity: 1,
-								transition: {
-									staggerChildren: 0.1,
-									delayChildren: 0.05,
-								},
-							},
-							exit: {
-								opacity: 0,
-								transition: { duration: 0.2 },
+								transition: { duration: 0.5, delay: 0.3 },
 							},
 						}}
-						className="space-y-10"
+						className="hidden md:block"
 					>
-						{sections.map((section) => {
-							const changes = groupedChanges[section.type]
-							if (!changes || changes.length === 0) return null
-
-							return (
-								<motion.div
-									key={`${section.type}-${version}`}
-									layout
-									variants={{
-										hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
-										visible: {
-											opacity: 1,
-											y: 0,
-											filter: 'blur(0px)',
-											transition: { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] },
-										},
-										exit: {
-											opacity: 0,
-											y: -10,
-											filter: 'blur(5px)',
-											transition: { duration: 0.3, ease: 'easeInOut' },
-										},
-									}}
-									className="space-y-4"
-								>
-									<div className="flex items-center gap-4 pl-2">
-										<h3 className="font-mono text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">
-											{section.title}
-										</h3>
-										<div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
-									</div>
-
-									<div className="space-y-1">
-										{changes.map((change) => (
-											<ChangeItem
-												key={change.id}
-												title={change.title}
-												description={change.description}
-												platform={change.platform}
-												isBreaking={change.isBreaking}
-												isSecurity={change.isSecurity}
-												isDeprecation={change.isDeprecation}
-												links={
-													change.links
-														? (change.links as Array<{
-																url: string
-																text: string
-																type?: string
-															}>)
-														: null
-												}
-												media={
-													change.media
-														? (change.media as Array<{
-																type: 'video' | 'image'
-																url: string
-																alt?: string
-															}>)
-														: null
-												}
-											/>
-										))}
-									</div>
-								</motion.div>
-							)
-						})}
+						<VersionList
+							toolSlug={slug}
+							currentVersion={version}
+							versions={allVersions}
+						/>
 					</motion.div>
 				)}
-			</AnimatePresence>
+			</motion.div>
 
-			{/* Version List at Bottom */}
+			{/* Mobile Section Nav - TODO: Enable in next release
+			{hasChanges && (
+				<SectionNav
+					sections={activeSections}
+					activeSection={activeSection}
+					onSectionClick={scrollToSection}
+				/>
+			)}
+			*/}
+
+			{/* Mobile Version Picker FAB + Sheet */}
 			{allVersions && (
-				<motion.div
-					variants={{
-						hidden: { opacity: 0 },
-						visible: {
-							opacity: 1,
-							transition: { duration: 0.5, delay: 0.3 },
-						},
-					}}
-				>
-					<VersionList
-						toolSlug={slug}
+				<>
+					<motion.button
+						type="button"
+						onClick={() => setIsVersionPickerOpen(true)}
+						initial={{ scale: 0, opacity: 0 }}
+						animate={{ scale: 1, opacity: 1 }}
+						transition={{
+							type: 'spring',
+							stiffness: 260,
+							damping: 20,
+							delay: 0.5,
+						}}
+						whileTap={{ scale: 0.9 }}
+						className="fixed bottom-20 right-4 z-40 md:hidden flex items-center justify-center size-12 rounded-full bg-black/80 backdrop-blur-xl border border-white/20 shadow-lg"
+						aria-label="Open version picker"
+					>
+						<Layers className="size-5 text-foreground" />
+					</motion.button>
+
+					<VersionPickerSheet
+						open={isVersionPickerOpen}
+						onClose={() => setIsVersionPickerOpen(false)}
 						currentVersion={version}
 						versions={allVersions}
+						toolSlug={slug}
 					/>
-				</motion.div>
+				</>
 			)}
-		</motion.div>
+		</>
 	)
 }
 

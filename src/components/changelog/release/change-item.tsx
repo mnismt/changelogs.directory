@@ -13,6 +13,29 @@ interface ChangeItemProps {
 }
 
 /**
+ * Decode HTML entities in text (SSR-safe).
+ * e.g., "It&#x27;s" -> "It's"
+ */
+function decodeHtmlEntities(text: string): string {
+	const entities: Record<string, string> = {
+		'&amp;': '&',
+		'&lt;': '<',
+		'&gt;': '>',
+		'&quot;': '"',
+		'&apos;': "'",
+		'&#x27;': "'",
+		'&#39;': "'",
+		'&#x2F;': '/',
+		'&#47;': '/',
+		'&nbsp;': ' ',
+	}
+	return text.replace(
+		/&(?:amp|lt|gt|quot|apos|nbsp|#x27|#39|#x2F|#47);/g,
+		(match) => entities[match] || match,
+	)
+}
+
+/**
  * Clean display title by removing markdown heading prefixes.
  * e.g., "#Layout customization" -> "Layout customization"
  */
@@ -41,8 +64,8 @@ export function ChangeItem({
 						</span>
 
 						{/* Title */}
-						<span className="text-base font-mono text-foreground/80 group-hover:text-foreground transition-colors flex-1">
-							{cleanDisplayTitle(title)}
+						<span className="text-sm md:text-base font-mono text-foreground/80 group-hover:text-foreground transition-colors flex-1">
+							{decodeHtmlEntities(cleanDisplayTitle(title))}
 						</span>
 
 						{/* Tags */}
@@ -88,9 +111,9 @@ export function ChangeItem({
 
 					{/* Description */}
 					{description && (
-						<div className="pl-6 border-l border-white/5 ml-1.5">
-							<p className="text-sm text-muted-foreground/70 leading-relaxed max-w-3xl font-sans">
-								{description}
+						<div className="pl-4 md:pl-6 border-l border-white/5 ml-1.5">
+							<p className="text-xs md:text-sm text-muted-foreground/70 leading-relaxed max-w-3xl font-sans">
+								{decodeHtmlEntities(description)}
 							</p>
 						</div>
 					)}

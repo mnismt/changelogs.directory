@@ -47,6 +47,10 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 
 	const logo = getToolLogo(slug)
 
+	// Check if user is viewing the latest version
+	const isViewingLatest =
+		version && tool.latestVersion && version === tool.latestVersion
+
 	return (
 		<div className="mb-16 relative">
 			<div className="absolute inset-x-0 -top-20 -bottom-20 opacity-20 pointer-events-none">
@@ -201,13 +205,13 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 							transition: { duration: 0.8, ease: 'circOut' },
 						},
 					}}
-					className="flex flex-wrap items-center gap-x-8 gap-y-4 font-mono text-xs text-muted-foreground border-y border-white/5 py-4 bg-white/[0.02] overflow-hidden whitespace-nowrap"
+					className="flex items-center gap-4 md:gap-8 font-mono text-xs text-muted-foreground border-y border-white/5 py-4 bg-white/[0.02] overflow-hidden"
 				>
 					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ delay: 0.8 }}
-						className="flex items-center gap-8 w-full"
+						className="flex items-center gap-6 md:gap-8 w-full"
 					>
 						{/* Status Indicator */}
 						<div className="flex items-center gap-2 min-w-[140px]">
@@ -227,18 +231,64 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 										</span>
 									</motion.div>
 								) : version ? (
-									<motion.div
-										key="deployed"
-										initial={{ opacity: 0 }}
-										animate={{ opacity: 1 }}
-										transition={{ duration: 0.5 }}
-										className="flex items-center gap-2"
-									>
-										<span className="size-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]" />
-										<span className="tracking-wider text-foreground">
-											STATUS: DEPLOYED
-										</span>
-									</motion.div>
+									isViewingLatest ? (
+										<motion.div
+											key="viewing-latest"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											transition={{ duration: 0.5 }}
+											className="flex items-center gap-2"
+										>
+											<span className="size-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+											<span className="tracking-wider text-foreground">
+												VIEWING:{' '}
+												{release?.sourceUrl ? (
+													<a
+														href={release.sourceUrl}
+														target="_blank"
+														rel="noreferrer"
+														className="text-green-400 underline decoration-green-400/50 decoration-2 underline-offset-4 hover:decoration-green-400 transition-colors"
+													>
+														{release?.formattedVersion || version}
+													</a>
+												) : (
+													<span className="text-green-400">
+														{release?.formattedVersion || version}
+													</span>
+												)}
+												<span className="text-muted-foreground/60 ml-2">
+													(LATEST)
+												</span>
+											</span>
+										</motion.div>
+									) : (
+										<motion.div
+											key="viewing-old"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											transition={{ duration: 0.5 }}
+											className="flex items-center gap-2"
+										>
+											<span className="size-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+											<span className="tracking-wider text-foreground">
+												VIEWING:{' '}
+												{release?.sourceUrl ? (
+													<a
+														href={release.sourceUrl}
+														target="_blank"
+														rel="noreferrer"
+														className="text-amber-400 underline decoration-amber-400/50 decoration-2 underline-offset-4 hover:decoration-amber-400 transition-colors"
+													>
+														{release?.formattedVersion || version}
+													</a>
+												) : (
+													<span className="text-amber-400">
+														{release?.formattedVersion || version}
+													</span>
+												)}
+											</span>
+										</motion.div>
+									)
 								) : (
 									<motion.div
 										key="ready"
@@ -256,16 +306,35 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 							</AnimatePresence>
 						</div>
 
-						{tool.latestVersion && (
+						{tool.latestVersion && !isViewingLatest && (
 							<div className="flex items-center gap-2">
-								<span className="text-muted-foreground/40">LATEST_VER:</span>
-								<span className="text-foreground">
-									{tool.formattedLatestVersion || tool.latestVersion}
-								</span>
+								{version ? (
+									<Link
+										to="/tools/$slug/releases/$version"
+										params={{ slug, version: tool.latestVersion }}
+										className="group flex items-center gap-2 hover:text-foreground transition-colors"
+									>
+										<span className="text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
+											↗ LATEST:
+										</span>
+										<span className="text-foreground group-hover:text-green-400 transition-colors">
+											{tool.formattedLatestVersion || tool.latestVersion}
+										</span>
+									</Link>
+								) : (
+									<>
+										<span className="text-muted-foreground/40">
+											LATEST_VER:
+										</span>
+										<span className="text-foreground">
+											{tool.formattedLatestVersion || tool.latestVersion}
+										</span>
+									</>
+								)}
 							</div>
 						)}
 
-						<div className="flex items-center gap-2">
+						<div className="hidden md:flex items-center gap-2">
 							<span className="text-muted-foreground/40">
 								{release ? 'CHANGES:' : 'TOTAL_RELEASES:'}
 							</span>
@@ -279,7 +348,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 								href={release?.sourceUrl || tool.homepage || '#'}
 								target="_blank"
 								rel="noreferrer"
-								className="group flex items-center gap-2 ml-auto px-3 py-1.5 rounded-sm border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+								className="hidden md:flex group items-center gap-2 ml-auto px-3 py-1.5 rounded-sm border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
 							>
 								<span className="text-[10px] tracking-widest uppercase text-muted-foreground group-hover:text-foreground transition-colors">
 									[ {release ? 'OPEN_CHANGELOG' : 'OPEN_HOMEPAGE'} ]
