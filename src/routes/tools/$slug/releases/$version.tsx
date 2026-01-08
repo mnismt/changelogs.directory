@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo } from 'react'
 import { ChangeItem } from '@/components/changelog/release/change-item'
@@ -15,16 +15,28 @@ import {
 
 export const Route = createFileRoute('/tools/$slug/releases/$version')({
 	loader: async ({ params }) => {
-		const [release, adjacentVersions, allVersions] = await Promise.all([
-			getReleaseWithChanges({
-				data: { toolSlug: params.slug, version: params.version },
-			}),
+		// 1. Fetch critical data (release)
+		const release = await getReleaseWithChanges({
+			data: { toolSlug: params.slug, version: params.version },
+		})
+
+		if (!release) {
+			throw notFound()
+		}
+
+		// 2. Fetch non-critical data in parallel (resilient)
+		const [adjacentVersions, allVersions] = await Promise.all([
 			getAdjacentVersions({
 				data: { toolSlug: params.slug, version: params.version },
-			}),
+			}).catch(() => ({
+				prev: null,
+				next: null,
+				formattedPrev: null,
+				formattedNext: null,
+			})),
 			getAllVersions({
 				data: { slug: params.slug },
-			}),
+			}).catch(() => []),
 		])
 
 		return {

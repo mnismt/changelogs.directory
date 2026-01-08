@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, notFound } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
@@ -50,6 +50,10 @@ export const Route = createFileRoute('/tools/$slug/')({
 				includePrereleases: deps.showPrereleases,
 			},
 		})
+
+		if (!firstPage) {
+			throw notFound()
+		}
 
 		return {
 			initialReleases: firstPage.releases,
@@ -128,6 +132,8 @@ function ToolPage() {
 					includePrereleases: search.showPrereleases,
 				},
 			})
+
+			if (!nextPage) throw new Error('Failed to load more releases')
 
 			setReleases((prev) => [...prev, ...nextPage.releases])
 			setPagination(nextPage.pagination)

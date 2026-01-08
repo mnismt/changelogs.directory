@@ -127,7 +127,7 @@ export const getToolMetadata = createServerFn({ method: 'GET' })
 			})
 
 			if (!tool) {
-				throw new Error('Tool not found')
+				return null
 			}
 
 			// Get latest and first release for header stats
@@ -159,9 +159,6 @@ export const getToolMetadata = createServerFn({ method: 'GET' })
 		} catch (error: unknown) {
 			console.error('Error fetching tool metadata:', error)
 			if (error instanceof Error) {
-				if (error.message === 'Tool not found') {
-					throw error
-				}
 				console.error('Database error fetching tool metadata:', error)
 			}
 			captureServerException(error)
@@ -194,7 +191,7 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 			})
 
 			if (!tool) {
-				throw new Error('Tool not found')
+				return null
 			}
 
 			// Build date range filter
@@ -292,9 +289,6 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 		} catch (error: unknown) {
 			console.error('Error fetching paginated releases:', error)
 			if (error instanceof Error) {
-				if (error.message === 'Tool not found') {
-					throw error
-				}
 				console.error('Database error fetching paginated releases:', error)
 			}
 			captureServerException(error)
@@ -333,7 +327,7 @@ export const getReleaseWithChanges = createServerFn({ method: 'GET' })
 			})
 
 			if (!release) {
-				throw new Error('Release not found')
+				return null
 			}
 
 			return {
@@ -345,9 +339,6 @@ export const getReleaseWithChanges = createServerFn({ method: 'GET' })
 			}
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				if (error.message === 'Release not found') {
-					throw error
-				}
 				console.error('Database error fetching release:', error)
 			}
 			captureServerException(error)
@@ -495,7 +486,7 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 		} catch (error: unknown) {
 			console.error('Error fetching versions:', error)
 			captureServerException(error)
-			throw new Error('Failed to fetch versions')
+			return []
 		}
 	})
 
