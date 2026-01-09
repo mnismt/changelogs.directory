@@ -10,8 +10,11 @@ export function useSectionObserver(
 	sectionRefs: Map<ChangeType, HTMLDivElement | null>,
 	options: UseSectionObserverOptions = {},
 ) {
-	const { rootMargin = '-40% 0px -40% 0px', threshold = 0 } = options
+	const { rootMargin = '-20% 0px -20% 0px', threshold = 0 } = options
 	const [activeSection, setActiveSection] = useState<ChangeType | null>(null)
+	const [visibleSections, setVisibleSections] = useState<Set<ChangeType>>(
+		new Set(),
+	)
 
 	useEffect(() => {
 		const sections = Array.from(sectionRefs.entries()).filter(
@@ -20,27 +23,47 @@ export function useSectionObserver(
 
 		if (sections.length === 0) return
 
+		const visibleSet = new Set<ChangeType>()
+
 		const observer = new IntersectionObserver(
 			(entries) => {
-				const visibleEntries = entries.filter((entry) => entry.isIntersecting)
-
-				if (visibleEntries.length > 0) {
-					const mostVisible = visibleEntries.reduce((prev, current) =>
-						current.intersectionRatio > prev.intersectionRatio ? current : prev,
-					)
-
+				for (const entry of entries) {
 					const sectionType = sections.find(
-						([, el]) => el === mostVisible.target,
+						([, el]) => el === entry.target,
 					)?.[0]
 
 					if (sectionType) {
-						setActiveSection(sectionType)
+						if (entry.isIntersecting) {
+							visibleSet.add(sectionType)
+						} else {
+							visibleSet.delete(sectionType)
+						}
 					}
+				}
+
+				setVisibleSections(new Set(visibleSet))
+
+				// Set active section as the first visible one (topmost)
+				const sectionOrder: ChangeType[] = [
+					'BREAKING',
+					'SECURITY',
+					'FEATURE',
+					'IMPROVEMENT',
+					'PERFORMANCE',
+					'BUGFIX',
+					'DEPRECATION',
+					'DOCUMENTATION',
+					'OTHER',
+				]
+
+				const firstVisible = sectionOrder.find((type) => visibleSet.has(type))
+				if (firstVisible) {
+					setActiveSection(firstVisible)
 				}
 			},
 			{
 				rootMargin,
-				threshold: [0, 0.25, 0.5, 0.75, 1],
+				threshold: [0, 0.1],
 			},
 		)
 
@@ -73,6 +96,7 @@ export function useSectionObserver(
 
 	return {
 		activeSection,
+		visibleSections,
 		scrollToSection,
 	}
 }

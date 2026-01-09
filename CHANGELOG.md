@@ -3,6 +3,15 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.5.1
+
+> **2026-01-09** — Mobile Section Nav
+
+![Mobile Section Nav](/changelog-assets/v0.5.1.png)
+
+- Section nav on mobile — jump to features, bugfixes, breaking changes
+- Fix claude code versions showing in the wrong order when timestamps match
+
 ## 0.5.0
 
 > **2026-01-08T23:45:00+07:00** — Mobile Version Picker

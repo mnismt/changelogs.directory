@@ -82,7 +82,7 @@ export function ChangeItem({
 								{isBreaking && (
 									<Badge
 										variant="destructive"
-										className="shrink-0 rounded-sm font-mono text-[10px] uppercase tracking-wider bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20"
+										className="shrink-0 rounded-sm font-mono text-[10px] uppercase tracking-wider bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30"
 									>
 										<AlertTriangle className="mr-1 h-3 w-3" />
 										BREAKING
@@ -91,7 +91,7 @@ export function ChangeItem({
 								{isSecurity && (
 									<Badge
 										variant="destructive"
-										className="shrink-0 rounded-sm font-mono text-[10px] uppercase tracking-wider bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20"
+										className="shrink-0 rounded-sm font-mono text-[10px] uppercase tracking-wider bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30"
 									>
 										<Shield className="mr-1 h-3 w-3" />
 										SECURITY
