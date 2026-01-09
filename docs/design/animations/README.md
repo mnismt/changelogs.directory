@@ -24,6 +24,9 @@ See [release-detail.md](release-detail.md#g-section-navigation-v05x) for full do
 - **[release-detail.md](release-detail.md)** - Release page transitions and change displays
 - **[analytics.md](analytics.md)** - Analytics page visualizations
 
+### Components
+- **[video-player.md](video-player.md)** - Cinematic video player with viewport-aware autoplay
+
 ## Design Principles
 
 All animations follow these core principles from [design-rules.md](../design-rules.md):
@@ -49,4 +52,4 @@ Each page document includes:
 
 ---
 
-**Last Updated**: 2026-01-09
+**Last Updated**: 2026-01-10

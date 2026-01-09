@@ -7,9 +7,11 @@ description: Track updates to the changelog aggregation platform itself
 
 > **2026-01-09** — Desktop Section Nav
 
-- Desktop sidebar TOC with viewport bracket indicator (minimap-style)
-- Compact mode on medium screens, expands on hover
-- Full labels always visible on XL+ screens
+<video src="/changelog-assets/v0.5.2.mp4" autoplay loop muted playsinline width="75%"></video>
+
+- Sidebar minimap with viewport bracket — see where you are at a glance
+- Dims when idle, brightens on scroll or hover
+- Labels expand on hover (medium screens) or always visible (XL+)
 
 ## 0.5.1
 
@@ -22,7 +24,7 @@ description: Track updates to the changelog aggregation platform itself
 
 ## 0.5.0
 
-> **2026-01-08T23:45:00+07:00** — Mobile Version Picker
+> **2026-01-09T15:44:00+07:00** — Mobile Version Picker
 
 <video src="/changelog-assets/v0.5.0.mp4" autoplay loop muted playsinline width="50%"></video>
 
