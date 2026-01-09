@@ -1,6 +1,7 @@
 import { motion, useInView } from 'motion/react'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
+import { CinematicVideoPlayer } from '@/components/ui/cinematic-video-player'
 import { EncryptedText } from '@/components/ui/encrypted-text'
 import { formatDate, formatRelativeDate } from '@/lib/date-utils'
 import type { PlatformRelease } from '@/lib/parsers/platform-changelog'
@@ -119,25 +120,11 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 				<div className="p-6">
 					{/* Video (if present) */}
 					{release.video && (
-						<div
-							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto w-full max-sm:!max-w-full"
-							style={
-								release.videoWidth
-									? { maxWidth: release.videoWidth }
-									: undefined
-							}
-						>
-							<video
-								src={release.video}
-								autoPlay
-								loop
-								muted
-								playsInline
-								className="w-full h-auto"
-							>
-								<track kind="captions" />
-							</video>
-						</div>
+						<CinematicVideoPlayer
+							src={release.video}
+							maxWidth={release.videoWidth}
+							className="mb-6 mx-auto w-full max-sm:!max-w-full"
+						/>
 					)}
 
 					{/* Image (if present and no video) */}

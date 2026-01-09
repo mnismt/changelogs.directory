@@ -146,8 +146,7 @@ export function SectionNav({
 								key={section.type}
 								type="button"
 								onClick={() => onSectionClick(section.type)}
-								whileTap={{ scale: 0.95 }}
-								className="relative shrink-0 flex items-center gap-1 rounded-full px-2.5 py-1 transition-colors"
+								className="relative shrink-0 flex items-center gap-1 rounded-full px-2.5 py-1 transition-[colors,transform] duration-100 active:scale-95"
 							>
 								{isActive && (
 									<motion.div
@@ -258,9 +257,8 @@ export function SectionNav({
 									key={section.type}
 									type="button"
 									onClick={() => onSectionClick(section.type)}
-									whileTap={{ scale: 0.95 }}
 									className={cn(
-										'relative flex h-8 items-center gap-2 rounded-lg px-2 transition-colors',
+										'relative flex h-8 items-center gap-2 rounded-lg px-2 transition-[colors,transform] duration-100 active:scale-95',
 										isActive
 											? isBreaking
 												? 'text-amber-200'

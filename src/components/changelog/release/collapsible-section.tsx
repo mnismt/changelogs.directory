@@ -136,12 +136,14 @@ export function CollapsibleSection({
 							'font-mono text-xs',
 						)}
 					>
-						<motion.span
-							animate={{ rotate: isExpanded ? 180 : 0 }}
-							transition={{ duration: 0.3, ease: 'easeInOut' }}
+						<span
+							className={cn(
+								'inline-block transition-transform duration-300 ease-in-out',
+								isExpanded && 'rotate-180',
+							)}
 						>
 							<ChevronDown className="size-4" />
-						</motion.span>
+						</span>
 						<span>
 							{isExpanded
 								? 'Show less'
