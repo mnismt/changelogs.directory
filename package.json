@@ -120,6 +120,7 @@
     "seed:prod": "bun --env-file=.env.production prisma/seed.ts",
     "serve": "vite preview",
     "start": "node .output/server/index.mjs",
+    "sync:prod": "bun scripts/sync-prod-to-local.ts",
     "test": "vitest run"
   },
   "type": "module"
