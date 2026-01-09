@@ -39,7 +39,7 @@ const changeTypeLabels: Partial<Record<ChangeType, string>> = {
 	IMPROVEMENT: '🚀 Improvements',
 	PERFORMANCE: '⚡ Performance',
 	BUGFIX: '🐛 Bug Fixes',
-	DEPRECATION: '⚠️ Deprecated',
+	DEPRECATION: '🌅 Deprecated',
 	DOCUMENTATION: '📚 Docs',
 	OTHER: '📦 Other',
 }

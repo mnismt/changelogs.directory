@@ -1,18 +1,16 @@
 import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router'
 import { Layers } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChangeItem } from '@/components/changelog/release/change-item'
 import { CollapsibleSection } from '@/components/changelog/release/collapsible-section'
 import { ReleaseDetailSkeleton } from '@/components/changelog/release/release-detail-skeleton'
-// TODO: Enable SectionNav in next release
-// import { SectionNav } from '@/components/changelog/release/section-nav'
+import { SectionNav } from '@/components/changelog/release/section-nav'
 import { VersionList } from '@/components/changelog/release/version-list'
 import { VersionPickerSheet } from '@/components/changelog/release/version-picker-sheet'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
 import type { Change, ChangeType } from '@/generated/prisma/client'
-// TODO: Enable useSectionObserver in next release
-// import { useSectionObserver } from '@/hooks/use-section-observer'
+import { useSectionObserver } from '@/hooks/use-section-observer'
 import { captureException } from '@/integrations/sentry'
 import {
 	getAdjacentVersions,
@@ -118,14 +116,12 @@ function ReleaseDetailPage() {
 	// Version picker state
 	const [isVersionPickerOpen, setIsVersionPickerOpen] = useState(false)
 
-	// TODO: Enable section observer in next release
 	// Section refs for scroll observation
-	// const sectionRefsMap = useRef<Map<ChangeType, HTMLDivElement | null>>(
-	// 	new Map(),
-	// )
-	// const { activeSection, scrollToSection } = useSectionObserver(
-	// 	sectionRefsMap.current,
-	// )
+	const sectionRefsMap = useRef<Map<ChangeType, HTMLDivElement | null>>(
+		new Map(),
+	)
+	const { activeSection, visibleSections, scrollToSection } =
+		useSectionObserver(sectionRefsMap.current)
 
 	// Group changes by type
 	const groupedChanges = useMemo((): Partial<Record<ChangeType, Change[]>> => {
@@ -173,34 +169,32 @@ function ReleaseDetailPage() {
 		{ type: 'IMPROVEMENT', title: '🚀 Improvements' },
 		{ type: 'PERFORMANCE', title: '⚡ Performance' },
 		{ type: 'BUGFIX', title: '🐛 Bug Fixes' },
-		{ type: 'DEPRECATION', title: '⚠️ Deprecated' },
+		{ type: 'DEPRECATION', title: '🌅 Deprecated' },
 		{ type: 'DOCUMENTATION', title: '📚 Documentation' },
 		{ type: 'OTHER', title: '📦 Other Changes' },
 	]
 
-	// TODO: Enable activeSections in next release
 	// Active sections (only those with changes)
-	// const activeSections = useMemo(() => {
-	// 	return sections
-	// 		.filter((section) => {
-	// 			const changes = groupedChanges[section.type]
-	// 			return changes && changes.length > 0
-	// 		})
-	// 		.map((section) => ({
-	// 			type: section.type,
-	// 			title: section.title,
-	// 			count: groupedChanges[section.type]?.length ?? 0,
-	// 		}))
-	// }, [groupedChanges, sections])
+	const activeSections = useMemo(() => {
+		return sections
+			.filter((section) => {
+				const changes = groupedChanges[section.type]
+				return changes && changes.length > 0
+			})
+			.map((section) => ({
+				type: section.type,
+				title: section.title,
+				count: groupedChanges[section.type]?.length ?? 0,
+			}))
+	}, [groupedChanges, sections])
 
-	// TODO: Enable ref setter in next release
 	// Ref setter callback
-	// const setSectionRef = useCallback(
-	// 	(type: ChangeType) => (el: HTMLDivElement | null) => {
-	// 		sectionRefsMap.current.set(type, el)
-	// 	},
-	// 	[],
-	// )
+	const setSectionRef = useCallback(
+		(type: ChangeType) => (el: HTMLDivElement | null) => {
+			sectionRefsMap.current.set(type, el)
+		},
+		[],
+	)
 
 	// Keyboard navigation
 	useEffect(() => {
@@ -324,6 +318,7 @@ function ReleaseDetailPage() {
 											type={section.type}
 											title={section.title}
 											changes={changes}
+											onSectionRef={setSectionRef(section.type)}
 										>
 											{changes.map((change) => (
 												<ChangeItem
@@ -383,15 +378,15 @@ function ReleaseDetailPage() {
 				)}
 			</motion.div>
 
-			{/* Mobile Section Nav - TODO: Enable in next release
+			{/* Section Nav */}
 			{hasChanges && (
 				<SectionNav
 					sections={activeSections}
 					activeSection={activeSection}
+					visibleSections={visibleSections}
 					onSectionClick={scrollToSection}
 				/>
 			)}
-			*/}
 
 			{/* Mobile Version Picker FAB + Sheet */}
 			{allVersions && (
