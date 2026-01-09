@@ -7,7 +7,7 @@ description: Track updates to the changelog aggregation platform itself
 
 > **2026-01-09** — Mobile Section Nav
 
-![Mobile Section Nav](/changelog-assets/v0.5.1.png)
+<img src="/changelog-assets/v0.5.1.png" alt="Mobile Section Nav" width="65%" />
 
 - Section nav on mobile — jump to features, bugfixes, breaking changes
 - Fix claude code versions showing in the wrong order when timestamps match
