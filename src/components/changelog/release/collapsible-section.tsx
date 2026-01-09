@@ -4,6 +4,18 @@ import { Children, useEffect, useState } from 'react'
 import type { Change, ChangeType } from '@/generated/prisma/client'
 import { cn } from '@/lib/utils'
 
+/**
+ * Collapsible section component with mobile-optimized auto-collapse and progressive rendering.
+ *
+ * Features:
+ * - Auto-collapses on mobile when items exceed threshold (5 items)
+ * - Progressive rendering: loads items in batches via requestAnimationFrame
+ * - Animated expand/collapse with height + opacity transitions
+ * - Provides section ref for scroll tracking via useSectionObserver
+ *
+ * @see docs/design/animations/release-detail.md#i-collapsible-sections-v050
+ */
+
 const COLLAPSE_THRESHOLD = 5
 const INITIAL_RENDER_COUNT = 10
 

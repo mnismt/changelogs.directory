@@ -44,6 +44,19 @@ The palette is strictly monochrome, inspired by high-end developer tools (Cursor
             -   **Active State**: Smooth sliding background (`layoutId`) and a glowing green dot indicator.
             -   **Animations**: Spring-based entry (`y: 100` -> `0`) and scale effects on tap/hover.
         -   **Content**: Essential navigation icons + primary action (Subscribe).
+    -   **Section Navigation** (v0.5.x):
+        -   **Purpose**: Jump between change type sections on release pages (Features, Bugfixes, Breaking, etc.).
+        -   **Mobile**: Horizontal floating bar at `top-[4.5rem]` with terminal-inspired aesthetic (`$_` prefix).
+        -   **Desktop**: Fixed left sidebar with viewport bracket indicator (minimap-style).
+        -   **Scroll-based Opacity**: Dims to 30% when idle, brightens on scroll/hover (non-intrusive reading).
+        -   **Animation**: Blur + scale entrance, spring-based pill transitions via `layoutId`.
+        -   **See**: [release-detail.md](animations/release-detail.md#g-section-navigation-v05x) for full choreography.
+    -   **Bottom Sheet** (v0.5.0):
+        -   **Purpose**: Mobile-first modal for version picker and similar interactions.
+        -   **Position**: Fixed at bottom, draggable with velocity-based dismiss.
+        -   **Aesthetic**: Matches floating dock (`bg-black/90`, `backdrop-blur-xl`, rounded top corners).
+        -   **Dismiss**: Drag 100px+ or velocity > 500px/s, tap backdrop, or press Escape.
+        -   **Coordination**: Sets `document.body.dataset.bottomSheetOpen` to hide other floating UI.
     -   **Toast Notifications**:
         -   **Position**: Fixed at `bottom-24` on mobile (to clear the Floating Dock), `bottom-6 right-6` on desktop.
         -   **Aesthetic**: Glassmorphism matching the dock (`bg-black/80`, `backdrop-blur-xl`, `border-border/40`).

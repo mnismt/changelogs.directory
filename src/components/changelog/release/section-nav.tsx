@@ -1,7 +1,27 @@
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ChangeType } from '@/generated/prisma/client'
 import { cn } from '@/lib/utils'
+
+/**
+ * Section Navigation component for release pages.
+ *
+ * Provides a floating navigation UI for jumping between change type sections
+ * (Features, Bugfixes, Breaking Changes, etc.) with visual feedback for
+ * active and visible sections.
+ *
+ * **Mobile**: Horizontal floating bar at top with terminal-inspired aesthetic.
+ * **Desktop**: Fixed left sidebar with viewport bracket indicator (minimap-style).
+ *
+ * Features:
+ * - Active section highlighting with animated pill background
+ * - Visible sections tracking for viewport bracket
+ * - Scroll-based opacity (dims when idle, brightens on scroll/hover)
+ * - Breaking changes get special amber color treatment
+ *
+ * @see docs/design/animations/release-detail.md for animation choreography
+ * @see docs/reference/hooks.md for useSectionObserver documentation
+ */
 
 interface SectionNavProps {
 	sections: Array<{ type: ChangeType; title: string; count: number }>
@@ -22,23 +42,21 @@ const SECTION_ICONS: Record<ChangeType, string> = {
 	OTHER: '📦',
 }
 
-// TODO: Enable in v0.5.2+ for desktop sidebar
-// const SECTION_LABELS: Record<ChangeType, string> = {
-// 	BREAKING: 'BREAKING',
-// 	SECURITY: 'SECURITY',
-// 	FEATURE: 'FEATURES',
-// 	IMPROVEMENT: 'IMPROVE',
-// 	PERFORMANCE: 'PERF',
-// 	BUGFIX: 'BUGFIX',
-// 	DEPRECATION: 'DEPREC',
-// 	DOCUMENTATION: 'DOCS',
-// 	OTHER: 'OTHER',
-// }
+const SECTION_LABELS: Record<ChangeType, string> = {
+	BREAKING: 'BREAKING',
+	SECURITY: 'SECURITY',
+	FEATURE: 'FEATURES',
+	IMPROVEMENT: 'IMPROVE',
+	PERFORMANCE: 'PERF',
+	BUGFIX: 'BUGFIX',
+	DEPRECATION: 'DEPREC',
+	DOCUMENTATION: 'DOCS',
+	OTHER: 'OTHER',
+}
 
 const SCROLL_THRESHOLD_MOBILE = 300
-// TODO: Enable in v0.5.2+ for desktop sidebar
-// const SCROLL_THRESHOLD_DESKTOP = 100
-// const ITEM_HEIGHT = 32
+const SCROLL_THRESHOLD_DESKTOP = 100
+const ITEM_HEIGHT = 32
 
 export function SectionNav({
 	sections,
@@ -47,36 +65,48 @@ export function SectionNav({
 	onSectionClick,
 }: SectionNavProps) {
 	const [isVisibleMobile, setIsVisibleMobile] = useState(false)
-	// TODO: Enable in v0.5.2+ for desktop sidebar
-	// const [isVisibleDesktop, setIsVisibleDesktop] = useState(false)
-	// const [isHovered, setIsHovered] = useState(false)
+	const [isVisibleDesktop, setIsVisibleDesktop] = useState(false)
+	const [isHovered, setIsHovered] = useState(false)
+	const [isScrolling, setIsScrolling] = useState(false)
 
 	useEffect(() => {
+		let scrollTimeout: ReturnType<typeof setTimeout>
+
 		const handleScroll = () => {
 			setIsVisibleMobile(window.scrollY > SCROLL_THRESHOLD_MOBILE)
-			// TODO: Enable in v0.5.2+ for desktop sidebar
-			// setIsVisibleDesktop(window.scrollY > SCROLL_THRESHOLD_DESKTOP)
+			setIsVisibleDesktop(window.scrollY > SCROLL_THRESHOLD_DESKTOP)
+
+			// Brighten immediately when scrolling
+			setIsScrolling(true)
+
+			// Dim after user stops scrolling
+			clearTimeout(scrollTimeout)
+			scrollTimeout = setTimeout(() => {
+				setIsScrolling(false)
+			}, 150)
 		}
 
 		handleScroll()
 		window.addEventListener('scroll', handleScroll, { passive: true })
-		return () => window.removeEventListener('scroll', handleScroll)
+		return () => {
+			window.removeEventListener('scroll', handleScroll)
+			clearTimeout(scrollTimeout)
+		}
 	}, [])
 
-	// TODO: Enable in v0.5.2+ for desktop sidebar viewport bracket
-	// const bracketStyle = useMemo(() => {
-	// 	if (visibleSections.size === 0) return null
-	// 	const visibleIndices = sections
-	// 		.map((section, index) => ({ type: section.type, index }))
-	// 		.filter(({ type }) => visibleSections.has(type))
-	// 		.map(({ index }) => index)
-	// 	if (visibleIndices.length === 0) return null
-	// 	const firstIndex = Math.min(...visibleIndices)
-	// 	const lastIndex = Math.max(...visibleIndices)
-	// 	const top = firstIndex * ITEM_HEIGHT + 8
-	// 	const height = (lastIndex - firstIndex + 1) * ITEM_HEIGHT
-	// 	return { top, height }
-	// }, [sections, visibleSections])
+	const bracketStyle = useMemo(() => {
+		if (visibleSections.size === 0) return null
+		const visibleIndices = sections
+			.map((section, index) => ({ type: section.type, index }))
+			.filter(({ type }) => visibleSections.has(type))
+			.map(({ index }) => index)
+		if (visibleIndices.length === 0) return null
+		const firstIndex = Math.min(...visibleIndices)
+		const lastIndex = Math.max(...visibleIndices)
+		const top = firstIndex * ITEM_HEIGHT + 8
+		const height = (lastIndex - firstIndex + 1) * ITEM_HEIGHT
+		return { top, height }
+	}, [sections, visibleSections])
 
 	if (sections.length <= 1) {
 		return null
@@ -183,10 +213,102 @@ export function SectionNav({
 				</div>
 			</motion.nav>
 
-			{/* TODO: Enable desktop sidebar in v0.5.2+
-			Desktop: Sidebar TOC on left with viewport bracket
-			Compact by default, expands on hover to show labels
-			See git history for full implementation */}
+			{/* Desktop: Sidebar TOC on left with viewport bracket */}
+			<motion.nav
+				initial={{ x: -20, opacity: 0 }}
+				animate={{
+					x: isVisibleDesktop ? 0 : -20,
+					opacity: isVisibleDesktop ? (isHovered || isScrolling ? 1 : 0.3) : 0,
+				}}
+				transition={{
+					type: 'spring',
+					stiffness: 300,
+					damping: 30,
+					opacity: { duration: isScrolling || isHovered ? 0.1 : 0.4 },
+				}}
+				className="fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 md:block xl:left-8"
+				onMouseEnter={() => setIsHovered(true)}
+				onMouseLeave={() => setIsHovered(false)}
+			>
+				<div className="relative rounded-xl border border-white/10 bg-black/80 px-2 py-2 shadow-2xl backdrop-blur-xl">
+					{/* Viewport bracket indicator */}
+					{bracketStyle && (
+						<motion.div
+							className="absolute left-0 w-0.5 rounded-full bg-white/40"
+							initial={false}
+							animate={{
+								top: bracketStyle.top,
+								height: bracketStyle.height,
+							}}
+							transition={{
+								type: 'spring',
+								stiffness: 300,
+								damping: 30,
+							}}
+						/>
+					)}
+
+					<div className="flex flex-col gap-0.5">
+						{sections.map((section) => {
+							const isActive = activeSection === section.type
+							const isInView = visibleSections.has(section.type)
+							const isBreaking = section.type === 'BREAKING'
+							return (
+								<motion.button
+									key={section.type}
+									type="button"
+									onClick={() => onSectionClick(section.type)}
+									whileTap={{ scale: 0.95 }}
+									className={cn(
+										'relative flex h-8 items-center gap-2 rounded-lg px-2 transition-colors',
+										isActive
+											? isBreaking
+												? 'text-amber-200'
+												: 'text-foreground'
+											: isInView
+												? 'text-foreground/70'
+												: 'text-muted-foreground hover:text-foreground/50',
+									)}
+								>
+									{isActive && (
+										<motion.div
+											layoutId="section-nav-active-desktop"
+											className={cn(
+												'absolute inset-0 rounded-lg',
+												isBreaking
+													? 'bg-amber-500/15 ring-1 ring-amber-500/30'
+													: 'bg-white/10 ring-1 ring-white/20',
+											)}
+											transition={{
+												type: 'spring',
+												stiffness: 300,
+												damping: 30,
+											}}
+										/>
+									)}
+									<span className="relative text-sm">
+										{SECTION_ICONS[section.type]}
+									</span>
+									<span className="relative font-mono text-[10px] uppercase tracking-wider">
+										{section.count}
+									</span>
+									{/* Label - shown on hover or always on XL+ */}
+									<motion.span
+										initial={false}
+										animate={{
+											width: isHovered ? 'auto' : 0,
+											opacity: isHovered ? 1 : 0,
+										}}
+										className="relative overflow-hidden whitespace-nowrap font-mono text-[10px] uppercase tracking-wider xl:!w-auto xl:!opacity-100"
+									>
+										{SECTION_LABELS[section.type]}
+									</motion.span>
+								</motion.button>
+							)
+						})}
+					</div>
+				</div>
+			</motion.nav>
 		</>
 	)
 }

@@ -19,6 +19,30 @@ interface BottomSheetProps {
 
 const DRAG_THRESHOLD = 100
 
+/**
+ * Mobile-first draggable bottom sheet modal component.
+ *
+ * Features:
+ * - Drag-to-dismiss with velocity detection (100px drag or 500px/s velocity)
+ * - Keyboard escape handling
+ * - Body scroll lock when open
+ * - Backdrop click to close
+ * - Sets `document.body.dataset.bottomSheetOpen` for coordinating with other floating UI
+ *
+ * @param open - Whether the sheet is visible
+ * @param onClose - Callback when sheet should close
+ * @param children - Sheet content
+ * @param title - Optional header title (displays with close button)
+ * @param maxHeight - Maximum height of sheet (default: '60vh')
+ * @param className - Additional classes for the sheet container
+ *
+ * @example
+ * <BottomSheet open={isOpen} onClose={() => setIsOpen(false)} title="Select Version">
+ *   <VersionList />
+ * </BottomSheet>
+ *
+ * @see docs/design/design-rules.md for styling guidelines
+ */
 export function BottomSheet({
 	open,
 	onClose,

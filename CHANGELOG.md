@@ -3,6 +3,14 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.5.2
+
+> **2026-01-09** — Desktop Section Nav
+
+- Desktop sidebar TOC with viewport bracket indicator (minimap-style)
+- Compact mode on medium screens, expands on hover
+- Full labels always visible on XL+ screens
+
 ## 0.5.1
 
 > **2026-01-09** — Mobile Section Nav
