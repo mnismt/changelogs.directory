@@ -133,13 +133,13 @@ export const getToolMetadata = createServerFn({ method: 'GET' })
 			// Get latest and first release for header stats
 			const latestRelease = await prisma.release.findFirst({
 				where: { toolId: tool.id },
-				orderBy: { releaseDate: 'desc' },
+				orderBy: [{ releaseDate: 'desc' }, { versionSort: 'desc' }],
 				select: { version: true, releaseDate: true },
 			})
 
 			const firstRelease = await prisma.release.findFirst({
 				where: { toolId: tool.id },
-				orderBy: { releaseDate: 'asc' },
+				orderBy: [{ releaseDate: 'asc' }, { versionSort: 'asc' }],
 				select: { version: true, releaseDate: true },
 			})
 
@@ -238,7 +238,7 @@ export const getToolReleasesPaginated = createServerFn({ method: 'GET' })
 			// Fetch paginated releases
 			const releases = await prisma.release.findMany({
 				where: whereClause,
-				orderBy: { releaseDate: 'desc' },
+				orderBy: [{ releaseDate: 'desc' }, { versionSort: 'desc' }],
 				skip: data.offset,
 				take: data.limit,
 				include: {
@@ -440,7 +440,7 @@ export const getAllVersions = createServerFn({ method: 'GET' })
 		try {
 			const versions = await prisma.release.findMany({
 				where: { tool: { slug: data.slug } },
-				orderBy: { releaseDate: 'desc' },
+				orderBy: [{ releaseDate: 'desc' }, { versionSort: 'desc' }],
 				select: {
 					id: true,
 					version: true,
@@ -539,7 +539,7 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 			// Optimize: Fetch changes in the same query to avoid N+1
 			const releases = await prisma.release.findMany({
 				where: whereClause,
-				orderBy: { releaseDate: 'desc' },
+				orderBy: [{ releaseDate: 'desc' }, { versionSort: 'desc' }],
 				skip: data.offset,
 				take: data.limit,
 				select: {
@@ -665,7 +665,7 @@ export const getAllTools = createServerFn({ method: 'GET' }).handler(
 				tools.map(async (tool) => {
 					const latestRelease = await prisma.release.findFirst({
 						where: { toolId: tool.id },
-						orderBy: { releaseDate: 'desc' },
+						orderBy: [{ releaseDate: 'desc' }, { versionSort: 'desc' }],
 						select: { version: true, releaseDate: true },
 					})
 					return {
@@ -750,7 +750,7 @@ export const getReleasesGroupedByTool = createServerFn({ method: 'GET' })
 					// Fetch releases with change type data
 					const releases = await prisma.release.findMany({
 						where: releaseWhere,
-						orderBy: { releaseDate: 'desc' },
+						orderBy: [{ releaseDate: 'desc' }, { versionSort: 'desc' }],
 						take: data.releasesPerTool,
 						select: {
 							id: true,
