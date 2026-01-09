@@ -180,6 +180,50 @@ Use webfetch to:
 - Find best practices for unfamiliar technologies
 - Research changelog formats for new tools
 
+### Phase 2.5: Ask Clarifying Questions (Interactive)
+
+**Before delivering the plan, proactively ask clarifying questions using the `question` tool.**
+
+Ask questions when:
+- Requirements are ambiguous or incomplete
+- Multiple valid design approaches exist
+- Critical constraints are unclear (performance, compatibility, etc.)
+- The scope is too broad to plan effectively
+- User preferences matter (styling, naming conventions, etc.)
+
+**How to ask questions:**
+- Use the `question` tool to ask up to 4 questions at once
+- Each question needs a short `header` (max 12 chars) for the UI tabs
+- Provide 2-4 `options` with `label` and `description` for each
+- Users can always select "Other" to provide custom input (no need to add this option)
+- If recommending an option, make it the first option and add "(Recommended)" to the label
+- Wait for answers before finalizing the plan
+
+**Example:**
+```json
+{
+  "questions": [
+    {
+      "question": "Where should we fetch Windsurf's changelog from?",
+      "header": "Source",
+      "options": [
+        { "label": "GitHub API (Recommended)", "description": "Use GitHub releases API - most reliable and structured" },
+        { "label": "Website", "description": "Scrape their changelog page - may break if layout changes" },
+        { "label": "Custom API", "description": "If they have a dedicated changelog API endpoint" }
+      ]
+    },
+    {
+      "question": "Should this tool have a dedicated page?",
+      "header": "UI",
+      "options": [
+        { "label": "Yes, custom page", "description": "Create a dedicated page with custom branding" },
+        { "label": "No, use template", "description": "Use the generic tool template" }
+      ]
+    }
+  ]
+}
+```
+
 ### Phase 3: Deliver the Plan
 
 Provide a plan that is:
@@ -189,12 +233,6 @@ Provide a plan that is:
 3. **Maintainable** - Follows existing conventions
 4. **Solid** - Considers edge cases and error handling
 5. **Documented** - Includes documentation update strategy
-
-**Before planning, ask clarifying questions if:**
-- Requirements are ambiguous or incomplete
-- Multiple valid interpretations exist
-- Critical constraints are unclear (performance, compatibility, etc.)
-- The scope is too broad to plan effectively
 
 ## Critical Patterns
 
@@ -494,17 +532,6 @@ How to verify the implementation works:
 - [ ] Run `pnpm test` (all tests pass)
 - [ ] Manual testing in browser (user flows work)
 - [ ] Check Trigger.dev dashboard (ingestion runs succeed, if applicable)
-
-## Open Questions (if any)
-
-1. [Question that needs user input]
-   - **A.** [Recommended option with brief rationale]
-   - **B.** [Alternative option with brief rationale]
-   - **C.** [Let user specify their own approach]
-
-2. [Another question]
-   - **A.** [Option]
-   - **B.** [Option]
 ```
 
 **Remember**: This agent is read-only. After planning, delegate implementation to appropriate subagents or implement yourself. Always include documentation update strategy in your plans.
