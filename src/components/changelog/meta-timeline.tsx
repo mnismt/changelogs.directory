@@ -120,9 +120,11 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 					{/* Video (if present) */}
 					{release.video && (
 						<div
-							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto"
+							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto w-full max-sm:!max-w-full"
 							style={
-								release.videoWidth ? { width: release.videoWidth } : undefined
+								release.videoWidth
+									? { maxWidth: release.videoWidth }
+									: undefined
 							}
 						>
 							<video
@@ -141,9 +143,11 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 					{/* Image (if present and no video) */}
 					{release.image && !release.video && (
 						<div
-							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto"
+							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto w-full max-sm:!max-w-full"
 							style={
-								release.imageWidth ? { width: release.imageWidth } : undefined
+								release.imageWidth
+									? { maxWidth: release.imageWidth }
+									: undefined
 							}
 						>
 							<img
