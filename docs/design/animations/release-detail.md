@@ -71,6 +71,93 @@ The version history list adapts its layout and interaction model based on the de
         -   **Staggered Entrance**: Items cascade in (`staggerChildren: 0.05`).
         -   **Active Indicator**: The active page background slides smoothly between numbers (`layoutId`).
 
+### G. Section Navigation (v0.5.x)
+
+The release page includes a section navigation system for jumping between change types (Features, Bugfixes, Breaking Changes, etc.).
+
+**Hook**: `useSectionObserver` — See [hooks.md](../../reference/hooks.md) for API details.
+
+#### Mobile: Floating Terminal Bar
+-   **Position**: Fixed at `top-[4.5rem]`, full-width with horizontal scroll.
+-   **Visibility**: Appears after scrolling past 300px (`SCROLL_THRESHOLD_MOBILE`).
+-   **Aesthetic**: Terminal-inspired with `$_` prefix indicator, glassmorphism background.
+-   **Entry Animation**:
+    ```tsx
+    initial={{ y: -40, opacity: 0, filter: 'blur(8px)', scale: 0.95 }}
+    animate={{ y: 0, opacity: 1, filter: 'blur(0px)', scale: 1 }}
+    transition={{ type: 'spring', stiffness: 260, damping: 25 }}
+    ```
+-   **Active State**: Pill background with `layoutId="section-nav-active-mobile"` for smooth transitions.
+-   **Visible State**: Subtle pulse animation for in-view but not active sections.
+-   **Breaking Changes**: Amber color scheme (`text-amber-200`, `ring-amber-500/30`) with glow effects.
+
+#### Desktop: Sidebar TOC with Viewport Bracket
+-   **Position**: Fixed left sidebar (`left-4` on md, `left-8` on xl), vertically centered.
+-   **Visibility**: Appears after scrolling past 100px (`SCROLL_THRESHOLD_DESKTOP`).
+-   **Viewport Bracket**: Animated vertical bar showing which sections are currently in view (minimap-style).
+    ```tsx
+    // Bracket position calculated from visible section indices
+    const bracketStyle = useMemo(() => {
+      const visibleIndices = sections
+        .filter(({ type }) => visibleSections.has(type))
+        .map((_, index) => index)
+      const top = Math.min(...visibleIndices) * ITEM_HEIGHT + 8
+      const height = (Math.max(...visibleIndices) - Math.min(...visibleIndices) + 1) * ITEM_HEIGHT
+      return { top, height }
+    }, [sections, visibleSections])
+    ```
+-   **Hover Behavior**: Compact mode (icons + counts only) → expands to show labels on hover.
+-   **XL+ Screens**: Labels always visible via `xl:!w-auto xl:!opacity-100`.
+-   **Scroll-based Opacity** (non-intrusive reading):
+    -   **Idle State**: Dims to 30% opacity when user is reading (not scrolling).
+    -   **Active State**: Brightens to 100% immediately on scroll or hover.
+    -   **Timing**: Fast fade-in (100ms), slow fade-out (400ms) for smooth UX.
+    ```tsx
+    opacity: isVisibleDesktop ? (isHovered || isScrolling ? 1 : 0.3) : 0
+    transition: { opacity: { duration: isScrolling || isHovered ? 0.1 : 0.4 } }
+    ```
+
+### H. Version Picker Sheet (v0.5.0)
+
+Mobile-first bottom sheet for version selection, replacing inline version lists on small screens.
+
+**Component**: `VersionPickerSheet` wrapping `BottomSheet`.
+
+-   **Trigger**: Tap on version badge in hero section.
+-   **Entry Animation**: Spring from `y: 100%` with drag-to-dismiss.
+-   **Fuzzy Search**: Filter versions by typing in search input.
+-   **Month Grouping**: Versions grouped by release month (e.g., `// JANUARY 2026`).
+-   **Auto-scroll**: Scrolls to current version on open via `scrollIntoView({ block: 'center' })`.
+-   **Current Indicator**: Green glowing dot next to active version.
+-   **Dismiss**: Drag down 100px or velocity > 500px/s, or tap backdrop, or press Escape.
+
+### I. Collapsible Sections (v0.5.0)
+
+Change sections support mobile-optimized collapsing to reduce initial content load.
+
+**Component**: `CollapsibleSection`.
+
+-   **Auto-collapse**: Sections with >5 items (`COLLAPSE_THRESHOLD`) collapse on mobile.
+-   **Progressive Rendering**: Items load in batches to prevent jank:
+    ```tsx
+    // Start with 10 items, then add 20 more per frame
+    useEffect(() => {
+      if (renderCount < total) {
+        requestAnimationFrame(() => {
+          setRenderCount(prev => Math.min(prev + 20, total))
+        })
+      }
+    }, [renderCount, total])
+    ```
+-   **Expand Animation**: Height + opacity animation with `AnimatePresence`:
+    ```tsx
+    initial={{ height: 0, opacity: 0 }}
+    animate={{ height: 'auto', opacity: 1 }}
+    exit={{ height: 0, opacity: 0 }}
+    transition={{ duration: 0.3, ease: 'easeInOut' }}
+    ```
+-   **Toggle Button**: Shows "Showing 5 of N • Tap to expand" on mobile.
+
 ## 3. Visual Aesthetics ("Dev-Vibe")
 
 ### Breadcrumbs as Navigation

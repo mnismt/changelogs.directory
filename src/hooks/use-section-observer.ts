@@ -6,6 +6,33 @@ interface UseSectionObserverOptions {
 	threshold?: number
 }
 
+/**
+ * Hook for tracking which sections are visible in the viewport using IntersectionObserver.
+ * Used by the Release page Section Navigation (TOC) to highlight active and visible sections.
+ *
+ * @param sectionRefs - Map of ChangeType to their corresponding DOM elements
+ * @param options - IntersectionObserver configuration
+ * @param options.rootMargin - Margin around the viewport (default: '-20% 0px -20% 0px')
+ * @param options.threshold - Visibility threshold to trigger (default: 0)
+ *
+ * @returns Object containing:
+ *   - `activeSection`: The topmost visible section (used for active indicator)
+ *   - `visibleSections`: Set of all sections currently in viewport (used for viewport bracket)
+ *   - `scrollToSection`: Function to smooth scroll to a section with header offset
+ *
+ * @example
+ * const sectionRefs = useRef<Map<ChangeType, HTMLDivElement | null>>(new Map())
+ * const { activeSection, visibleSections, scrollToSection } = useSectionObserver(
+ *   sectionRefs.current
+ * )
+ *
+ * // Set refs via callback
+ * const setSectionRef = (type: ChangeType) => (el: HTMLDivElement | null) => {
+ *   sectionRefs.current.set(type, el)
+ * }
+ *
+ * @see docs/reference/hooks.md for full documentation
+ */
 export function useSectionObserver(
 	sectionRefs: Map<ChangeType, HTMLDivElement | null>,
 	options: UseSectionObserverOptions = {},

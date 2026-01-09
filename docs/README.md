@@ -33,6 +33,7 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 - [ingestion-pipeline.md](reference/ingestion-pipeline.md) - 7-phase ingestion pipeline architecture
 - [parsers.md](reference/parsers.md) - Parser development patterns and examples
 - [api-patterns.md](reference/api-patterns.md) - Server functions and SSR best practices
+- [hooks.md](reference/hooks.md) - Custom React hooks (useSectionObserver, useScrollReveal)
 
 ### 🎨 design/
 **Visual design and UX guidelines** for maintaining aesthetic consistency.
@@ -151,5 +152,5 @@ This documentation is updated as the codebase evolves. If you notice outdated co
 
 ---
 
-**Last Updated**: 2025-12-05
-**Documentation Version**: 2.0 (Reorganized Structure)
+**Last Updated**: 2026-01-09
+**Documentation Version**: 2.1 (Added hooks reference, v0.5.x navigation docs)

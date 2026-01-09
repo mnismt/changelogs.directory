@@ -6,6 +6,15 @@ This directory contains page-by-page animation choreography details for Changelo
 
 All pages follow the core "Directory" concept with monochrome aesthetics and cinematic transitions. Each document details the animation choreography and UX flow for a specific page.
 
+## Recent Updates
+
+### v0.5.x Navigation System (2026-01-09)
+- **Section Navigation**: Mobile floating bar + Desktop sidebar with viewport bracket
+- **Version Picker Sheet**: Bottom sheet with fuzzy search and month grouping
+- **Collapsible Sections**: Auto-collapse on mobile with progressive rendering
+
+See [release-detail.md](release-detail.md#g-section-navigation-v05x) for full documentation.
+
 ## Pages
 
 ### Core Pages
@@ -40,4 +49,4 @@ Each page document includes:
 
 ---
 
-**Last Updated**: 2025-12-05
+**Last Updated**: 2026-01-09

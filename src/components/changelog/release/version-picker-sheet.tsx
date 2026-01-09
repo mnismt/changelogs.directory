@@ -6,6 +6,19 @@ import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { formatDate } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
 
+/**
+ * Mobile version picker bottom sheet with fuzzy search and month grouping.
+ *
+ * Features:
+ * - Fuzzy search filtering by version string
+ * - Versions grouped by release month (e.g., "// JANUARY 2026")
+ * - Auto-scrolls to current version on open
+ * - Green dot indicator for current version
+ * - Navigates to selected version on tap
+ *
+ * @see docs/design/animations/release-detail.md#h-version-picker-sheet-v050
+ */
+
 interface VersionPickerSheetProps {
 	open: boolean
 	onClose: () => void
