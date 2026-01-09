@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import type { ChangeType } from '@/generated/prisma/client'
+import { cn } from '@/lib/utils'
 
 interface SectionNavProps {
 	sections: Array<{ type: ChangeType; title: string; count: number }>
@@ -83,24 +84,33 @@ export function SectionNav({
 
 	return (
 		<>
-			{/* Mobile: Horizontal bar at top */}
+			{/* Mobile: Floating terminal bar at top */}
 			<motion.nav
-				initial={{ y: -60, opacity: 0 }}
+				initial={{ y: -40, opacity: 0, filter: 'blur(8px)', scale: 0.95 }}
 				animate={{
-					y: isVisibleMobile ? 0 : -60,
+					y: isVisibleMobile ? 0 : -40,
 					opacity: isVisibleMobile ? 1 : 0,
+					filter: isVisibleMobile ? 'blur(0px)' : 'blur(8px)',
+					scale: isVisibleMobile ? 1 : 0.95,
 				}}
 				transition={{
 					type: 'spring',
-					stiffness: 300,
-					damping: 30,
+					stiffness: 260,
+					damping: 25,
 				}}
-				className="fixed top-14 left-0 right-0 z-40 md:hidden"
+				className="fixed top-[4.5rem] left-0 right-0 z-40 md:hidden"
 			>
-				<div className="mx-3 flex items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-black/80 px-2 py-1.5 backdrop-blur-xl scrollbar-hide">
+				<div className="mx-3 flex items-center gap-1.5 overflow-x-auto rounded-full border border-white/10 bg-black/90 px-3 py-2 shadow-2xl ring-1 ring-white/5 backdrop-blur-xl scrollbar-hide">
+					{/* Terminal prefix indicator */}
+					<span className="shrink-0 font-mono text-xs text-white/60 drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]">
+						$_
+					</span>
+					<div className="h-4 w-px shrink-0 bg-white/10" />
+
 					{sections.map((section) => {
 						const isActive = activeSection === section.type
 						const isInView = visibleSections.has(section.type)
+						const isBreaking = section.type === 'BREAKING'
 						return (
 							<motion.button
 								key={section.type}
@@ -112,7 +122,12 @@ export function SectionNav({
 								{isActive && (
 									<motion.div
 										layoutId="section-nav-active-mobile"
-										className="absolute inset-0 rounded-full bg-white/15"
+										className={cn(
+											'absolute inset-0 rounded-full',
+											isBreaking
+												? 'bg-amber-500/15 ring-1 ring-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.12)]'
+												: 'bg-white/15 ring-1 ring-white/20 shadow-[0_0_10px_rgba(255,255,255,0.08)]',
+										)}
 										transition={{
 											type: 'spring',
 											stiffness: 300,
@@ -121,22 +136,47 @@ export function SectionNav({
 									/>
 								)}
 								{!isActive && isInView && (
-									<div className="absolute inset-0 rounded-full bg-white/5" />
+									<div
+										className="absolute inset-0 rounded-full bg-white/[0.03] ring-1 ring-white/10"
+										style={{ animation: 'pulse 3s ease-in-out infinite' }}
+									/>
 								)}
-								<span className="relative text-xs">
+								<span
+									className={cn(
+										'relative text-sm transition-all duration-200',
+										isActive &&
+											(isBreaking
+												? 'drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]'
+												: 'drop-shadow-[0_0_4px_rgba(255,255,255,0.4)]'),
+									)}
+								>
 									{SECTION_ICONS[section.type]}
 								</span>
 								<span
-									className={`relative font-mono text-[10px] uppercase tracking-wider ${
+									className={cn(
+										'relative font-mono text-[10px] uppercase tracking-wider',
 										isActive
-											? 'text-foreground'
+											? isBreaking
+												? 'text-amber-200'
+												: 'text-foreground'
 											: isInView
 												? 'text-foreground/70'
-												: 'text-muted-foreground'
-									}`}
+												: 'text-muted-foreground',
+									)}
 								>
 									{section.count}
 								</span>
+								{/* Active dot indicator */}
+								{isActive && (
+									<span
+										className={cn(
+											'absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full',
+											isBreaking
+												? 'bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)]'
+												: 'bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)]',
+										)}
+									/>
+								)}
 							</motion.button>
 						)
 					})}
