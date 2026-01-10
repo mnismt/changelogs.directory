@@ -68,6 +68,7 @@ export function CollapsibleSection({
 			})
 			return () => cancelAnimationFrame(timer)
 		}
+		return undefined
 	}, [renderCount, childArray.length])
 
 	// Get visible children based on expanded state and render count
@@ -109,6 +110,7 @@ export function CollapsibleSection({
 				<AnimatePresence initial={false}>
 					{collapsedChildren.length > 0 && (
 						<motion.div
+							key={`${type}-collapsed-content`}
 							initial={{ height: 0, opacity: 0 }}
 							animate={{ height: 'auto', opacity: 1 }}
 							exit={{ height: 0, opacity: 0 }}
@@ -125,6 +127,7 @@ export function CollapsibleSection({
 			<AnimatePresence>
 				{shouldCollapse && (
 					<motion.button
+						key={`${type}-toggle-button`}
 						type="button"
 						onClick={handleToggle}
 						initial={{ opacity: 0 }}

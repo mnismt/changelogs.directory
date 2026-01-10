@@ -9,6 +9,7 @@ interface AppErrorBoundaryProps {
 interface AppErrorBoundaryState {
 	hasError: boolean
 	errorMessage?: string
+	showDetail: boolean
 }
 
 export class AppErrorBoundary extends Component<
@@ -18,15 +19,27 @@ export class AppErrorBoundary extends Component<
 	state: AppErrorBoundaryState = {
 		hasError: false,
 		errorMessage: undefined,
+		showDetail: false,
 	}
 
 	static getDerivedStateFromError(error: Error): AppErrorBoundaryState {
-		return { hasError: true, errorMessage: error.message }
+		return { hasError: true, errorMessage: error.message, showDetail: false }
 	}
 
 	override componentDidCatch(error: Error, _errorInfo: ErrorInfo) {
 		console.error('Uncaught application error:', error)
 		captureException(error)
+	}
+
+	override componentDidMount() {
+		// Set showDetail flag after hydration on client
+		if (
+			typeof window !== 'undefined' &&
+			(window.location.hostname === 'localhost' ||
+				window.location.hostname === '127.0.0.1')
+		) {
+			this.setState({ showDetail: true })
+		}
 	}
 
 	private handleRetry = () => {
@@ -40,18 +53,12 @@ export class AppErrorBoundary extends Component<
 
 	override render(): ReactNode {
 		if (this.state.hasError) {
-			// Only show technical details in development mode
-			const showDetail =
-				typeof window !== 'undefined' &&
-				(window.location.hostname === 'localhost' ||
-					window.location.hostname === '127.0.0.1')
-
 			return (
 				<div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
 					<ErrorBoundaryCard
 						title="Unexpected error"
 						message="The interface crashed unexpectedly."
-						detail={showDetail ? this.state.errorMessage : undefined}
+						detail={this.state.showDetail ? this.state.errorMessage : undefined}
 						onRetry={this.handleRetry}
 						onGoHome={this.handleGoHome}
 					/>

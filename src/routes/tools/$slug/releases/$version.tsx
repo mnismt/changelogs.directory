@@ -121,7 +121,7 @@ function ReleaseDetailPage() {
 		new Map(),
 	)
 	const { activeSection, visibleSections, scrollToSection } =
-		useSectionObserver(sectionRefsMap.current)
+		useSectionObserver(sectionRefsMap.current, {}, version)
 
 	// Group changes by type
 	const groupedChanges = useMemo((): Partial<Record<ChangeType, Change[]>> => {
@@ -297,7 +297,6 @@ function ReleaseDetailPage() {
 								return (
 									<motion.div
 										key={`${section.type}-${version}`}
-										layout
 										variants={{
 											hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
 											visible: {
