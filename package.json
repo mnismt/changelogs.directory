@@ -62,6 +62,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
+    "@playwright/test": "^1.57.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
     "@trigger.dev/build": "4.3.1",
@@ -114,7 +115,12 @@
     "serve": "vite preview",
     "start": "node .output/server/index.mjs",
     "sync:prod": "bun scripts/sync-prod-to-local.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:config": "vitest run tests/e2e/config/",
+    "test:e2e:headed": "playwright test --headed",
+    "test:all": "pnpm test && pnpm test:e2e:config && pnpm test:e2e"
   },
   "type": "module"
 }

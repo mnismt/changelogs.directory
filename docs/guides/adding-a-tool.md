@@ -9,6 +9,9 @@ This guide walks you through adding a new tool (like "Google Antigravity") to th
 - [ ] **Step 1: Database Setup** (5 min) - Add tool record to `prisma/seed.ts`
 - [ ] **Step 2: Logo Component** (10 min) - Create SVG component and register in logoMap
 - [ ] **Step 2.5: Tool Registry** (2 min) - Register tool in unified registry
+- [ ] **Step 2.6: OG Image SVG** (5 min) - Add case in `getToolLogoSVG()` in `src/lib/og-utils.tsx`
+- [ ] **Step 2.7: Background Image** (2 min) - Add `{slug}.png` to `public/images/tools/`
+- [ ] **Step 2.8: Validate Config** (1 min) - Run `pnpm test:e2e:config` to verify all assets
 - [ ] **Step 3: Version Formatter** (Optional, 5 min) - Add custom version display logic if needed
 - [ ] **Step 4: Ingestion Pipeline** (60-180 min) - Copy and customize trigger task
 - [ ] **Step 5: Testing** (15 min) - Test locally and verify results
@@ -330,6 +333,66 @@ import { GoogleAntigravity } from '@/components/logo/google-antigravity'
 **Cross-reference**: See [reference/tool-registry.md](../reference/tool-registry.md) for full registry documentation.
 
 > **Note on the `url` field**: While the `url` field is required in the registry, the logo showcase component links to internal tool pages (`/tools/$slug`) rather than external URLs. The `url` field is kept for potential future features like "Visit official site" buttons on tool detail pages.
+
+---
+
+## Step 2.6: Add OG Image SVG (5 minutes)
+
+Add a case for your tool's logo in the OG image generation switch statement.
+
+**File**: `src/lib/og-utils.tsx`
+
+Find the `getToolLogoSVG()` function and add a case:
+
+```typescript
+switch (slug) {
+  case 'claude-code':
+    return '<svg>...</svg>'
+  case 'google-antigravity':  // Add this case
+    return '<svg viewBox="0 0 24 24" ...>...</svg>'
+  // ... other cases
+}
+```
+
+**Important**: The SVG must be a string (not JSX) for use with `@vercel/og`.
+
+---
+
+## Step 2.7: Add Background Image (2 minutes)
+
+Add a background image for the tool card hover effect on the `/tools` directory page.
+
+**File**: `public/images/tools/{slug}.png`
+
+Requirements:
+- PNG format
+- Recommended size: 800x600px or similar aspect ratio
+- Should represent the tool visually
+
+---
+
+## Step 2.8: Validate Configuration (1 minute)
+
+Run the configuration validation tests to verify all required assets are in place:
+
+```bash
+pnpm test:e2e:config
+```
+
+**Expected Output** (if everything is correct):
+```
+✓ tests/e2e/config/tool-assets.test.ts
+✓ tests/e2e/config/database-sync.test.ts
+```
+
+**If tests fail**, you'll see which assets are missing:
+- Missing logo component → Create in `src/components/logo/`
+- Missing OG SVG case → Add to `getToolLogoSVG()` in `og-utils.tsx`
+- Missing background image → Add PNG to `public/images/tools/`
+- Missing ingestion pipeline → Will be added in Step 4
+- Missing seed entry → Added in Step 1
+
+Fix each issue and re-run until all config tests pass.
 
 ---
 
