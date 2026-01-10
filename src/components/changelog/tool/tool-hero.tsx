@@ -160,7 +160,10 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 					>
 						<div className="absolute -inset-0.5 bg-gradient-to-br from-white/20 to-white/0 rounded-xl opacity-50 blur-sm group-hover:opacity-100 transition-opacity duration-500" />
 						<div className="relative flex size-20 md:size-24 items-center justify-center rounded-xl border border-white/10 bg-black/50 backdrop-blur-xl shadow-2xl">
-							<div className="size-12 md:size-14 text-foreground [&>svg]:size-full [&>svg]:fill-foreground">
+							<div
+								className="size-12 md:size-14 text-foreground [&>svg]:size-full [&>svg]:fill-foreground"
+								data-testid="tool-logo"
+							>
 								{logo}
 							</div>
 						</div>

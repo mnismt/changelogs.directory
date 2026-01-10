@@ -222,6 +222,7 @@ export function ReleaseCard({
 			to="/tools/$slug/releases/$version"
 			params={{ slug: toolSlug, version }}
 			className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-lg"
+			data-testid="release-card"
 		>
 			{cardContent}
 		</Link>

@@ -85,7 +85,10 @@ export function HeroSection({
 	}, [isMounted, onAnimationComplete])
 
 	return (
-		<section className="relative border-b border-border overflow-hidden">
+		<section
+			className="relative border-b border-border overflow-hidden"
+			data-testid="hero-section"
+		>
 			<div className="relative mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
 				<div className="flex flex-col items-center text-center">
 					{/* Badge */}
@@ -144,7 +147,7 @@ export function HeroSection({
 								: 'translate-y-8 opacity-0',
 						)}
 					>
-						<div className="relative">
+						<div className="relative" data-testid="logo-showcase">
 							{/* Fade edges */}
 							<div className="absolute left-0 top-0 z-10 h-full w-12 bg-gradient-to-r from-background to-transparent" />
 							<div className="absolute right-0 top-0 z-10 h-full w-12 bg-gradient-to-l from-background to-transparent" />

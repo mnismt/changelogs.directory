@@ -43,10 +43,12 @@ export function ToolCard({
 			to="/tools/$slug"
 			params={{ slug: tool.slug }}
 			className="block h-full"
+			data-testid={`tool-card-${tool.slug}`}
 			onMouseEnter={onHoverStart}
 			onMouseLeave={onHoverEnd}
 		>
 			<Card
+				data-testid="tool-card"
 				className={cn(
 					'group relative h-full overflow-hidden border-border/60 bg-card/40 transition-all duration-500 ease-out',
 					isHovered
@@ -65,6 +67,7 @@ export function ToolCard({
 					<img
 						src={`/images/tools/${tool.slug}.png`}
 						alt=""
+						data-testid={`tool-card-bg-${tool.slug}`}
 						className="h-full w-full object-cover grayscale"
 					/>
 				</div>

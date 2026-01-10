@@ -384,7 +384,89 @@ LIMIT 5;
 
 ## End-to-End Testing
 
-Full workflow testing from ingestion to display.
+Full workflow testing from configuration validation to browser UI testing.
+
+### E2E Test Commands
+
+```bash
+# Run configuration validation tests (fast, no browser)
+pnpm test:e2e:config
+
+# Run browser E2E tests (starts dev server, requires database)
+pnpm test:e2e
+
+# Run browser tests with UI (for debugging)
+pnpm test:e2e:ui
+
+# Run browser tests in headed mode
+pnpm test:e2e:headed
+
+# Run all tests (unit + config validation + browser E2E)
+pnpm test:all
+```
+
+### Configuration Validation Tests
+
+These tests validate that all tools are properly configured across all required files. They run quickly (~500ms) without a browser.
+
+**File**: `tests/e2e/config/tool-assets.test.ts`
+
+Tests:
+- ✅ Every tool has a logo component file
+- ✅ Every tool has a background image in `public/images/tools/`
+- ✅ No orphaned background images (unused files)
+- ✅ Every tool has a case in `getToolLogoSVG()` for OG images
+- ✅ Every tool has an ingestion pipeline directory
+
+**File**: `tests/e2e/config/database-sync.test.ts`
+
+Tests:
+- ✅ All registry tools exist in `prisma/seed.ts`
+- ✅ All seed.ts tools exist in registry (bidirectional sync)
+- ✅ Tool counts match between registry and seed
+- ✅ All slugs follow valid format (`lowercase-with-hyphens`)
+
+### Browser E2E Tests
+
+These tests use Playwright to verify actual UI rendering and user flows. They start the dev server automatically.
+
+**Files in `tests/e2e/pages/`**:
+
+| File | Tests |
+|------|-------|
+| `homepage.spec.ts` | Hero section, logo showcase, filters, search, navigation |
+| `tools-directory.spec.ts` | Tool cards, hover backgrounds, navigation |
+| `tool-detail.spec.ts` | Tool pages, release navigation, OG meta tags |
+| `og-images.spec.ts` | OG image endpoints return valid PNGs (critical!) |
+
+### Playwright Configuration
+
+**File**: `playwright.config.ts`
+
+Key settings:
+- `webServer`: Automatically starts `pnpm dev` before tests
+- `retries: 2` in CI for flakiness handling
+- `workers: 1` in CI for stability
+- Screenshots and videos on failure for debugging
+
+### When Adding a New Tool
+
+After adding a tool to `TOOL_REGISTRY`, run the config validation tests to catch missing assets:
+
+```bash
+pnpm test:e2e:config
+```
+
+Expected failures for missing:
+- Logo component file
+- Background image
+- OG image SVG case
+- Ingestion pipeline
+- Database seed entry
+
+Fix each issue, then re-run until all tests pass.
+
+---
 
 ### Manual E2E Test
 
