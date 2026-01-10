@@ -109,7 +109,12 @@ export function HeroSection({
 					</div>
 
 					{/* Main Title with Typewriter */}
-					<div className="mb-6 h-12 sm:h-16">
+					<div
+						className={cn(
+							'mb-6 h-12 sm:h-16 transition-opacity duration-300',
+							isMounted ? 'opacity-100' : 'opacity-0',
+						)}
+					>
 						<h1 className="font-mono text-3xl font-bold tracking-tighter sm:text-5xl">
 							{text}
 							<span className="animate-pulse text-muted-foreground">_</span>

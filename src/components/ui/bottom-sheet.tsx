@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useDragControls } from "framer-motion"
+import { AnimatePresence, motion, useDragControls } from "motion/react"
 import { X } from "lucide-react"
 import {
 	type ReactNode,

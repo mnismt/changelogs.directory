@@ -1,5 +1,4 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { motion } from 'framer-motion'
 import {
 	Box,
 	ChevronRight,
@@ -8,6 +7,7 @@ import {
 	Radio,
 	Terminal,
 } from 'lucide-react'
+import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 
 const MENU_ITEMS = [
