@@ -14,6 +14,7 @@ interface UseSectionObserverOptions {
  * @param options - IntersectionObserver configuration
  * @param options.rootMargin - Margin around the viewport (default: '-20% 0px -20% 0px')
  * @param options.threshold - Visibility threshold to trigger (default: 0)
+ * @param version - Optional version string to trigger re-sync when content changes
  *
  * @returns Object containing:
  *   - `activeSection`: The topmost visible section (used for active indicator)
@@ -36,6 +37,7 @@ interface UseSectionObserverOptions {
 export function useSectionObserver(
 	sectionRefs: Map<ChangeType, HTMLDivElement | null>,
 	options: UseSectionObserverOptions = {},
+	version?: string,
 ) {
 	const { rootMargin = '-20% 0px -20% 0px', threshold = 0 } = options
 	const [activeSection, setActiveSection] = useState<ChangeType | null>(null)
@@ -100,8 +102,16 @@ export function useSectionObserver(
 			}
 		}
 
-		return () => observer.disconnect()
-	}, [sectionRefs, rootMargin, threshold])
+		return () => {
+			// Properly cleanup by unobserving all elements
+			for (const [, element] of sections) {
+				if (element) {
+					observer.unobserve(element)
+				}
+			}
+			observer.disconnect()
+		}
+	}, [sectionRefs, rootMargin, threshold, version])
 
 	const scrollToSection = useCallback(
 		(type: ChangeType) => {

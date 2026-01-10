@@ -31,7 +31,7 @@ export function AnimatedNumber({
 	}, [value, count])
 
 	return (
-		<motion.span style={{ filter }} className={className}>
+		<motion.span suppressHydrationWarning style={{ filter }} className={className}>
 			{rounded}
 		</motion.span>
 	)
