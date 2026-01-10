@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
+import { AnimatePresence, motion, type Variants } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
