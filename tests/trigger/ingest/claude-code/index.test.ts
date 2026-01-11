@@ -20,7 +20,14 @@ vi.mock('@trigger.dev/sdk', () => ({
 }))
 
 vi.mock('@/lib/enrichment/llm', () => ({
-	enrichReleaseWithLLM: vi.fn((release) => Promise.resolve(release)),
+	enrichReleaseWithLLM: vi.fn((release) =>
+		Promise.resolve({
+			release,
+			success: true,
+			modelUsed: null,
+			circuitBreakerTriggered: false,
+		}),
+	),
 }))
 
 vi.mock('@/lib/llm', () => ({
