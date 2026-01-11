@@ -18,3 +18,4 @@ todos.json
 # Prisma generated client
 src/generated/
 test-results
+playwright-results

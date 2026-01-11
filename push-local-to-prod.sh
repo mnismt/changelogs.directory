@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 
-# Interactive helper to migrate data from local (.env) to prod (.env.production)
-# while skipping the waitlist table.
+# Interactive helper to push data FROM local (.env) TO prod (.env.production).
+# This is the inverse of pull-prod-to-local.sh.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_ENV_FILE="$REPO_ROOT/.env"
 PROD_ENV_FILE="$REPO_ROOT/.env.production"
-EXCLUDED_TABLE="public.waitlist"
 REQUIRED_PG_MAJOR="${REQUIRED_PG_MAJOR:-17}"
 
 require_cmd() {
@@ -124,17 +123,18 @@ LOCAL_URL="$(read_env_var "$LOCAL_ENV_FILE" "DATABASE_URL")"
 PROD_URL="$(read_env_var "$PROD_ENV_FILE" "DATABASE_URL")"
 
 echo "Detected URLs (passwords hidden):"
-echo "  Source (local): $(mask_url "$LOCAL_URL")"
-echo "  Target (prod):  $(mask_url "$PROD_URL")"
+echo "  Source (LOCAL): $(mask_url "$LOCAL_URL")"
+echo "  Target (PROD):  $(mask_url "$PROD_URL")"
 echo
-echo "Choose restore mode:"
-echo "  [a] Append (default): import schema+data, do NOT drop existing tables. Waitlist data skipped."
-echo "  [r] Replace (safe for waitlist): drop/recreate imported objects, but skip waitlist entirely."
-read -rp "Mode [a/r]: " mode_choice
-
-MODE="append"
-if [[ "$mode_choice" =~ ^[Rr]$ ]]; then
-	MODE="replace"
+echo "🚨 DANGER 🚨"
+echo "This will OVERWRITE your PRODUCTION database with data from LOCAL."
+echo "All production data will be PERMANENTLY LOST."
+echo
+echo "Are you absolutely sure you want to do this?"
+read -rp "Type 'I understand the risks' to proceed: " confirm
+if [[ "$confirm" != "I understand the risks" ]]; then
+	echo "Aborted."
+	exit 1
 fi
 
 DUMP_FILE="$(mktemp "${TMPDIR:-/tmp}/local-to-prod-XXXXXX.dump")"
@@ -143,35 +143,52 @@ cleanup() {
 }
 trap cleanup EXIT
 
-dump_flags=(--format=custom --no-owner --no-privileges)
-restore_flags=(--dbname="$PROD_URL" --no-owner --no-privileges --disable-triggers)
+# Tables from prisma/schema.prisma (public schema only)
+APP_TABLES=(
+	"waitlist"
+	"user"
+	"session"
+	"account"
+	"verification"
+	"tool"
+	"release"
+	"change"
+	"fetch_log"
+	"email_log"
+)
 
-if [[ "$MODE" == "replace" ]]; then
-	dump_flags+=(--exclude-table="$EXCLUDED_TABLE")
-	restore_flags+=(--clean --if-exists)
-else
-	dump_flags+=(--exclude-table-data="$EXCLUDED_TABLE")
-fi
+# Flags
+# -Fc: Custom format (required for pg_restore)
+dump_flags=(--format=custom --no-owner --no-privileges --schema=public)
+
+# Add each table to dump flags
+for table in "${APP_TABLES[@]}"; do
+	dump_flags+=(--table="public.${table}")
+done
+
+# --clean: Drop database objects before creating them
+# --if-exists: Use IF EXISTS when dropping objects
+# --no-owner: Do not output commands to set ownership of objects to match the original database
+# --no-privileges: Do not restore access privileges (grant/revoke)
+restore_flags=(--dbname="$PROD_URL" --no-owner --no-privileges --clean --if-exists --disable-triggers --schema=public)
 
 echo
 echo "Planned actions:"
 echo "  Dump file: $DUMP_FILE"
-echo "  Excluding: $EXCLUDED_TABLE (${MODE} mode)"
 echo "  pg_dump: $PG_DUMP_BIN"
-echo "    flags: ${dump_flags[*]}"
 echo "  pg_restore: $PG_RESTORE_BIN"
 echo "    flags: ${restore_flags[*]}"
 echo
-read -rp "Type 'yes' to proceed: " confirm
-if [[ "$confirm" != "yes" ]]; then
+read -rp "Type 'yes' to confirm: " confirm2
+if [[ "$confirm2" != "yes" ]]; then
 	echo "Aborted."
 	exit 1
 fi
 
-echo "Dumping local database..."
+echo "Dumping LOCAL database..."
 "$PG_DUMP_BIN" "$LOCAL_URL" "${dump_flags[@]}" --file="$DUMP_FILE"
 
-echo "Restoring into prod..."
+echo "Restoring into PROD..."
 "$PG_RESTORE_BIN" "${restore_flags[@]}" "$DUMP_FILE"
 
-echo "Done. Dump file removed."
+echo "Done. Production database is now in sync with Local."
