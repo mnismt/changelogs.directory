@@ -44,27 +44,34 @@ describe("parseMarkdownLinks", () => {
 	})
 
 	describe("internal links", () => {
-		it("should create Link component for absolute paths", () => {
-			const result = parseMarkdownLinks("[Home](/)")
+	it("should create Link component for absolute paths", () => {
+		const result = parseMarkdownLinks("[Home](/)")
 
-			expect(result).toHaveLength(1)
-			expect(isValidElement(result[0])).toBe(true)
+		expect(result).toHaveLength(1)
+		expect(isValidElement(result[0])).toBe(true)
 
-			const props = getElementProps(result[0])
-			expect(props?.to).toBe("/")
-			expect(props?.children).toBe("Home")
-		})
+		const props = getElementProps(result[0])
+		expect(props?.to).toBe("/")
+		// Children is now an array: [logo?, linkText]
+		expect(Array.isArray(props?.children)).toBe(true)
+		const children = props?.children as unknown[]
+		expect(children[children.length - 1]).toBe("Home")
+	})
 
-		it("should handle internal link with path segments", () => {
-			const result = parseMarkdownLinks("[Gemini CLI](/tools/gemini-cli)")
+	it("should handle internal link with path segments", () => {
+		const result = parseMarkdownLinks("[Gemini CLI](/tools/gemini-cli)")
 
-			expect(result).toHaveLength(1)
-			expect(isValidElement(result[0])).toBe(true)
+		expect(result).toHaveLength(1)
+		expect(isValidElement(result[0])).toBe(true)
 
-			const props = getElementProps(result[0])
-			expect(props?.to).toBe("/tools/gemini-cli")
-			expect(props?.children).toBe("Gemini CLI")
-		})
+		const props = getElementProps(result[0])
+		expect(props?.to).toBe("/tools/gemini-cli")
+		// Children is now an array: [logo, linkText] for tool links
+		expect(Array.isArray(props?.children)).toBe(true)
+		const children = props?.children as unknown[]
+		expect(isValidElement(children[0])).toBe(true) // Logo component
+		expect(children[1]).toBe("Gemini CLI")
+	})
 
 		it("should preserve text before and after link", () => {
 			const result = parseMarkdownLinks(
@@ -193,15 +200,18 @@ describe("parseMarkdownLinks", () => {
 			expect(isValidElement(result[1])).toBe(true)
 		})
 
-		it("should handle link with special characters in text", () => {
-			const result = parseMarkdownLinks("[What's New?](/changelog)")
+	it("should handle link with special characters in text", () => {
+		const result = parseMarkdownLinks("[What's New?](/changelog)")
 
-			expect(result).toHaveLength(1)
-			expect(isValidElement(result[0])).toBe(true)
+		expect(result).toHaveLength(1)
+		expect(isValidElement(result[0])).toBe(true)
 
-			const props = getElementProps(result[0])
-			expect(props?.children).toBe("What's New?")
-		})
+		const props = getElementProps(result[0])
+		// Children is now an array: [logo?, linkText]
+		expect(Array.isArray(props?.children)).toBe(true)
+		const children = props?.children as unknown[]
+		expect(children[children.length - 1]).toBe("What's New?")
+	})
 
 		it("should handle link with query params", () => {
 			const result = parseMarkdownLinks("[Search](/search?q=test&page=1)")
@@ -225,14 +235,16 @@ describe("parseMarkdownLinks", () => {
 	})
 
 	describe("styling", () => {
-		it("should apply correct className to internal links", () => {
-			const result = parseMarkdownLinks("[Test](/path)")
+	it("should apply correct className to internal links", () => {
+		const result = parseMarkdownLinks("[Test](/path)")
 
-			expect(isValidElement(result[0])).toBe(true)
+		expect(isValidElement(result[0])).toBe(true)
 
-			const props = getElementProps(result[0])
-			expect(props?.className).toBe("text-primary hover:underline")
-		})
+		const props = getElementProps(result[0])
+		expect(props?.className).toBe(
+			"text-primary hover:text-primary/80 transition-colors duration-300",
+		)
+	})
 
 		it("should apply correct className to external links", () => {
 			const result = parseMarkdownLinks("[Test](https://example.com)")
