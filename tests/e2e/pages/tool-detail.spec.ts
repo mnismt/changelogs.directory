@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { TOOL_SLUGS } from "@/lib/tool-registry";
 
-// Test first 2 tools to keep test time reasonable
-const TOOLS_TO_TEST = TOOL_SLUGS.slice(0, 2);
+// Test only seeded tools
+const TOOLS_TO_TEST = ["codex", "cursor"];
 
 test.describe("Tool Detail Page", () => {
 	for (const slug of TOOLS_TO_TEST) {
@@ -27,8 +27,26 @@ test.describe("Tool Detail Page", () => {
 		});
 	}
 
+	test("pagination and infinite scroll works for codex", async ({ page }) => {
+		// Use codex as we know it has 60 releases in the snapshot
+		await page.goto("/tools/codex");
+
+		const releaseCards = page.locator('[data-testid="release-card"]');
+		
+		// Initial load should be 20
+		await expect(releaseCards).toHaveCount(20);
+
+		// Scroll to bottom
+		await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+		// Wait for more to load (should be > 20)
+		await expect(releaseCards).not.toHaveCount(20, { timeout: 10000 });
+		const count = await releaseCards.count();
+		expect(count).toBeGreaterThan(20);
+	});
+
 	test("navigate to release detail", async ({ page }) => {
-		const slug = TOOLS_TO_TEST[0];
+		const slug = "codex";
 		await page.goto(`/tools/${slug}`);
 
 		const releaseLink = page
