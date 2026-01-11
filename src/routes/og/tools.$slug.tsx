@@ -16,6 +16,12 @@ export const Route = createFileRoute('/og/tools/$slug')({
 			GET: async ({ params }) => {
 				try {
 					const tool = await getToolMetadata({ data: { slug: params.slug } })
+
+					// Return 404 for unknown/missing tools
+					if (!tool) {
+						return new Response('Tool not found', { status: 404 })
+					}
+
 					const fonts = await loadOGFonts()
 					const logoSVG = getToolLogoSVG(params.slug)
 

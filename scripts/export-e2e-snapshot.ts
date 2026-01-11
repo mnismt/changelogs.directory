@@ -16,13 +16,32 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 const OUTPUT_PATH = path.join(__dirname, "../tests/fixtures/e2e-db.snapshot.json.gz");
-const TARGET_TOOLS = ["codex", "cursor"];
-const RELEASES_PER_TOOL = 60;
+
+// All tools from the registry - must match TOOL_SLUGS in src/lib/tool-registry.tsx
+const TARGET_TOOLS = [
+	"claude-code",
+	"codex",
+	"cursor",
+	"windsurf",
+	"opencode",
+	"antigravity",
+	"gemini-cli",
+];
+
+// Tools that need deep release data for pagination tests
+const DEEP_DATA_TOOLS = ["codex", "cursor"];
+const DEEP_RELEASES_COUNT = 60;
+const MINIMAL_RELEASES_COUNT = 3;
+
+function getReleasesPerTool(slug: string): number {
+	return DEEP_DATA_TOOLS.includes(slug) ? DEEP_RELEASES_COUNT : MINIMAL_RELEASES_COUNT;
+}
 
 async function main() {
   console.log("Starting E2E snapshot export...");
   console.log(`Target tools: ${TARGET_TOOLS.join(", ")}`);
-  console.log(`Releases per tool: ${RELEASES_PER_TOOL}`);
+  console.log(`Deep data tools (${DEEP_RELEASES_COUNT} releases): ${DEEP_DATA_TOOLS.join(", ")}`);
+  console.log(`Other tools: ${MINIMAL_RELEASES_COUNT} releases each`);
 
   const snapshot = {
     meta: {
@@ -72,7 +91,7 @@ async function main() {
         { releaseDate: "desc" },
         { versionSort: "desc" },
       ],
-      take: RELEASES_PER_TOOL,
+      take: getReleasesPerTool(slug),
       include: {
         changes: true,
       },

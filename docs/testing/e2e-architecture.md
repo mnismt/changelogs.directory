@@ -234,8 +234,8 @@ Playwright tests run
 
 | Data | Count | Purpose |
 |------|-------|---------|
-| Tools | 2 (`codex`, `cursor`) | Test tool pages, OG images |
-| Releases | 60 per tool | Test pagination (20 per page) |
+| Tools | 7 (all registry tools) | Test tool pages, OG images |
+| Releases | 60 for codex/cursor, 3 for others | Test pagination + basic rendering |
 | Changes | All for releases | Test release detail pages |
 
 See [snapshots.md](snapshots.md) for full documentation.
@@ -344,7 +344,7 @@ When tests fail in CI, download:
 
 1. **Config tests first** - Fast fail before browser tests
 2. **Parallel execution** - Local tests run in parallel
-3. **Minimal snapshot** - Only 2 tools, 60 releases each
+3. **Minimal snapshot** - All 7 tools, with deep data (60 releases) only for codex/cursor
 4. **Single browser** - Chromium only (sufficient coverage)
 5. **Reuse dev server** - Don't restart for each test file
 
