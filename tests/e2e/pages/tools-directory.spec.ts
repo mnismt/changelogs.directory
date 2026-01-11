@@ -14,13 +14,15 @@ test.describe("Tools Directory Page", () => {
 
 	test("all tool cards are displayed", async ({ page }) => {
 		const toolCards = page.locator('[data-testid="tool-card"]');
+		// E2E snapshot now includes all registered tools
 		await expect(toolCards).toHaveCount(TOOL_SLUGS.length);
 	});
 
 	test("tool cards render correctly with logos", async ({ page }) => {
-		const firstThreeSlugs = TOOL_SLUGS.slice(0, 3);
+		// Test a representative sample of tools for rendering
+		const sampleSlugs = TOOL_SLUGS.slice(0, 3);
 
-		for (const slug of firstThreeSlugs) {
+		for (const slug of sampleSlugs) {
 			const card = page.locator(`[data-testid="tool-card-${slug}"]`);
 			await expect(card).toBeVisible();
 

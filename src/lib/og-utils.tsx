@@ -85,6 +85,17 @@ export function getToolLogoSVG(
 					/>
 				</svg>
 			)
+		case 'gemini-cli':
+			// Gemini sparkle star simplified for OG images
+			// Base64 logo is too large for Satori - use clean SVG instead
+			return (
+				<svg width={size} height={size} viewBox="0 0 56 56" style={commonStyle}>
+					<path
+						fill="#4285F4"
+						d="M28 0C28 15.464 15.464 28 0 28C15.464 28 28 40.536 28 56C28 40.536 40.536 28 56 28C40.536 28 28 15.464 28 0Z"
+					/>
+				</svg>
+			)
 		default:
 			return null
 	}

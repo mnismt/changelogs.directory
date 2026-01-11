@@ -137,15 +137,34 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Tables from prisma/schema.prisma (public schema only)
+APP_TABLES=(
+	"waitlist"
+	"user"
+	"session"
+	"account"
+	"verification"
+	"tool"
+	"release"
+	"change"
+	"fetch_log"
+	"email_log"
+)
+
 # Flags
 # -Fc: Custom format (required for pg_restore)
-dump_flags=(--format=custom --no-owner --no-privileges)
+dump_flags=(--format=custom --no-owner --no-privileges --schema=public)
+
+# Add each table to dump flags
+for table in "${APP_TABLES[@]}"; do
+	dump_flags+=(--table="public.${table}")
+done
 
 # --clean: Drop database objects before creating them
 # --if-exists: Use IF EXISTS when dropping objects
 # --no-owner: Do not output commands to set ownership of objects to match the original database
 # --no-privileges: Do not restore access privileges (grant/revoke)
-restore_flags=(--dbname="$LOCAL_URL" --no-owner --no-privileges --clean --if-exists --disable-triggers)
+restore_flags=(--dbname="$LOCAL_URL" --no-owner --no-privileges --clean --if-exists --disable-triggers --schema=public)
 
 echo "Planned actions:"
 echo "  Dump file: $DUMP_FILE"

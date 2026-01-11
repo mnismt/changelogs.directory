@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { TOOL_SLUGS } from "@/lib/tool-registry";
 
-// Test first 2 tools to keep test time reasonable
-const TOOLS_TO_TEST = TOOL_SLUGS.slice(0, 2);
+// Test only seeded tools
+const TOOLS_TO_TEST = ["codex", "cursor"];
 
 test.describe("Tool Detail Page", () => {
 	for (const slug of TOOLS_TO_TEST) {
@@ -28,7 +27,7 @@ test.describe("Tool Detail Page", () => {
 	}
 
 	test("navigate to release detail", async ({ page }) => {
-		const slug = TOOLS_TO_TEST[0];
+		const slug = "codex";
 		await page.goto(`/tools/${slug}`);
 
 		const releaseLink = page

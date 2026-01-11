@@ -16,6 +16,12 @@ export const Route = createFileRoute('/og/tools/$slug')({
 			GET: async ({ params }) => {
 				try {
 					const tool = await getToolMetadata({ data: { slug: params.slug } })
+
+					// Return 404 for unknown/missing tools
+					if (!tool) {
+						return new Response('Tool not found', { status: 404 })
+					}
+
 					const fonts = await loadOGFonts()
 					const logoSVG = getToolLogoSVG(params.slug)
 
@@ -28,7 +34,10 @@ export const Route = createFileRoute('/og/tools/$slug')({
 					const image = new ImageResponse(
 						<OGLayout
 							title={`~/tools/${params.slug}`}
-							breadcrumbs={['changelogs.directory', `v${tool.latestVersion}`]}
+							breadcrumbs={[
+								'changelogs.directory',
+								tool.latestVersion ? `v${tool.latestVersion}` : 'coming soon',
+							]}
 							indicator="Live Release Feed"
 						>
 							{/* Command Input */}

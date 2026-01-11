@@ -41,8 +41,18 @@ describe('enrichStep', () => {
 		})
 
 		vi.mocked(enrichReleaseWithLLM)
-			.mockResolvedValueOnce(enrichedRelease1)
-			.mockResolvedValueOnce(enrichedRelease2)
+			.mockResolvedValueOnce({
+				release: enrichedRelease1,
+				success: true,
+				modelUsed: null,
+				circuitBreakerTriggered: false,
+			})
+			.mockResolvedValueOnce({
+				release: enrichedRelease2,
+				success: true,
+				modelUsed: null,
+				circuitBreakerTriggered: false,
+			})
 
 		const filterResult: FilterResult = {
 			releases: [
@@ -67,7 +77,12 @@ describe('enrichStep', () => {
 			summary: 'Original summary',
 		})
 
-		vi.mocked(enrichReleaseWithLLM).mockResolvedValue(originalRelease)
+		vi.mocked(enrichReleaseWithLLM).mockResolvedValue({
+			release: originalRelease,
+			success: false,
+			modelUsed: null,
+			circuitBreakerTriggered: false,
+		})
 
 		const filterResult: FilterResult = {
 			releases: [originalRelease],
@@ -115,7 +130,12 @@ describe('enrichStep', () => {
 			createMockParsedRelease({ version: `2.0.${30 + i}` }),
 		)
 
-		vi.mocked(enrichReleaseWithLLM).mockImplementation(async (release) => release)
+		vi.mocked(enrichReleaseWithLLM).mockImplementation(async (release) => ({
+			release,
+			success: true,
+			modelUsed: null,
+			circuitBreakerTriggered: false,
+		}))
 
 		const filterResult: FilterResult = {
 			releases,

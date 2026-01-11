@@ -256,9 +256,9 @@ Changelogs.directory is a full-stack web application that aggregates changelog d
 
 ### Current Scale (MVP)
 
-- **Tools**: 3 (Claude Code, Codex, Cursor)
-- **Releases**: ~300 total across all tools
-- **Changes**: ~1,500 total
+- **Tools**: 7 (Claude Code, Codex, Cursor, Windsurf, OpenCode, Antigravity, Gemini CLI)
+- **Releases**: ~300+ total across all tools
+- **Changes**: ~1,500+ total
 - **Users**: <100 (mostly admin)
 - **Traffic**: <1,000 page views/month
 
@@ -272,6 +272,7 @@ Changelogs.directory is a full-stack web application that aggregates changelog d
 #### Ingestion
 - **Parallel tasks**: Process multiple tools concurrently
 - **Incremental updates**: Only fetch new releases (ETag, Redis cache)
+- **Manual full refresh**: Use `forceFullRescan` payloads (for supported tasks) to bypass cache/filter when a full reprocess is needed
 - **Rate limiting**: Respect GitHub API limits (5000 req/hr)
 
 #### Caching

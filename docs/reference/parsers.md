@@ -1,6 +1,6 @@
 # Parser Development Reference
 
-> **Last verified**: 2025-12-23
+> **Last verified**: 2026-01-11
 
 This document explains how to develop custom parsers for extracting structured changelog data from various sources.
 
@@ -580,7 +580,7 @@ export function hashContent(content: string): string {
 }
 ```
 
-**Usage**: Compare hashes to skip unchanged releases in filter phase.
+**Usage**: Compare hashes to skip unchanged releases in filter phase. When a run enables `forceFullRescan`, ingestion bypasses that filter and reprocesses releases even if the hash is unchanged.
 
 ---
 

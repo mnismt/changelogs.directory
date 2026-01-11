@@ -65,6 +65,10 @@ Fetches `CHANGELOG.md` from GitHub, extracts release dates from Git history, par
 - Update `FetchLog` with `SUCCESS` status and metrics
 - On failure: update `FetchLog` with `FAILED` status and error details
 
+## Operational Overrides
+- `retryVersions`: pass in the task payload to reprocess specific versions even if the `contentHash` is unchanged.
+- `forceFullRescan` is not implemented for this pipeline; use targeted `retryVersions` runs instead.
+
 ## Flow Diagram
 
 ```

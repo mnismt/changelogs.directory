@@ -8,7 +8,8 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 
 - 🚀 **Add a new tool** → [guides/adding-a-tool.md](guides/adding-a-tool.md)
 - 🔧 **Set up my environment** → [guides/environment-variables.md](guides/environment-variables.md)
-- 🧪 **Test ingestion pipelines** → [guides/testing.md](guides/testing.md)
+- 🧪 **Run unit tests** → [guides/testing.md](guides/testing.md)
+- 🎭 **Run E2E tests** → [testing/e2e-architecture.md](testing/e2e-architecture.md)
 - 🚢 **Deploy to production** → [guides/deployment.md](guides/deployment.md)
 - 🎨 **Understand the design system** → [design/design-rules.md](design/design-rules.md)
 - 🗄️ **Query the database** → [reference/database-schema.md](reference/database-schema.md)
@@ -48,6 +49,16 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
   - [release-detail.md](design/animations/release-detail.md) - Release page transitions
   - [analytics.md](design/animations/analytics.md) - Analytics page animations
   - [system-errors.md](design/animations/system-errors.md) - Error page choreography (404/500)
+
+### 🧪 testing/
+**End-to-end testing documentation** for comprehensive test coverage.
+
+- [README.md](testing/README.md) - Testing docs index
+- [e2e-architecture.md](testing/e2e-architecture.md) - E2E test architecture and CI integration
+- [config-validation.md](testing/config-validation.md) - Static configuration validation tests
+- [browser-tests.md](testing/browser-tests.md) - Playwright browser tests
+- [snapshots.md](testing/snapshots.md) - Production-derived snapshot system
+- [troubleshooting.md](testing/troubleshooting.md) - Debug failing tests
 
 ### 📋 project/
 **Project planning, vision, and strategic decisions.**
@@ -121,6 +132,10 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 - **Claude Code** (Anthropic) - CHANGELOG_MD source type
 - **Codex** (OpenAI) - GITHUB_RELEASES source type
 - **Cursor** (Anysphere) - CUSTOM_API source type (HTML scraper)
+- **Windsurf** (Cognition) - CUSTOM_API source type
+- **OpenCode** (Anomaly) - GITHUB_RELEASES source type
+- **Antigravity** (Google) - CUSTOM_API source type
+- **Gemini CLI** (Google) - GITHUB_RELEASES source type
 
 ### Repository Structure
 ```
@@ -152,5 +167,5 @@ This documentation is updated as the codebase evolves. If you notice outdated co
 
 ---
 
-**Last Updated**: 2026-01-09
-**Documentation Version**: 2.1 (Added hooks reference, v0.5.x navigation docs)
+**Last Updated**: 2026-01-11
+**Documentation Version**: 2.2 (Gemini CLI ingestion updates, cache bypass docs)

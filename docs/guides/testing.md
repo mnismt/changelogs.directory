@@ -1,8 +1,8 @@
 # Testing Guide
 
-> **Last verified**: 2025-12-05
+> **Last verified**: 2026-01-11
 
-This guide covers testing strategies for Changelogs.directory, including unit tests, integration tests, and ingestion pipeline testing.
+This guide covers testing strategies for Changelogs.directory, including unit tests, integration tests, and ingestion pipeline testing. For comprehensive E2E testing documentation, see [docs/testing/](../testing/README.md).
 
 ## Testing Philosophy
 
@@ -135,6 +135,26 @@ describe('formatVersionForDisplay', () => {
 		const result = formatVersionForDisplay(version, 'claude-code')
 		expect(result).toBe('v2.0.31')
 	})
+})
+```
+
+#### Example: Testing GitHub Releases Cache Bypass
+
+**File**: `tests/lib/github/releases.test.ts`
+
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { fetchGitHubReleases } from '@/lib/github/releases'
+
+it('skips cache when bypassCache is true', async () => {
+	const result = await fetchGitHubReleases('https://github.com/octo/repo', 'token', {
+		bypassCache: true,
+		includeDrafts: true,
+		includePreReleases: true,
+	})
+
+	expect(result).toHaveLength(1)
+	// Assert no cached ETag was used and cache write happens after fetch
 })
 ```
 
@@ -274,6 +294,25 @@ describe('Claude Code Ingestion', () => {
 })
 ```
 
+#### Example: Testing Force Full Rescan
+
+**File**: `tests/trigger/ingest/gemini-cli/index.test.ts`
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { ingestGeminiCli } from '@/trigger/ingest/gemini-cli'
+
+it('reprocesses unchanged releases when forced', async () => {
+	const result = await ingestGeminiCli.run({
+		toolSlug: 'gemini-cli',
+		forceFullRescan: true,
+	})
+
+	expect(result.releasesSkipped).toBe(0)
+	expect(result.releasesUpdated).toBeGreaterThan(0)
+})
+```
+
 ---
 
 ### Trigger.dev Local Testing
@@ -384,7 +423,19 @@ LIMIT 5;
 
 ## End-to-End Testing
 
+> **📚 For comprehensive E2E documentation, see [docs/testing/](../testing/README.md)**
+
 Full workflow testing from configuration validation to browser UI testing.
+
+### Quick Reference
+
+| Documentation | Purpose |
+|---------------|---------|
+| [E2E Architecture](../testing/e2e-architecture.md) | Test structure, CI integration |
+| [Config Validation](../testing/config-validation.md) | Static asset validation tests |
+| [Browser Tests](../testing/browser-tests.md) | Playwright test patterns |
+| [Snapshots](../testing/snapshots.md) | Production-derived test data |
+| [Troubleshooting](../testing/troubleshooting.md) | Debug failing tests |
 
 ### E2E Test Commands
 
