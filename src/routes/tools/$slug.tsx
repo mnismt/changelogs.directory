@@ -18,11 +18,12 @@ export const Route = createFileRoute('/tools/$slug')({
 	head: ({ params, loaderData }) => {
 		const baseUrl =
 			import.meta.env.VITE_BASE_URL || 'https://changelogs.directory'
-		const toolName = loaderData?.tool?.name ?? params.slug
+		const toolName = loaderData?.tool?.name ?? 'Tool'
+		const toolNameLower = toolName.toLowerCase()
 		return {
 			meta: [
 				{
-					title: `${toolName.toLowerCase()} changelog - changelogs.directory`,
+					title: `${toolNameLower} changelog - changelogs.directory`,
 				},
 				{
 					name: 'description',
@@ -32,7 +33,7 @@ export const Route = createFileRoute('/tools/$slug')({
 				{ property: 'og:type', content: 'website' },
 				{
 					property: 'og:title',
-					content: `${toolName.toLowerCase()} changelog`,
+					content: `${toolNameLower} changelog`,
 				},
 				{
 					property: 'og:description',
@@ -50,7 +51,7 @@ export const Route = createFileRoute('/tools/$slug')({
 				{ name: 'twitter:card', content: 'summary_large_image' },
 				{
 					name: 'twitter:title',
-					content: `${toolName} Changelog`,
+					content: `${toolNameLower} changelog`,
 				},
 				{
 					name: 'twitter:description',
