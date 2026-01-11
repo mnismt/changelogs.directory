@@ -1,6 +1,6 @@
 # Plan: Real Release Snapshots for CI E2E
 
-> **Status**: 🟡 Planned
+> **Status**: ✅ Implemented (2026-01-11)
 
 ## Goal
 
