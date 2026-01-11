@@ -14,14 +14,15 @@ test.describe("Tools Directory Page", () => {
 
 	test("all tool cards are displayed", async ({ page }) => {
 		const toolCards = page.locator('[data-testid="tool-card"]');
-		// We only seed 2 tools in the E2E snapshot (codex, cursor)
-		await expect(toolCards).toHaveCount(2);
+		// E2E snapshot now includes all registered tools
+		await expect(toolCards).toHaveCount(TOOL_SLUGS.length);
 	});
 
 	test("tool cards render correctly with logos", async ({ page }) => {
-		const seededSlugs = ["codex", "cursor"];
+		// Test a representative sample of tools for rendering
+		const sampleSlugs = TOOL_SLUGS.slice(0, 3);
 
-		for (const slug of seededSlugs) {
+		for (const slug of sampleSlugs) {
 			const card = page.locator(`[data-testid="tool-card-${slug}"]`);
 			await expect(card).toBeVisible();
 
@@ -31,7 +32,7 @@ test.describe("Tools Directory Page", () => {
 	});
 
 	test("background image appears on hover", async ({ page }) => {
-		const firstSlug = "codex";
+		const firstSlug = TOOL_SLUGS[0];
 		const card = page.locator(`[data-testid="tool-card-${firstSlug}"]`);
 
 		await card.hover();
@@ -45,7 +46,7 @@ test.describe("Tools Directory Page", () => {
 	test("clicking a tool card navigates to tool detail page", async ({
 		page,
 	}) => {
-		const firstSlug = "codex";
+		const firstSlug = TOOL_SLUGS[0];
 		const cardLink = page.locator(`a[href="/tools/${firstSlug}"]`);
 
 		await cardLink.click();

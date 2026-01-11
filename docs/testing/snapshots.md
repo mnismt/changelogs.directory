@@ -20,8 +20,8 @@ Browser E2E tests need realistic data to test pagination, navigation, and render
 
 | Data | Details |
 |------|---------|
-| **Tools** | 2 tools: `codex`, `cursor` |
-| **Releases** | 60 per tool (latest by date) |
+| **Tools** | All 7 registry tools |
+| **Releases** | 60 for codex/cursor (pagination tests), 3 for others |
 | **Changes** | All changes for included releases |
 | **rawContent** | Full content preserved (no truncation) |
 
@@ -144,8 +144,8 @@ pnpm tsx scripts/export-e2e-snapshot.ts
 
 **What it does**:
 1. Connects to the database specified by `DATABASE_URL`
-2. Fetches tools: `codex`, `cursor`
-3. Fetches latest 60 releases per tool (by `releaseDate` desc)
+2. Fetches all tools from `TOOL_SLUGS` in the registry
+3. Fetches 60 releases for codex/cursor (pagination tests), 3 for others
 4. Fetches all changes for those releases
 5. Writes compressed JSON to `tests/fixtures/e2e-db.snapshot.json.gz`
 
@@ -154,11 +154,24 @@ pnpm tsx scripts/export-e2e-snapshot.ts
 In the export script:
 
 ```typescript
-const TARGET_TOOLS = ["codex", "cursor"];
-const RELEASES_PER_TOOL = 60;
+// All tools from registry
+const TARGET_TOOLS = [
+  "claude-code",
+  "codex",
+  "cursor",
+  "windsurf",
+  "opencode",
+  "antigravity",
+  "gemini-cli",
+];
+
+// Tools needing deep release data for pagination tests
+const DEEP_DATA_TOOLS = ["codex", "cursor"];
+const DEEP_RELEASES_COUNT = 60;
+const MINIMAL_RELEASES_COUNT = 3;
 ```
 
-To add more tools or change release count, modify these constants.
+To add a new tool: add it to `TOOL_REGISTRY` in `src/lib/tool-registry.tsx` and update `TARGET_TOOLS` in the export script.
 
 ### Safety Checks
 
@@ -279,7 +292,7 @@ pnpm seed:e2e
 pnpm seed:local
 ```
 
-Note: Normal seed won't conflict because snapshot only includes `codex` and `cursor`.
+Note: Normal seed may update data for tools also in the snapshot. The snapshot import runs a clean slate for included tools.
 
 ---
 
@@ -343,12 +356,15 @@ If the snapshot grows too large:
 
 ### Adding More Tools to Snapshot
 
-1. Edit `scripts/export-e2e-snapshot.ts`:
-   ```typescript
-   const TARGET_TOOLS = ["codex", "cursor", "new-tool"];
-   ```
-2. Run export
-3. Update tests that assert on tool count
+When adding a new tool to the registry:
+
+1. Add the tool to `TOOL_REGISTRY` in `src/lib/tool-registry.tsx`
+2. Add the slug to `TARGET_TOOLS` in `scripts/export-e2e-snapshot.ts`
+3. To include in "deep data" set (60 releases for pagination tests):
+   - Add slug to `DEEP_DATA_TOOLS` array in the export script
+4. Run export: `pnpm tsx scripts/export-e2e-snapshot.ts`
+5. Commit the updated snapshot file
+6. Tests will automatically include the new tool (uses `TOOL_SLUGS.length`)
 
 ### Schema Migrations
 

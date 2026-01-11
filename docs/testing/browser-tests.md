@@ -44,7 +44,7 @@ Tests the tools listing page (`/tools`).
 | Test | What it verifies |
 |------|------------------|
 | `page loads with heading and stats` | Heading, "Total Tools", "Total Releases" visible |
-| `all tool cards are displayed` | Card count matches seeded tools (2) |
+| `all tool cards are displayed` | Card count matches `TOOL_SLUGS.length` |
 | `tool cards render correctly with logos` | Each card has visible logo |
 | `background image appears on hover` | Hover triggers background image visibility |
 | `clicking a tool card navigates to tool detail page` | Click navigates to `/tools/{slug}` |
@@ -56,7 +56,7 @@ Tests the tools listing page (`/tools`).
 - `[data-testid="tool-card-bg-{slug}"]`
 - `a[href="/tools/{slug}"]`
 
-**Note**: The test expects 2 tool cards because the E2E snapshot only includes `codex` and `cursor`.
+**Note**: The test expects tool cards matching `TOOL_SLUGS.length` because the E2E snapshot includes all registered tools.
 
 ---
 
@@ -79,7 +79,7 @@ Tests individual tool pages (`/tools/{slug}`).
 **Pagination test details**:
 - Initial load: 20 release cards
 - After scroll: > 20 cards
-- Uses `codex` which has 60 releases in snapshot
+- Uses `codex` or `cursor` which have 60 releases each in the snapshot (other tools have minimal releases for faster CI)
 
 ---
 
