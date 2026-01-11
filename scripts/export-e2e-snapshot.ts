@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma/client";
 import fs from "fs";
 import path from "path";
 import zlib from "zlib";
@@ -11,7 +12,8 @@ const writeFile = promisify(fs.writeFile);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
 
 const OUTPUT_PATH = path.join(__dirname, "../tests/fixtures/e2e-db.snapshot.json.gz");
 const TARGET_TOOLS = ["codex", "cursor"];
