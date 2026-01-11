@@ -1,6 +1,6 @@
 # Adding a New Tool to Changelogs.directory
 
-> **Last verified**: 2025-12-05 with claude-code, codex, and cursor examples
+> **Last verified**: 2026-01-11 with claude-code, codex, cursor, and gemini-cli examples
 
 This guide walks you through adding a new tool (like "Google Antigravity") to the changelog aggregation platform.
 
@@ -589,6 +589,9 @@ await ingestGoogleAntigravity.trigger({ toolSlug: 'google-antigravity' })
 ```
 
 Run: `pnpm tsx test-google-antigravity.ts`
+
+**Force full rescan (optional)**:
+Some ingestion tasks accept `forceFullRescan: true` in the payload to bypass cache/filter phases (e.g., Gemini CLI). Use this only for full refreshes.
 
 ### 5.3 Verify Results
 

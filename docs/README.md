@@ -121,6 +121,10 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 - **Claude Code** (Anthropic) - CHANGELOG_MD source type
 - **Codex** (OpenAI) - GITHUB_RELEASES source type
 - **Cursor** (Anysphere) - CUSTOM_API source type (HTML scraper)
+- **Windsurf** (Cognition) - CUSTOM_API source type
+- **OpenCode** (Anomaly) - GITHUB_RELEASES source type
+- **Antigravity** (Google) - CUSTOM_API source type
+- **Gemini CLI** (Google) - GITHUB_RELEASES source type
 
 ### Repository Structure
 ```
@@ -152,5 +156,5 @@ This documentation is updated as the codebase evolves. If you notice outdated co
 
 ---
 
-**Last Updated**: 2026-01-09
-**Documentation Version**: 2.1 (Added hooks reference, v0.5.x navigation docs)
+**Last Updated**: 2026-01-11
+**Documentation Version**: 2.2 (Gemini CLI ingestion updates, cache bypass docs)

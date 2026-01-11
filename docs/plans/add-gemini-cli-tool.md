@@ -1,7 +1,8 @@
 # Implementation Plan: Add Gemini CLI Tool
 
 > **Created**: 2026-01-11
-> **Status**: 📝 Planning
+> **Status**: ✅ Completed
+> **Completed**: 2026-01-11
 > **Estimated Time**: 1-2 hours
 
 ## Summary
@@ -493,4 +494,9 @@ After implementation, update:
 
 ---
 
-**Next Steps**: Implement sequentially following Phase 1 → Phase 2 → Phase 3 timeline.
+## Completion Notes
+
+- Gemini CLI tool is seeded in `prisma/seed.ts` and registered in `src/lib/tool-registry.tsx`.
+- Ingestion pipeline lives in `src/trigger/ingest/gemini-cli/` with schedule enabled.
+- Assets are present (`src/components/logo/gemini-cli.tsx`, `public/images/tools/gemini-cli.png`).
+- Operational `forceFullRescan` flag documented and tested.

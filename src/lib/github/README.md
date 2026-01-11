@@ -10,7 +10,7 @@ Minimal docs for the GitHub integration used by ingestion steps.
   - `fetchCommitDetail(repoUrl, sha, token?)` – commit detail with files/patches (cached)
   - `buildVersionDateMapping(repoUrl, filePath, token?)` – map `version -> Date` via patches
 - `releases.ts`
-  - `fetchGitHubReleases(repoUrl, token?, options?)` – fetch releases with Redis cache + ETag support (paginated)
+  - `fetchGitHubReleases(repoUrl, token?, options?)` – fetch releases with Redis cache + ETag support (paginated, supports `bypassCache`)
 - `cache.ts`
   - `getCommitCacheKey(owner, repo, sha)` – `github:commit:{owner}:{repo}:{sha}`
   - `getReleasesCacheKey(owner, repo)` – `github:release:{owner}:{repo}:list`
@@ -51,6 +51,8 @@ Minimal docs for the GitHub integration used by ingestion steps.
 ```
 
 ### Releases Cache with ETag
+
+`fetchGitHubReleases()` accepts `bypassCache: true` to skip Redis/ETag checks and refetch all pages. It still writes the refreshed releases and ETag back to cache.
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -101,6 +103,7 @@ Minimal docs for the GitHub integration used by ingestion steps.
   - ETag: `github:etag:{owner}:{repo}:releases`
 - TTL: 90 days (releases rarely change after publication)
 - ETag support: Uses GitHub's `If-None-Match` header for conditional requests
+- `bypassCache`: Set to `true` to skip Redis/ETag checks and refetch all pages (still writes refreshed cache)
 - **Size optimization**: Strips unnecessary fields (author, assets, URLs) - keeps only 7 essential fields
   - GitHub API: ~50 fields per release
   - Cached: 7 fields (tag_name, name, body, prerelease, draft, published_at, html_url)

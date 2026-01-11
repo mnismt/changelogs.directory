@@ -1,6 +1,6 @@
 # Testing Guide
 
-> **Last verified**: 2025-12-05
+> **Last verified**: 2026-01-11
 
 This guide covers testing strategies for Changelogs.directory, including unit tests, integration tests, and ingestion pipeline testing.
 
@@ -138,6 +138,26 @@ describe('formatVersionForDisplay', () => {
 })
 ```
 
+#### Example: Testing GitHub Releases Cache Bypass
+
+**File**: `tests/lib/github/releases.test.ts`
+
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { fetchGitHubReleases } from '@/lib/github/releases'
+
+it('skips cache when bypassCache is true', async () => {
+	const result = await fetchGitHubReleases('https://github.com/octo/repo', 'token', {
+		bypassCache: true,
+		includeDrafts: true,
+		includePreReleases: true,
+	})
+
+	expect(result).toHaveLength(1)
+	// Assert no cached ETag was used and cache write happens after fetch
+})
+```
+
 ---
 
 ### Testing Server Functions
@@ -271,6 +291,25 @@ describe('Claude Code Ingestion', () => {
 		expect(parseResult.releases.length).toBeGreaterThan(0)
 		expect(parseResult.releases[0].version).toMatch(/^\d+\.\d+\.\d+/)
 	}, 30000) // 30 second timeout for network request
+})
+```
+
+#### Example: Testing Force Full Rescan
+
+**File**: `tests/trigger/ingest/gemini-cli/index.test.ts`
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { ingestGeminiCli } from '@/trigger/ingest/gemini-cli'
+
+it('reprocesses unchanged releases when forced', async () => {
+	const result = await ingestGeminiCli.run({
+		toolSlug: 'gemini-cli',
+		forceFullRescan: true,
+	})
+
+	expect(result.releasesSkipped).toBe(0)
+	expect(result.releasesUpdated).toBeGreaterThan(0)
 })
 ```
 

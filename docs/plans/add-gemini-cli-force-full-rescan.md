@@ -1,7 +1,8 @@
 # Implementation Plan: Add forceFullRescan to Gemini CLI ingestion
 
 > **Created**: 2026-01-11
-> **Status**: 📝 Planning
+> **Status**: ✅ Completed
+> **Completed**: 2026-01-11
 > **Estimated Time**: 1-2 hours
 
 ## Summary
@@ -132,3 +133,11 @@ Update `ingestGeminiCli.run` to accept `{ toolSlug?: string; forceFullRescan?: b
 ## Open Questions
 
 None (semantics confirmed with user).
+
+## Completion Notes
+
+- `forceFullRescan` payload wired through Gemini CLI ingestion context and steps.
+- `fetchGitHubReleases` supports `bypassCache` for forced runs.
+- Filter/upsert phases honor forced reprocessing.
+- Tests added: `tests/lib/github/releases.test.ts`, `tests/trigger/ingest/gemini-cli/index.test.ts`.
+- Gemini CLI README documents the operational flag.

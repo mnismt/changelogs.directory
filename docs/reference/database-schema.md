@@ -305,6 +305,7 @@ enum FetchStatus {
 - **Metrics**: Track new vs updated releases, total changes
 - **Debugging**: Store error messages and stack traces
 - **HTTP caching**: `sourceEtag` for conditional requests (GitHub supports ETags)
+- **Force rescan visibility**: No explicit flag stored; use Trigger.dev payloads/logs to identify `forceFullRescan` runs
 - **Admin dashboard**: Query latest logs per tool to show status
 
 ---

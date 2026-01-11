@@ -1,6 +1,6 @@
 # Ingestion Pipeline Reference
 
-> **Last verified**: 2025-12-05
+> **Last verified**: 2026-01-11
 
 This document provides a deep dive into the 7-phase changelog ingestion pipeline architecture used by all tools on Changelogs.directory.
 
@@ -50,7 +50,8 @@ Every tool (Claude Code, Codex, Cursor) follows the same 7-phase pipeline:
   prisma: PrismaClient,    // Prisma v7+ requires driver adapter in workers
   tool: Tool,              // slug, sourceType, sourceUrl, sourceConfig
   fetchLog: FetchLog,      // id, startedAt
-  startTime: number        // Date.now() for duration calculation
+  startTime: number,       // Date.now() for duration calculation
+  forceFullRescan?: boolean // Optional: bypass cache/filter/upsert skips
 }
 ```
 
@@ -108,6 +109,9 @@ while (page <= maxPages) {
 ```
 
 **Output**: `{ releases: GitHubRelease[] }`
+
+**Cache bypass**:
+- When a supported task sets `forceFullRescan`, pass `bypassCache: true` to `fetchGitHubReleases()` to skip Redis/ETag checks and refetch all pages.
 
 ### C. CUSTOM_API (Cursor pattern)
 ```typescript
@@ -308,8 +312,9 @@ const toEnrich = parsedReleases.filter(release => {
 - Reduces database writes
 - Faster ingestion (no unnecessary upserts)
 
-**Special Case**: `retryVersions` parameter
-Can force re-processing of specific versions even if unchanged:
+**Special Cases**: `retryVersions` and `forceFullRescan`
+
+- `retryVersions` can force re-processing of specific versions even if unchanged:
 ```typescript
 const toEnrich = parsedReleases.filter(release => {
   if (retryVersions.includes(release.version)) return true // Force retry
@@ -317,6 +322,8 @@ const toEnrich = parsedReleases.filter(release => {
   return !existingHash || existingHash !== release.contentHash
 })
 ```
+
+- When supported by a task, `forceFullRescan` bypasses this phase entirely and returns all parsed releases to re-enrich.
 
 ---
 
@@ -410,6 +417,9 @@ for (const release of enrichedReleases) {
   }
 }
 ```
+
+**Force Full Rescan**:
+- When supported and enabled, `forceFullRescan` makes upsert steps update releases even if the `contentHash` is unchanged (recreate changes and re-run enrichment).
 
 **Metrics Tracked**:
 - `releasesNew`: Count of new releases created
