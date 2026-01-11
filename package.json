@@ -113,7 +113,7 @@
     "seed-admin:prod": "bun --env-file=.env.production prisma/seed-admin.ts",
     "seed:local": "bun prisma/seed.ts",
     "seed:prod": "bun --env-file=.env.production prisma/seed.ts",
-    "seed:e2e": "tsx prisma/seed-e2e-snapshot.ts",
+    "seed:e2e": "bun prisma/seed-e2e-snapshot.ts",
     "serve": "vite preview",
     "start": "node .output/server/index.mjs",
     "sync:prod": "bun scripts/sync-prod-to-local.ts",

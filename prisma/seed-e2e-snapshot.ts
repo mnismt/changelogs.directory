@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma/client";
 import fs from "fs";
 import path from "path";
 import zlib from "zlib";
@@ -11,7 +12,8 @@ const readFile = promisify(fs.readFile);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
 const SNAPSHOT_PATH = path.join(__dirname, "../tests/fixtures/e2e-db.snapshot.json.gz");
 
 async function main() {
@@ -30,126 +32,129 @@ async function main() {
 
   const toolsToImport = snapshot.meta.tools;
 
-  await prisma.$transaction(async (tx) => {
-    // 1. Clean up existing data for these tools
-    console.log("Cleaning up existing data...");
-    
-    // Find IDs of tools to remove
-    const tools = await tx.tool.findMany({
-      where: { slug: { in: toolsToImport } },
-      select: { id: true },
-    });
-    const toolIds = tools.map(t => t.id);
-
-    if (toolIds.length > 0) {
-      await tx.change.deleteMany({
-        where: { release: { toolId: { in: toolIds } } }
+  await prisma.$transaction(
+    async (tx) => {
+      // 1. Clean up existing data for these tools
+      console.log("Cleaning up existing data...");
+      
+      // Find IDs of tools to remove
+      const tools = await tx.tool.findMany({
+        where: { slug: { in: toolsToImport } },
+        select: { id: true },
       });
-      await tx.release.deleteMany({
-        where: { toolId: { in: toolIds } }
-      });
-      await tx.fetchLog.deleteMany({
-        where: { toolId: { in: toolIds } }
-      });
-      await tx.tool.deleteMany({
-        where: { id: { in: toolIds } }
-      });
-    }
+      const toolIds = tools.map(t => t.id);
 
-    // 2. Insert Tools
-    console.log(`Inserting ${snapshot.tools.length} tools...`);
-    const toolIdMap = new Map<string, string>(); // slug -> id
+      if (toolIds.length > 0) {
+        await tx.change.deleteMany({
+          where: { release: { toolId: { in: toolIds } } }
+        });
+        await tx.release.deleteMany({
+          where: { toolId: { in: toolIds } }
+        });
+        await tx.fetchLog.deleteMany({
+          where: { toolId: { in: toolIds } }
+        });
+        await tx.tool.deleteMany({
+          where: { id: { in: toolIds } }
+        });
+      }
 
-    for (const t of snapshot.tools) {
-      const created = await tx.tool.create({
-        data: {
-          slug: t.slug,
-          name: t.name,
-          vendor: t.vendor,
-          description: t.description,
-          homepage: t.homepage,
-          repositoryUrl: t.repositoryUrl,
-          sourceType: t.sourceType,
-          sourceUrl: t.sourceUrl,
-          sourceConfig: t.sourceConfig as any,
-          tags: t.tags,
-          isActive: t.isActive,
-          lastFetchedAt: t.lastFetchedAt ? new Date(t.lastFetchedAt) : null,
-          logoUrl: t.logoUrl,
-        }
-      });
-      toolIdMap.set(t.slug, created.id);
-    }
+      // 2. Insert Tools
+      console.log(`Inserting ${snapshot.tools.length} tools...`);
+      const toolIdMap = new Map<string, string>(); // slug -> id
 
-    // 3. Insert Releases
-    console.log(`Inserting ${snapshot.releases.length} releases...`);
-    const releaseIdMap = new Map<string, string>(); // "slug:version" -> id
+      for (const t of snapshot.tools) {
+        const created = await tx.tool.create({
+          data: {
+            slug: t.slug,
+            name: t.name,
+            vendor: t.vendor,
+            description: t.description,
+            homepage: t.homepage,
+            repositoryUrl: t.repositoryUrl,
+            sourceType: t.sourceType,
+            sourceUrl: t.sourceUrl,
+            sourceConfig: t.sourceConfig as any,
+            tags: t.tags,
+            isActive: t.isActive,
+            lastFetchedAt: t.lastFetchedAt ? new Date(t.lastFetchedAt) : null,
+            logoUrl: t.logoUrl,
+          }
+        });
+        toolIdMap.set(t.slug, created.id);
+      }
 
-    // Process in chunks to avoid overwhelming the DB if large
-    const releaseChunks = chunkArray(snapshot.releases, 50);
-    for (const chunk of releaseChunks) {
-        // We can't use createMany easily if we need the IDs back for changes.
-        // But we can use create and loop.
-        for (const r of chunk) {
-            const toolId = toolIdMap.get(r.toolSlug);
-            if (!toolId) continue;
+      // 3. Insert Releases
+      console.log(`Inserting ${snapshot.releases.length} releases...`);
+      const releaseIdMap = new Map<string, string>(); // "slug:version" -> id
 
-            const created = await tx.release.create({
-                data: {
-                    toolId,
-                    version: r.version,
-                    versionSort: r.versionSort,
-                    releaseDate: r.releaseDate ? new Date(r.releaseDate) : null,
-                    publishedAt: new Date(r.publishedAt),
-                    sourceUrl: r.sourceUrl,
-                    rawContent: r.rawContent,
-                    contentHash: r.contentHash,
-                    title: r.title,
-                    summary: r.summary,
-                    headline: r.headline,
-                    isPrerelease: r.isPrerelease,
-                }
-            });
-            releaseIdMap.set(`${r.toolSlug}:${r.version}`, created.id);
-        }
-    }
+      // Process in chunks to avoid overwhelming the DB if large
+      const releaseChunks = chunkArray(snapshot.releases, 50);
+      for (const chunk of releaseChunks) {
+          // We can't use createMany easily if we need the IDs back for changes.
+          // But we can use create and loop.
+          for (const r of chunk) {
+              const toolId = toolIdMap.get(r.toolSlug);
+              if (!toolId) continue;
 
-    // 4. Insert Changes
-    console.log(`Inserting ${snapshot.changes.length} changes...`);
-    
-    // We can use createMany for changes as we don't need their IDs later
-    const changesToInsert = snapshot.changes.map((c: any) => {
-        const releaseId = releaseIdMap.get(`${c.toolSlug}:${c.version}`);
-        if (!releaseId) return null;
+              const created = await tx.release.create({
+                  data: {
+                      toolId,
+                      version: r.version,
+                      versionSort: r.versionSort,
+                      releaseDate: r.releaseDate ? new Date(r.releaseDate) : null,
+                      publishedAt: new Date(r.publishedAt),
+                      sourceUrl: r.sourceUrl,
+                      rawContent: r.rawContent,
+                      contentHash: r.contentHash,
+                      title: r.title,
+                      summary: r.summary,
+                      headline: r.headline,
+                      isPrerelease: r.isPrerelease,
+                  }
+              });
+              releaseIdMap.set(`${r.toolSlug}:${r.version}`, created.id);
+          }
+      }
 
-        return {
-            releaseId,
-            type: c.type,
-            title: c.title,
-            description: c.description,
-            platform: c.platform,
-            component: c.component,
-            isBreaking: c.isBreaking,
-            isSecurity: c.isSecurity,
-            isDeprecation: c.isDeprecation,
-            impact: c.impact,
-            links: c.links,
-            media: c.media,
-            order: c.order,
-        };
-    }).filter((c: any) => c !== null);
+      // 4. Insert Changes
+      console.log(`Inserting ${snapshot.changes.length} changes...`);
+      
+      // We can use createMany for changes as we don't need their IDs later
+      const changesToInsert = snapshot.changes.map((c: any) => {
+          const releaseId = releaseIdMap.get(`${c.toolSlug}:${c.version}`);
+          if (!releaseId) return null;
 
-    if (changesToInsert.length > 0) {
-        // createMany is restricted in some environments/adapters, but standard PG supports it.
-        // Doing in chunks.
-        const changeChunks = chunkArray(changesToInsert, 100);
-        for (const chunk of changeChunks) {
-            await tx.change.createMany({
-                data: chunk
-            });
-        }
-    }
-  });
+          return {
+              releaseId,
+              type: c.type,
+              title: c.title,
+              description: c.description,
+              platform: c.platform,
+              component: c.component,
+              isBreaking: c.isBreaking,
+              isSecurity: c.isSecurity,
+              isDeprecation: c.isDeprecation,
+              impact: c.impact,
+              links: c.links,
+              media: c.media,
+              order: c.order,
+          };
+      }).filter((c: any) => c !== null);
+
+      if (changesToInsert.length > 0) {
+          // createMany is restricted in some environments/adapters, but standard PG supports it.
+          // Doing in chunks.
+          const changeChunks = chunkArray(changesToInsert, 100);
+          for (const chunk of changeChunks) {
+              await tx.change.createMany({
+                  data: chunk
+              });
+          }
+      }
+    },
+    { timeout: 60000 }
+  );
 
   console.log("Snapshot import completed successfully.");
 }
