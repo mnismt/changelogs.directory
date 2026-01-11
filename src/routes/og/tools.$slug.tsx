@@ -34,7 +34,10 @@ export const Route = createFileRoute('/og/tools/$slug')({
 					const image = new ImageResponse(
 						<OGLayout
 							title={`~/tools/${params.slug}`}
-							breadcrumbs={['changelogs.directory', `v${tool.latestVersion}`]}
+							breadcrumbs={[
+								'changelogs.directory',
+								tool.latestVersion ? `v${tool.latestVersion}` : 'coming soon',
+							]}
 							indicator="Live Release Feed"
 						>
 							{/* Command Input */}
