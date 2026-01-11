@@ -2,7 +2,7 @@ import type { FetchLog, PrismaClient, Tool } from '@/generated/prisma/client'
 import type { ParsedRelease } from '@/lib/parsers/changelog-md'
 
 /**
- * Context passed between ingestion steps
+ * Shared context passed between ingestion steps
  */
 export interface IngestionContext {
 	prisma: PrismaClient
@@ -10,28 +10,6 @@ export interface IngestionContext {
 	tool: Tool
 	fetchLog: FetchLog
 	startTime: number
-}
-
-/**
- * Result from fetch step
- */
-export interface FetchResult {
-	markdown: string
-	etag: string | null
-}
-
-/**
- * Result from fetch-dates step
- */
-export interface FetchDatesResult {
-	versionDates: Map<string, Date>
-}
-
-/**
- * Result from parse step
- */
-export interface ParseResult {
-	releases: ParsedRelease[]
 }
 
 /**
@@ -59,13 +37,4 @@ export interface EnrichmentStats {
 	failed: number
 	circuitBreakerTriggered: number
 	modelUsage: Record<string, number>
-}
-
-/**
- * Result from upsert step
- */
-export interface UpsertResult {
-	releasesNew: number
-	releasesUpdated: number
-	changesCreated: number
 }

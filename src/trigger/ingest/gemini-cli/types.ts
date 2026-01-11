@@ -1,54 +1,53 @@
 import type { FetchLog, PrismaClient, Tool } from '@/generated/prisma/client'
 import type { ParsedRelease } from '@/lib/parsers/changelog-md'
+import type { GitHubRelease } from '@/lib/parsers/github-releases'
 
-export interface WindsurfSourceConfig {
-	baseUrl?: string
-	startPath?: string
-	releaseSelector?: string
-	bodySelector?: string
-	maxReleasesPerRun?: number
-}
-
-export interface CachedWindsurfRelease {
-	slug: string
-	contentHash?: string
-	releaseDate?: string
-}
-
+/**
+ * Context passed between ingestion steps
+ */
 export interface IngestionContext {
 	prisma: PrismaClient
 	toolSlug: string
 	tool: Tool
 	fetchLog: FetchLog
 	startTime: number
-	forceFullRescan: boolean
+	forceFullRescan?: boolean
 }
 
+/**
+ * Result from fetch step
+ */
 export interface FetchResult {
-	page: {
-		url: string
-		html: string
-	}
-	cachedSlug: string | null
-	cacheEntry: CachedWindsurfRelease | null
-	initialScan: boolean
+	releases: GitHubRelease[]
+	etag?: string | null
 }
 
+/**
+ * Result from parse step
+ */
 export interface ParseResult {
 	releases: ParsedRelease[]
-	newestRelease: CachedWindsurfRelease | null
 }
 
+/**
+ * Result from filter step
+ */
 export interface FilterResult {
 	releases: ParsedRelease[]
 	releasesSkipped: number
 }
 
+/**
+ * Result from enrich step
+ */
 export interface EnrichResult {
 	enrichedReleases: ParsedRelease[]
 	stats?: EnrichmentStats
 }
 
+/**
+ * Stats from LLM enrichment
+ */
 export interface EnrichmentStats {
 	total: number
 	succeeded: number
@@ -57,6 +56,9 @@ export interface EnrichmentStats {
 	modelUsage: Record<string, number>
 }
 
+/**
+ * Result from upsert step
+ */
 export interface UpsertResult {
 	releasesNew: number
 	releasesUpdated: number
