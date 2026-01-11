@@ -18,6 +18,7 @@ export function formatVersionForDisplay(
 		windsurf: formatWindsurfVersion,
 		opencode: formatOpenCodeVersion,
 		antigravity: formatAntigravityVersion,
+		'gemini-cli': formatGeminiCliVersion,
 	}
 
 	const formatter = formatters[toolSlug]
@@ -82,6 +83,15 @@ function formatOpenCodeVersion(version: string): string {
 function formatAntigravityVersion(version: string): string {
 	const versionPart = version.replace(/^antigravity-/, '')
 	return `v${versionPart}`
+}
+
+/**
+ * Gemini CLI versions: "Release v0.23.0" → "v0.23.0"
+ * Strip the "Release " prefix from GitHub release names
+ */
+function formatGeminiCliVersion(version: string): string {
+	const cleaned = version.replace(/^Release\s+/, '')
+	return cleaned.startsWith('v') ? cleaned : `v${cleaned}`
 }
 
 /**

@@ -146,7 +146,12 @@ export function getLogoHoverClasses(slug: string): string {
 	if (!config) return 'group-hover:rotate-45 group-hover:scale-110'
 
 	// Simple icons (monochrome or specific tools) only scale, no rotation
-	if (config.isMonochrome || slug === 'windsurf' || slug === 'antigravity') {
+	if (
+		config.isMonochrome ||
+		slug === 'windsurf' ||
+		slug === 'antigravity' ||
+		slug === 'gemini-cli'
+	) {
 		return 'group-hover:scale-110'
 	}
 	return 'group-hover:rotate-45 group-hover:scale-110'

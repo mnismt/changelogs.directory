@@ -36,7 +36,10 @@ The `ToolHero` dynamically updates its "System Status" based on the route:
 ### C. Content Entrance (Cinematic Stagger)
 The release content enters with a heavy, sequential animation to simulate data loading:
 1.  **Container**: `staggerChildren: 0.15` ensures a rhythmic reveal.
-2.  **Sections (New Features, Improvements, etc.)**:
+2.  **ReleaseSummary**:
+    -   **Position**: First in the stagger sequence.
+    -   **Motion**: Slide Up + Fade In.
+3.  **Sections (New Features, Improvements, etc.)**:
     -   **Motion**: Slide Up (`y: 30` -> `0`) + Fade In (`opacity: 0` -> `1`).
     -   **Blur**: A subtle blur effect (`blur(10px)` -> `0`) adds a "focusing" feel.
     -   **Easing**: `[0.2, 0.8, 0.2, 1]` (Custom cubic bezier) for a premium, "heavy" feel.
@@ -157,6 +160,31 @@ Change sections support mobile-optimized collapsing to reduce initial content lo
     transition={{ duration: 0.3, ease: 'easeInOut' }}
     ```
 -   **Toggle Button**: Shows "Showing 5 of N • Tap to expand" on mobile.
+
+### J. Release Summary Interaction (v0.6.0)
+
+The release summary uses a bifurcated interaction model to optimize for screen real estate while maintaining the "dev-vibe".
+
+#### Desktop: Inline Terminal
+-   **Visual**: A `TerminalWindow` component that renders the summary as if it were a text file (`summary.txt`) being `cat`ed to the console.
+-   **Behavior**: Always visible, inline with the content flow.
+-   **Aesthetics**:
+    -   Command prompt: `$ cat summary.txt`
+    -   Blinking cursor at the end of the stream.
+    -   Monospace font with syntax highlighting cues.
+
+#### Mobile: File Preview + Sheet
+-   **Problem**: Terminal windows consume too much vertical space on mobile, pushing actual changes below the fold.
+-   **Solution**: A compact "File Card" that expands into a Bottom Sheet.
+-   **Interaction**:
+    1.  **Idle State**: A compact button resembling a file system entry.
+        -   **Icon**: Terminal/File icon.
+        -   **Metadata**: `summary.txt`, `1.2 KB` (simulated).
+        -   **Preview**: Truncated first line of the summary.
+    2.  **Active State**: Tapping the card opens `SummarySheet`.
+        -   **Transition**: Standard bottom sheet spring animation.
+        -   **Content**: Full terminal view rendered inside the sheet.
+        -   **Header**: Sticky header with file metadata.
 
 ## 3. Visual Aesthetics ("Dev-Vibe")
 

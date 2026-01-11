@@ -52,6 +52,7 @@ export function FeedReleaseCard({
 	onHoverEnd,
 }: FeedReleaseCardProps) {
 	const logo = getToolLogo(toolSlug)
+	const isGeminiCli = toolSlug === 'gemini-cli'
 
 	// Calculate total feature/bugfix/improvement counts for tooltip
 	const featureCount = changesByType.FEATURE || 0
@@ -109,8 +110,12 @@ export function FeedReleaseCard({
 								<div
 									className={cn(
 										'flex size-10 items-center justify-center rounded p-2 [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-all duration-700 [&>svg_path]:transition-all [&>svg_path]:duration-300 [&>svg_circle]:transition-all [&>svg_circle]:duration-300',
+										!isSameToolHovered &&
+											isGeminiCli &&
+											'grayscale brightness-110',
 										// Keep monochrome fill for monochrome logos or when not hovered
-										(isMonochromeLogo(toolSlug) || !isSameToolHovered) &&
+										!isGeminiCli &&
+											(isMonochromeLogo(toolSlug) || !isSameToolHovered) &&
 											'[&>svg]:fill-foreground [&>svg_path]:fill-foreground [&>svg_circle]:fill-foreground',
 										getLogoHoverClasses(toolSlug),
 									)}
