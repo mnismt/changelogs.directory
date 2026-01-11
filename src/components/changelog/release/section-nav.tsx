@@ -1,33 +1,16 @@
+import { FileText } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
 import type { ChangeType } from '@/generated/prisma/client'
 import { cn } from '@/lib/utils'
-
-/**
- * Section Navigation component for release pages.
- *
- * Provides a floating navigation UI for jumping between change type sections
- * (Features, Bugfixes, Breaking Changes, etc.) with visual feedback for
- * active and visible sections.
- *
- * **Mobile**: Horizontal floating bar at top with terminal-inspired aesthetic.
- * **Desktop**: Fixed left sidebar with viewport bracket indicator (minimap-style).
- *
- * Features:
- * - Active section highlighting with animated pill background
- * - Visible sections tracking for viewport bracket
- * - Scroll-based opacity (dims when idle, brightens on scroll/hover)
- * - Breaking changes get special amber color treatment
- *
- * @see docs/design/animations/release-detail.md for animation choreography
- * @see docs/reference/hooks.md for useSectionObserver documentation
- */
 
 interface SectionNavProps {
 	sections: Array<{ type: ChangeType; title: string; count: number }>
 	activeSection: ChangeType | null
 	visibleSections?: Set<ChangeType>
 	onSectionClick: (type: ChangeType) => void
+	hasSummary?: boolean
+	onSummaryClick?: () => void
 }
 
 const SECTION_ICONS: Record<ChangeType, string> = {
@@ -63,6 +46,8 @@ export function SectionNav({
 	activeSection,
 	visibleSections = new Set(),
 	onSectionClick,
+	hasSummary,
+	onSummaryClick,
 }: SectionNavProps) {
 	const [isVisibleMobile, setIsVisibleMobile] = useState(false)
 	const [isVisibleDesktop, setIsVisibleDesktop] = useState(false)
@@ -136,6 +121,23 @@ export function SectionNav({
 						$_
 					</span>
 					<div className="h-4 w-px shrink-0 bg-white/10" />
+
+					{/* Summary Button */}
+					{hasSummary && (
+						<>
+							<motion.button
+								type="button"
+								onClick={onSummaryClick}
+								className="relative shrink-0 flex items-center gap-2 rounded-full px-2.5 py-1 transition-[colors,transform] duration-100 active:scale-95 text-cyan-400/80 hover:text-cyan-400"
+							>
+								<FileText className="size-3.5" />
+								<span className="font-mono text-[10px] uppercase tracking-wider font-bold">
+									README.md
+								</span>
+							</motion.button>
+							<div className="h-4 w-px shrink-0 bg-white/10" />
+						</>
+					)}
 
 					{sections.map((section) => {
 						const isActive = activeSection === section.type

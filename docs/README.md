@@ -35,6 +35,7 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 - [parsers.md](reference/parsers.md) - Parser development patterns and examples
 - [api-patterns.md](reference/api-patterns.md) - Server functions and SSR best practices
 - [hooks.md](reference/hooks.md) - Custom React hooks (useSectionObserver, useScrollReveal)
+- [utilities.md](reference/utilities.md) - General lib utilities (parseMarkdownLinks)
 
 ### 🎨 design/
 **Visual design and UX guidelines** for maintaining aesthetic consistency.

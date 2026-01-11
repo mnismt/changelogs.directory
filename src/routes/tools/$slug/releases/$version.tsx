@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChangeItem } from '@/components/changelog/release/change-item'
 import { CollapsibleSection } from '@/components/changelog/release/collapsible-section'
 import { ReleaseDetailSkeleton } from '@/components/changelog/release/release-detail-skeleton'
+// import { ReleaseSummary } from '@/components/changelog/release/release-summary'
 import { SectionNav } from '@/components/changelog/release/section-nav'
 import { VersionList } from '@/components/changelog/release/version-list'
 import { VersionPickerSheet } from '@/components/changelog/release/version-picker-sheet'
@@ -115,6 +116,9 @@ function ReleaseDetailPage() {
 
 	// Version picker state
 	const [isVersionPickerOpen, setIsVersionPickerOpen] = useState(false)
+
+	// Summary sheet state
+	// const [isSummaryOpen, setIsSummaryOpen] = useState(false)
 
 	// Section refs for scroll observation
 	const sectionRefsMap = useRef<Map<ChangeType, HTMLDivElement | null>>(
@@ -244,6 +248,14 @@ function ReleaseDetailPage() {
 				}}
 				className="space-y-8 pb-24 md:pb-8"
 			>
+				{/* Summary - Hidden for now, to be released with gemini-cli */}
+				{/* <ReleaseSummary
+					headline={release?.headline || null}
+					summary={release?.summary || null}
+					open={isSummaryOpen}
+					onOpenChange={setIsSummaryOpen}
+				/> */}
+
 				{/* Changes by Type */}
 				<AnimatePresence mode="wait">
 					{!hasChanges ? (
@@ -384,6 +396,8 @@ function ReleaseDetailPage() {
 					activeSection={activeSection}
 					visibleSections={visibleSections}
 					onSectionClick={scrollToSection}
+					// hasSummary={!!(release?.headline || release?.summary)}
+					// onSummaryClick={() => setIsSummaryOpen(true)}
 				/>
 			)}
 

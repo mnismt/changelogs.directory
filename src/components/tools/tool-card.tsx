@@ -36,6 +36,7 @@ export function ToolCard({
 	onHoverStart,
 	onHoverEnd,
 }: ToolCardProps) {
+	const isGeminiCli = tool.slug === 'gemini-cli'
 	const logo = getToolLogo(tool.slug)
 
 	return (
@@ -91,7 +92,9 @@ export function ToolCard({
 											'flex size-10 items-center justify-center rounded p-1.5 [&>svg]:h-full [&>svg]:w-full transition-all duration-500',
 											// Monochrome by default, color on hover
 											(!isHovered || isMonochromeLogo(tool.slug)) &&
+												!isGeminiCli &&
 												'[&>svg]:fill-foreground [&>svg_path]:fill-foreground [&>svg_circle]:fill-foreground',
+											!isHovered && isGeminiCli && 'grayscale brightness-110',
 											isHovered && getLogoHoverClasses(tool.slug),
 										)}
 									>
