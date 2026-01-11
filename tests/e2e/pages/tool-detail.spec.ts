@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { TOOL_SLUGS } from "@/lib/tool-registry";
 
 // Test only seeded tools
 const TOOLS_TO_TEST = ["codex", "cursor"];
@@ -32,12 +31,14 @@ test.describe("Tool Detail Page", () => {
 		await page.goto("/tools/codex");
 
 		const releaseCards = page.locator('[data-testid="release-card"]');
-		
+
 		// Initial load should be 20
 		await expect(releaseCards).toHaveCount(20);
 
-		// Scroll to bottom
-		await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+		// Scroll the load-more trigger into view to fire IntersectionObserver
+		const loadMoreTrigger = page.locator('[data-testid="load-more-trigger"]');
+		await expect(loadMoreTrigger).toBeVisible({ timeout: 5000 });
+		await loadMoreTrigger.scrollIntoViewIfNeeded();
 
 		// Wait for more to load (should be > 20)
 		await expect(releaseCards).not.toHaveCount(20, { timeout: 10000 });

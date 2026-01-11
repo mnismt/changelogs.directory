@@ -261,6 +261,7 @@ function ToolPage() {
 						{pagination.hasMore && (
 							<div
 								ref={loadMoreRef}
+								data-testid="load-more-trigger"
 								className="flex min-h-[100px] flex-col items-center justify-center gap-4 py-12"
 							>
 								{isLoadingMore ? (

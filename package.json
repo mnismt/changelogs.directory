@@ -117,6 +117,8 @@
     "serve": "vite preview",
     "start": "node .output/server/index.mjs",
     "sync:prod": "bun scripts/sync-prod-to-local.ts",
+    "db:pull-prod": "./pull-prod-to-local.sh",
+    "db:push-prod": "./push-local-to-prod.sh",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
