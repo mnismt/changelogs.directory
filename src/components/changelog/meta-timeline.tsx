@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { CinematicVideoPlayer } from '@/components/ui/cinematic-video-player'
 import { EncryptedText } from '@/components/ui/encrypted-text'
 import { formatDate, formatRelativeDate } from '@/lib/date-utils'
+import { parseMarkdownLinks } from '@/lib/markdown-utils'
 import type { PlatformRelease } from '@/lib/parsers/platform-changelog'
 import { cn } from '@/lib/utils'
 
@@ -154,7 +155,7 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 							<li key={change} className="flex items-baseline gap-2">
 								<span className="font-mono text-primary/60 text-xs">•</span>
 								<span className="font-mono text-sm text-muted-foreground">
-									{change}
+									{parseMarkdownLinks(change)}
 								</span>
 							</li>
 						))}

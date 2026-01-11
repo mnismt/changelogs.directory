@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion, type PanInfo } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { parseMarkdownLinks } from '@/lib/markdown-utils'
 import type { PlatformRelease } from '@/lib/parsers/platform-changelog'
 import { getPlatformChangelog } from '@/server/platform'
 
@@ -101,7 +102,7 @@ export function WhatsNewToast() {
 							</div>
 
 							<p className="font-mono text-xs text-muted-foreground/80 line-clamp-2 mb-4">
-								{latestRelease.changes[0]}
+								{parseMarkdownLinks(latestRelease.changes[0])}
 							</p>
 
 							<div className="flex gap-2">

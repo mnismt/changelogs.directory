@@ -360,7 +360,7 @@ function HomePage() {
 
 											{toolFilterOptions.length > 0 && (
 												<div className="flex flex-wrap items-center gap-3 lg:justify-end">
-													<div className="flex flex-wrap gap-2">
+													<div className="grid w-fit grid-cols-[repeat(4,auto)] gap-2">
 														{toolFilterOptions.map(({ slug, name, logo }) => {
 															const isSelected = selectedTools.includes(slug)
 															return (
