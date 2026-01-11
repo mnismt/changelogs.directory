@@ -32,6 +32,7 @@ export function LaneReleaseCard({
 	className,
 }: LaneReleaseCardProps) {
 	const logo = getToolLogo(toolSlug)
+	const isGeminiCli = toolSlug === 'gemini-cli'
 
 	return (
 		<Card
@@ -102,11 +103,14 @@ export function LaneReleaseCard({
 					<div
 						className={cn(
 							'flex size-3.5 items-center justify-center opacity-40 transition-all duration-300 group-hover/card:opacity-100 shrink-0',
-							(isMonochromeLogo(toolSlug) || !isLaneHovered) &&
-								'[\u0026>svg]:fill-foreground [\u0026>svg_path]:fill-foreground grayscale',
-							!isMonochromeLogo(toolSlug) &&
+							!isLaneHovered && isGeminiCli && 'grayscale brightness-110',
+							!isGeminiCli &&
+								(isMonochromeLogo(toolSlug) || !isLaneHovered) &&
+								'[&>svg]:fill-foreground [&>svg_path]:fill-foreground grayscale',
+							!isGeminiCli &&
+								!isMonochromeLogo(toolSlug) &&
 								isLaneHovered &&
-								'grayscale-0 [\u0026>svg]:fill-current',
+								'grayscale-0 [&>svg]:fill-current',
 						)}
 					>
 						{logo}

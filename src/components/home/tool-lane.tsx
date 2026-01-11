@@ -50,6 +50,7 @@ export function ToolLane({
 	const [canScrollRight, setCanScrollRight] = useState(true)
 
 	const logo = getToolLogo(tool.slug)
+	const isGeminiCli = tool.slug === 'gemini-cli'
 
 	const updateScrollState = useCallback(() => {
 		const container = scrollContainerRef.current
@@ -90,7 +91,9 @@ export function ToolLane({
 							<div
 								className={cn(
 									'flex size-8 items-center justify-center rounded [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-all duration-700 [&>svg_path]:transition-all [&>svg_path]:duration-300',
-									(isMonochromeLogo(tool.slug) || !isHovered) &&
+									!isHovered && isGeminiCli && 'grayscale brightness-110',
+									!isGeminiCli &&
+										(isMonochromeLogo(tool.slug) || !isHovered) &&
 										'[&>svg]:fill-foreground [&>svg_path]:fill-foreground',
 									isHovered &&
 										getLogoHoverClasses(tool.slug).replace(/group-hover:/g, ''),

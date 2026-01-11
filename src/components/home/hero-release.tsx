@@ -63,6 +63,7 @@ export function HeroRelease({
 	changesByType,
 }: HeroReleaseProps) {
 	const logo = getToolLogo(toolSlug)
+	const isGeminiCli = toolSlug === 'gemini-cli'
 	const [isHovered, setIsHovered] = useState(false)
 
 	// Animation state
@@ -163,7 +164,9 @@ export function HeroRelease({
 										<div
 											className={cn(
 												'flex size-14 items-center justify-center [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-all duration-700',
-												(isMonochromeLogo(toolSlug) || !isHovered) &&
+												!isHovered && isGeminiCli && 'grayscale brightness-110',
+												!isGeminiCli &&
+													(isMonochromeLogo(toolSlug) || !isHovered) &&
 													'[&>svg]:fill-foreground [&>svg_path]:fill-foreground [&>svg_circle]:fill-foreground',
 												getLogoHoverClasses(toolSlug),
 											)}

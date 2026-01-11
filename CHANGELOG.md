@@ -3,6 +3,14 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.6.0
+
+> **2026-01-11** — Gemini CLI Integration
+
+![Gemini CLI Integration](/changelog-assets/v0.6.0.png)
+
+- Google's [Gemini CLI](/tools/gemini-cli) is now tracked 🚀
+
 ## 0.5.2
 
 > **2026-01-09** — Desktop Section Nav

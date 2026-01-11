@@ -1,0 +1,100 @@
+# Utilities Reference
+
+General-purpose utility functions in `src/lib/`.
+
+## parseMarkdownLinks
+
+Parse markdown link syntax `[text](url)` and return React elements. Useful for rendering text that may contain inline links without using a full markdown parser.
+
+**File**: `src/lib/markdown-utils.tsx`
+
+### Signature
+
+```tsx
+function parseMarkdownLinks(text: string): ReactNode[]
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `string` | Input text that may contain markdown links |
+
+### Returns
+
+An array of `ReactNode` elements:
+- Plain text segments as strings
+- Internal links as TanStack Router `<Link>` components
+- External links as `<a>` elements with `target="_blank"`
+
+### Link Handling
+
+| URL Pattern | Result | Example |
+|-------------|--------|---------|
+| `/path` | `<Link>` (TanStack Router) | `/tools/cursor` |
+| `https://...` | `<a target="_blank">` | `https://github.com` |
+| `http://...` | `<a target="_blank">` | `http://example.com` |
+| `./path` | `<Link>` (normalized) | `./tools/cursor` → `/tools/cursor` |
+| `path` | `<Link>` (prefixed) | `tools/cursor` → `/tools/cursor` |
+
+### Usage
+
+```tsx
+import { parseMarkdownLinks } from "@/lib/markdown-utils"
+
+function ChangelogEntry({ text }: { text: string }) {
+  return <p>{parseMarkdownLinks(text)}</p>
+}
+```
+
+### Real-World Examples
+
+**Changelog timeline** - Renders tool links in version entries:
+
+```tsx
+// src/components/changelog/meta-timeline.tsx
+<li key={i} className="text-muted-foreground">
+  {parseMarkdownLinks(change)}
+</li>
+```
+
+**What's New toast** - Renders preview text with clickable links:
+
+```tsx
+// src/components/shared/whats-new-toast.tsx
+<p className="text-sm text-muted-foreground">
+  {parseMarkdownLinks(latestRelease.changes[0])}
+</p>
+```
+
+### Styling
+
+All generated links include `className="text-primary hover:underline"` for consistent styling with the design system.
+
+### When to Use
+
+- Rendering changelog entries with tool links
+- Notification toasts with embedded links
+- Any text that may contain markdown-style links
+- Dynamic content where links need client-side navigation
+
+### When NOT to Use
+
+- **Full markdown documents** - Use a proper markdown parser (e.g., `remark`)
+- **User-generated content** - Security risk; sanitize first or use a safe parser
+- **Static content** - Just use `<Link>` directly for better type safety
+- **Complex markdown** - Only supports `[text](url)` syntax, not images/headings/etc.
+
+### Security Considerations
+
+This utility does not sanitize URLs. If processing user-generated content:
+
+1. Validate URLs against an allowlist of domains
+2. Ensure URLs don't use `javascript:` protocol
+3. Consider using a dedicated markdown sanitizer
+
+For internal changelog content (admin-controlled), this is safe to use directly.
+
+---
+
+**Last Updated**: 2026-01-11
