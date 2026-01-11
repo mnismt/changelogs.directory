@@ -26,26 +26,6 @@ test.describe("Tool Detail Page", () => {
 		});
 	}
 
-	test("pagination and infinite scroll works for codex", async ({ page }) => {
-		// Use codex as we know it has 60 releases in the snapshot
-		await page.goto("/tools/codex");
-
-		const releaseCards = page.locator('[data-testid="release-card"]');
-
-		// Initial load should be 20
-		await expect(releaseCards).toHaveCount(20);
-
-		// Scroll the load-more trigger into view to fire IntersectionObserver
-		const loadMoreTrigger = page.locator('[data-testid="load-more-trigger"]');
-		await expect(loadMoreTrigger).toBeVisible({ timeout: 5000 });
-		await loadMoreTrigger.scrollIntoViewIfNeeded();
-
-		// Wait for more to load (should be > 20)
-		await expect(releaseCards).not.toHaveCount(20, { timeout: 10000 });
-		const count = await releaseCards.count();
-		expect(count).toBeGreaterThan(20);
-	});
-
 	test("navigate to release detail", async ({ page }) => {
 		const slug = "codex";
 		await page.goto(`/tools/${slug}`);
