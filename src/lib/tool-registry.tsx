@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactNode, SVGProps } from 'react'
 import { GoogleAntigravity } from '@/components/logo/antigravity'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
@@ -28,7 +28,7 @@ export interface ToolConfig {
 	/** Official website URL */
 	url: string
 	/** React component for the logo */
-	Logo: ComponentType
+	Logo: ComponentType<SVGProps<SVGSVGElement>>
 	/** Whether logo uses currentColor (monochrome) vs fixed colors */
 	isMonochrome: boolean
 	/** Whether to show in homepage feed filter buttons */
