@@ -55,8 +55,8 @@ describe("Database Sync Validation", () => {
 		}
 	});
 
-	it("should have exactly 6 tools", () => {
-		const expectedTools = ["claude-code", "codex", "cursor", "windsurf", "opencode", "antigravity"];
+	it("should have exactly 7 tools", () => {
+		const expectedTools = ["claude-code", "codex", "cursor", "windsurf", "opencode", "antigravity", "gemini-cli"];
 		expect(TOOL_SLUGS.sort()).toEqual(expectedTools.sort());
 		expect(seedSlugs.sort()).toEqual(expectedTools.sort());
 	});
