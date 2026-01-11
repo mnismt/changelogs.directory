@@ -2,7 +2,7 @@
 
 > **Last verified**: 2026-01-11
 
-This guide covers testing strategies for Changelogs.directory, including unit tests, integration tests, and ingestion pipeline testing.
+This guide covers testing strategies for Changelogs.directory, including unit tests, integration tests, and ingestion pipeline testing. For comprehensive E2E testing documentation, see [docs/testing/](../testing/README.md).
 
 ## Testing Philosophy
 
@@ -423,7 +423,19 @@ LIMIT 5;
 
 ## End-to-End Testing
 
+> **📚 For comprehensive E2E documentation, see [docs/testing/](../testing/README.md)**
+
 Full workflow testing from configuration validation to browser UI testing.
+
+### Quick Reference
+
+| Documentation | Purpose |
+|---------------|---------|
+| [E2E Architecture](../testing/e2e-architecture.md) | Test structure, CI integration |
+| [Config Validation](../testing/config-validation.md) | Static asset validation tests |
+| [Browser Tests](../testing/browser-tests.md) | Playwright test patterns |
+| [Snapshots](../testing/snapshots.md) | Production-derived test data |
+| [Troubleshooting](../testing/troubleshooting.md) | Debug failing tests |
 
 ### E2E Test Commands
 
