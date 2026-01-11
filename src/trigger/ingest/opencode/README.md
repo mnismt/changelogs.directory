@@ -1,20 +1,20 @@
-# Codex Ingestion Flow
+# OpenCode Ingestion Flow
 
-Trigger.dev task that ingests release notes from OpenAI Codex via the GitHub Releases API.
+Trigger.dev task that ingests release notes from OpenCode via the GitHub Releases API.
 
 ## Overview
 
-Fetches releases from `https://api.github.com/repos/openai/codex/releases`, parses version info and body sections (Highlights, Merged PRs), handles pre-releases (alpha/beta/rc), enriches with LLM classification, and upserts into the database.
+Fetches releases from `https://api.github.com/repos/anomalyco/opencode/releases`, parses version info from release bodies, respects pre-release filtering from `sourceConfig`, enriches with LLM classification, and upserts into the database.
 
 Key differences from Claude Code:
 - Source is GitHub Releases API (not CHANGELOG.md)
 - No git-history date step; uses `published_at` from API
-- Pre-release handling via `isPrerelease` boolean on Release
-- Version strings stripped from tag prefix `rust-v` (e.g., `rust-v0.55.0` → `0.55.0`)
+- Pre-release handling via `includePreReleases` in `sourceConfig` (default: false)
+- Version strings stripped from tag prefix `v` (e.g., `v1.2.0` → `1.2.0`)
 
 ## Files
 
-- Task: `src/trigger/ingest/codex/index.ts`
+- Task: `src/trigger/ingest/opencode/index.ts`
 - Steps:
   - `steps/fetch.ts` (GitHub Releases API)
   - `steps/parse.ts` (normalize + pre-release handling)
@@ -30,13 +30,13 @@ Key differences from Claude Code:
 ## Phases
 
 ### Phase 1: Setup
-- Load tool from database (`slug: codex` by default)
+- Load tool from database (`slug: opencode` by default)
 - Validate `isActive`
 - Create `FetchLog` with `IN_PROGRESS`
 
 ### Phase 2: Fetch (GitHub Releases API)
 - Paginated GET: `/repos/:owner/:repo/releases?per_page=100&page=N`
-- Filters drafts by default; pre-releases filter configurable via `tool.sourceConfig.includePreReleases` (default: true)
+- Filters drafts by default; pre-releases filter configurable via `tool.sourceConfig.includePreReleases` (default: false)
 - GitHub token support (5000/hr vs 60/hr)
 - **Caching with ETag support:**
   - Always makes conditional request to GitHub with `If-None-Match: <etag>` header
@@ -45,16 +45,11 @@ Key differences from Claude Code:
   - Cache TTL: 90 days (Redis)
 
 ### Phase 3: Parse
-- Strip version prefix from tags (e.g., `rust-v0.55.0` → `0.55.0`)
+- Strip version prefix from tags (e.g., `v1.2.0` → `1.2.0`)
 - Normalize null/empty bodies to empty string (some releases have `body: null`)
-- Parse body sections:
-  - `## Highlights` → high-impact items (FEATURE/IMPROVEMENT bias)
-  - `## Merged PRs` → PR-linked items; builds links to `.../pull/<number>`
-  - Fallback: flat bullet list
+- Parse body sections into bullet changes
 - Set `releaseDate` from `published_at`
 - Compute `contentHash` from `body`
-- Version sort handles pre-releases (alpha/beta/rc) with ordering like:
-  - `0.54.0-alpha.1` < `0.54.0-alpha.2` < `0.54.0`
 - Mark `isPrerelease: true` when `prerelease` is true from API
 
 ### Phase 4: Filter
@@ -75,15 +70,19 @@ Key differences from Claude Code:
 - Update `FetchLog` with metrics and `SUCCESS`
 - On error: `FAILED` with details
 
+## Operational Overrides
+- `forceFullRescan` is not wired for OpenCode; runs always use the cached GitHub releases flow.
+- If you need a full refresh, clear cached releases (Redis) and re-run the task.
+
 ## Configuration
 
 Tool seed (see `prisma/seed.ts`):
 ```ts
 sourceType: 'GITHUB_RELEASES',
-sourceUrl: 'https://api.github.com/repos/openai/codex/releases',
+sourceUrl: 'https://api.github.com/repos/anomalyco/opencode/releases',
 sourceConfig: {
-  versionPrefix: 'rust-v',
-  includePreReleases: true,
+  versionPrefix: 'v',
+  includePreReleases: false,
 }
 ```
 
@@ -95,14 +94,13 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ## Scheduling
 
-- Task ID: `ingest-codex`
-- Schedule ID: `ingest-codex-schedule`
+- Task ID: `ingest-opencode`
+- Schedule ID: `ingest-opencode-schedule`
 - Cron: `0 */6 * * *` (every 6 hours)
 - Concurrency: 1
-- Max duration: 5 minutes
+- Max duration: 30 minutes
 
 ## Notes
 
-- Some alpha releases have empty bodies; pipeline creates the release with 0 changes.
-- UI can filter pre-releases via `Release.isPrerelease`.
+- Pre-releases are excluded by default; set `includePreReleases: true` in `sourceConfig` to ingest them.
 - `versionSort` ensures stable releases sort after pre-releases of the same base version.

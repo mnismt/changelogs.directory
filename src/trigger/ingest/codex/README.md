@@ -75,6 +75,10 @@ Key differences from Claude Code:
 - Update `FetchLog` with metrics and `SUCCESS`
 - On error: `FAILED` with details
 
+## Operational Overrides
+- `forceFullRescan` is not wired for Codex; runs always use the cached GitHub releases flow.
+- If you need a full refresh, clear cached releases (Redis) and re-run the task.
+
 ## Configuration
 
 Tool seed (see `prisma/seed.ts`):
