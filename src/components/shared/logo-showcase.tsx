@@ -119,7 +119,7 @@ export function LogoShowcase() {
 								<span className="font-mono text-base font-bold text-muted-foreground transition-colors duration-300 group-hover/item:text-foreground sm:text-lg">
 									{tool.name}
 								</span>
-								<span className="font-mono text-xs text-muted-foreground/60 transition-colors duration-300 group-hover/item:text-muted-foreground">
+								<span className="font-mono text-xs text-muted-foreground transition-colors duration-300 group-hover/item:text-muted-foreground">
 									{tool.subtitle}
 								</span>
 							</div>

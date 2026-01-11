@@ -3,6 +3,14 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.6.1
+
+> **2026-01-11T23:41:00+07:00** — Accessibility Contrast Updates
+
+![Accessibility Contrast Updates](/changelog-assets/v0.6.1.png)
+
+- Improved text contrast across tools, filters, and release pages for better a11y
+
 ## 0.6.0
 
 > **2026-01-11T20:30:00+07:00** — Gemini CLI Integration

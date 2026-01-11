@@ -70,7 +70,7 @@ code {
 
 	/* Muted/disabled states */
 	--muted: oklch(0.17 0 0);
-	--muted-foreground: oklch(0.5 0 0); /* #808080 - gray text */
+	--muted-foreground: oklch(0.65 0 0); /* #A0A0A0 - accessible gray */
 
 	/* Accent/hover states */
 	--accent: oklch(0.2 0 0); /* #222222 - hover bg */
@@ -81,7 +81,7 @@ code {
 	--destructive-foreground: oklch(1 0 0);
 
 	/* Borders and inputs - subtle white overlays */
-	--border: oklch(0.25 0 0); /* rgba(255,255,255,0.1) equivalent */
+	--border: oklch(0.3 0 0); /* Slightly more visible borders */
 	--input: oklch(0.17 0 0);
 	--ring: oklch(0.4 0 0);
 

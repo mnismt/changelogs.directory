@@ -62,7 +62,7 @@ function FilterSection({
 			<button
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}
-				className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full group"
+				className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-muted-foreground transition-colors w-full group"
 			>
 				<motion.span
 					animate={{ rotate: isOpen ? 90 : 0 }}
@@ -203,7 +203,7 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 			{/* Type Filters */}
 			<FilterSection
 				title="FILTER_BY_TYPE"
-				colorClass="text-green-500/50"
+				colorClass="text-green-500/80"
 				forceCollapsed={forceCollapsed}
 			>
 				<div className="flex flex-wrap gap-2">
@@ -247,7 +247,7 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 			{/* Date Filters */}
 			<FilterSection
 				title="FILTER_BY_DATE"
-				colorClass="text-blue-500/50"
+				colorClass="text-blue-500/80"
 				forceCollapsed={forceCollapsed}
 			>
 				<div className="flex flex-wrap items-center gap-2">
@@ -358,7 +358,7 @@ export function FilterBar({ hoveredTypes }: FilterBarProps) {
 			{/* Stable Only Toggle */}
 			<FilterSection
 				title="FILTER_BY_VERSION"
-				colorClass="text-purple-500/50"
+				colorClass="text-purple-500/80"
 				forceCollapsed={forceCollapsed}
 			>
 				<motion.button

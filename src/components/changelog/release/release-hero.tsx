@@ -69,7 +69,7 @@ export function ReleaseHero({
 						hidden: { opacity: 0, y: -10 },
 						visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 					}}
-					className="flex items-center gap-2 font-mono text-sm text-muted-foreground/60"
+					className="flex items-center gap-2 font-mono text-sm text-muted-foreground"
 				>
 					<Link to="/" className="hover:text-foreground transition-colors">
 						~
@@ -187,12 +187,12 @@ export function ReleaseHero({
 						</div>
 
 						<div className="flex items-center gap-2">
-							<span className="text-muted-foreground/40">RELEASE_DATE:</span>
+							<span className="text-muted-foreground/70">RELEASE_DATE:</span>
 							<span className="text-foreground">{formattedDate}</span>
 						</div>
 
 						<div className="flex items-center gap-2">
-							<span className="text-muted-foreground/40">CHANGES:</span>
+							<span className="text-muted-foreground/70">CHANGES:</span>
 							<span className="text-foreground">{changeCount}</span>
 						</div>
 					</motion.div>

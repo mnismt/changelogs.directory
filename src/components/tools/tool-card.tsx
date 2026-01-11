@@ -121,7 +121,7 @@ export function ToolCard({
 						{/* Arrow icon that appears on hover */}
 						<div
 							className={cn(
-								'text-foreground/50 transition-all duration-500 ease-out transform',
+								'text-foreground/70 transition-all duration-500 ease-out transform',
 								isHovered
 									? 'opacity-100 translate-x-0'
 									: 'opacity-0 -translate-x-2',
@@ -139,7 +139,7 @@ export function ToolCard({
 					)}
 
 					{/* Footer / Stats */}
-					<div className="mt-auto pt-4 border-t border-border/40 flex items-center justify-between text-xs font-mono text-muted-foreground">
+					<div className="mt-auto pt-4 border-t border-border/60 flex items-center justify-between text-xs font-mono text-muted-foreground">
 						<div className="flex items-center gap-2">
 							{latestRelease ? (
 								<span className="flex items-center gap-1.5">

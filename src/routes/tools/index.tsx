@@ -147,7 +147,7 @@ function ToolsDirectoryPage() {
 										SYSTEM_READY
 									</span>
 								</div>
-								<span className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-widest">
+								<span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
 									Status
 								</span>
 							</div>
@@ -163,7 +163,7 @@ function ToolsDirectoryPage() {
 										className="font-mono text-2xl font-bold text-foreground"
 									/>
 								</div>
-								<span className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-widest">
+								<span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
 									Total Tools
 								</span>
 							</div>
@@ -179,7 +179,7 @@ function ToolsDirectoryPage() {
 										className="font-mono text-2xl font-bold text-foreground"
 									/>
 								</div>
-								<span className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-widest">
+								<span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
 									Total Releases
 								</span>
 							</div>

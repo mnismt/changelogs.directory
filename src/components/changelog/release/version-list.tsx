@@ -143,7 +143,7 @@ export function VersionList({
 						<div className="font-mono text-sm font-bold tracking-tight group-hover:text-foreground transition-colors">
 							{version.formattedVersion || version.version}
 						</div>
-						<div className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider">
+						<div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
 							{formatDate(version.releaseDate, 'MMM d, yyyy')}
 						</div>
 					</div>
@@ -157,7 +157,7 @@ export function VersionList({
 
 				<div className="flex items-center justify-between pt-2 border-t border-white/5">
 					<div className="flex items-center gap-2">
-						<span className="text-[10px] font-mono text-muted-foreground/40">
+						<span className="text-[10px] font-mono text-muted-foreground/70">
 							CHANGES
 						</span>
 						<span className="text-xs font-mono text-foreground/80">
@@ -260,7 +260,7 @@ export function VersionList({
 	return (
 		<div className="mt-8 pt-8 border-t border-white/5">
 			<div className="flex items-center gap-4 mb-8">
-				<h2 className="font-mono text-lg font-bold uppercase tracking-wider text-muted-foreground/60">
+				<h2 className="font-mono text-lg font-bold uppercase tracking-wider text-muted-foreground">
 					{'// Version_History'}
 				</h2>
 				<div className="h-px flex-1 bg-gradient-to-r from-white/5 to-transparent" />

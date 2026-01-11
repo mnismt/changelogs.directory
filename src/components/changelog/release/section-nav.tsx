@@ -101,6 +101,7 @@ export function SectionNav({
 		<>
 			{/* Mobile: Floating terminal bar at top */}
 			<motion.nav
+				data-testid="section-nav-mobile"
 				initial={{ y: -40, opacity: 0, filter: 'blur(8px)', scale: 0.95 }}
 				animate={{
 					y: isVisibleMobile ? 0 : -40,
@@ -147,6 +148,7 @@ export function SectionNav({
 							<motion.button
 								key={section.type}
 								type="button"
+								data-active={isActive ? 'true' : 'false'}
 								onClick={() => onSectionClick(section.type)}
 								className="relative shrink-0 flex items-center gap-1 rounded-full px-2.5 py-1 transition-[colors,transform] duration-100 active:scale-95"
 							>
@@ -216,6 +218,7 @@ export function SectionNav({
 
 			{/* Desktop: Sidebar TOC on left with viewport bracket */}
 			<motion.nav
+				data-testid="section-nav"
 				initial={{ x: -20, opacity: 0 }}
 				animate={{
 					x: isVisibleDesktop ? 0 : -20,
@@ -258,6 +261,7 @@ export function SectionNav({
 								<motion.button
 									key={section.type}
 									type="button"
+									data-active={isActive ? 'true' : 'false'}
 									onClick={() => onSectionClick(section.type)}
 									className={cn(
 										'relative flex h-8 items-center gap-2 rounded-lg px-2 transition-[colors,transform] duration-100 active:scale-95',

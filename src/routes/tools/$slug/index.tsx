@@ -216,7 +216,7 @@ function ToolPage() {
 					<div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-white/10 rounded-lg">
 						<div className="font-mono text-muted-foreground">
 							<p className="mb-2">No releases found</p>
-							<p className="text-xs opacity-50">Try adjusting your filters</p>
+							<p className="text-sm opacity-70">Try adjusting your filters</p>
 						</div>
 					</div>
 				) : (
