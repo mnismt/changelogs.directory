@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react'
 import { GoogleAntigravity } from '@/components/logo/antigravity'
 import { ClaudeAI } from '@/components/logo/claude'
 import { Cursor } from '@/components/logo/cursor'
+import { GeminiCli } from '@/components/logo/gemini-cli'
 import { OpenAI } from '@/components/logo/openai'
 import { OpenCode } from '@/components/logo/opencode'
 import { Windsurf } from '@/components/logo/windsurf'
@@ -97,6 +98,16 @@ export const TOOL_REGISTRY: ToolConfig[] = [
 		vendor: 'Google',
 		url: 'https://antigravity.google',
 		Logo: GoogleAntigravity,
+		isMonochrome: false,
+		showInFeedFilter: true,
+		showInShowcase: true,
+	},
+	{
+		slug: 'gemini-cli',
+		name: 'Gemini CLI',
+		vendor: 'Google',
+		url: 'https://geminicli.com',
+		Logo: GeminiCli,
 		isMonochrome: false,
 		showInFeedFilter: true,
 		showInShowcase: true,

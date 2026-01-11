@@ -287,6 +287,46 @@ async function main() {
 
   console.log(`✅ Seeded tool: ${antigravity.name} (${antigravity.slug})`);
 
+  // Seed Gemini CLI tool
+  const geminiCli = await prisma.tool.upsert({
+    where: { slug: "gemini-cli" },
+    update: {
+      name: "Gemini CLI",
+      vendor: "Google",
+      description:
+        "Google's AI-powered CLI agent for coding, debugging, and terminal workflows with rich artifacts",
+      homepage: "https://geminicli.com",
+      repositoryUrl: "https://github.com/google-gemini/gemini-cli",
+      sourceType: "GITHUB_RELEASES",
+      sourceUrl: "https://api.github.com/repos/google-gemini/gemini-cli/releases",
+      sourceConfig: {
+        versionPrefix: "v",
+        includePreReleases: true,
+      },
+      tags: ["cli", "ai", "agent", "google", "gemini", "terminal"],
+      isActive: true,
+    },
+    create: {
+      slug: "gemini-cli",
+      name: "Gemini CLI",
+      vendor: "Google",
+      description:
+        "Google's AI-powered CLI agent for coding, debugging, and terminal workflows with rich artifacts",
+      homepage: "https://geminicli.com",
+      repositoryUrl: "https://github.com/google-gemini/gemini-cli",
+      sourceType: "GITHUB_RELEASES",
+      sourceUrl: "https://api.github.com/repos/google-gemini/gemini-cli/releases",
+      sourceConfig: {
+        versionPrefix: "v",
+        includePreReleases: true,
+      },
+      tags: ["cli", "ai", "agent", "google", "gemini", "terminal"],
+      isActive: true,
+    },
+  });
+
+  console.log(`✅ Seeded tool: ${geminiCli.name} (${geminiCli.slug})`);
+
   console.log("Database seed completed!");
 }
 
