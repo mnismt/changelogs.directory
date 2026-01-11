@@ -63,18 +63,6 @@ export const Route = createFileRoute('/tools/$slug/')({
 	pendingComponent: ToolPageSkeleton,
 	errorComponent: ToolPageError,
 	component: ToolPage,
-	head: ({ params }) => {
-		// Note: We don't have tool name here anymore, but layout handles main meta.
-		// We can keep basic title or rely on parent.
-		// For now, let's keep it simple.
-		return {
-			meta: [
-				{
-					title: `${params.slug} Changelog - changelogs.directory`,
-				},
-			],
-		}
-	},
 })
 
 function ToolPage() {
