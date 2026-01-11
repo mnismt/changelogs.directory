@@ -5,7 +5,7 @@ description: Track updates to the changelog aggregation platform itself
 
 ## 0.6.0
 
-> **2026-01-11** — Gemini CLI Integration
+> **2026-01-11T20:30:00+07:00** — Gemini CLI Integration
 
 ![Gemini CLI Integration](/changelog-assets/v0.6.0.png)
 
@@ -13,7 +13,7 @@ description: Track updates to the changelog aggregation platform itself
 
 ## 0.5.2
 
-> **2026-01-09** — Desktop Section Nav
+> **2026-01-10T08:16:00+07:00** — Desktop Section Nav
 
 <video src="/changelog-assets/v0.5.2.mp4" autoplay loop muted playsinline width="75%"></video>
 
@@ -23,7 +23,7 @@ description: Track updates to the changelog aggregation platform itself
 
 ## 0.5.1
 
-> **2026-01-09** — Mobile Section Nav
+> **2026-01-09T15:44:00+07:00** — Mobile Section Nav
 
 <img src="/changelog-assets/v0.5.1.png" alt="Mobile Section Nav" width="65%" />
 
