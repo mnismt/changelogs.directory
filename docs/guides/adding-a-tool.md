@@ -11,7 +11,8 @@ This guide walks you through adding a new tool (like "Google Antigravity") to th
 - [ ] **Step 2.5: Tool Registry** (2 min) - Register tool in unified registry
 - [ ] **Step 2.6: OG Image SVG** (5 min) - Add case in `getToolLogoSVG()` in `src/lib/og-utils.tsx`
 - [ ] **Step 2.7: Background Image** (2 min) - Add `{slug}.png` to `public/images/tools/`
-- [ ] **Step 2.8: Validate Config** (1 min) - Run `pnpm test:e2e:config` to verify all assets
+- [ ] **Step 2.8: Update E2E Tests** (2 min) - Add tool to expected lists in `tests/e2e/config/`
+- [ ] **Step 2.9: Validate Config** (1 min) - Run `pnpm test:e2e:config` to verify all assets
 - [ ] **Step 3: Version Formatter** (Optional, 5 min) - Add custom version display logic if needed
 - [ ] **Step 4: Ingestion Pipeline** (60-180 min) - Copy and customize trigger task
 - [ ] **Step 5: Testing** (15 min) - Test locally and verify results
@@ -371,9 +372,49 @@ Requirements:
 
 ---
 
-## Step 2.8: Validate Configuration (1 minute)
+## Step 2.8: Update E2E Tests (2 minutes)
 
-Run the configuration validation tests to verify all required assets are in place:
+Before running the validation, you must update the E2E test configuration to include your new tool.
+
+### 1. Update Database Sync Test
+**File**: `tests/e2e/config/database-sync.test.ts`
+
+- Increment the tool count in the test description (e.g., "should have exactly 7 tools").
+- Add your tool's slug to the `expectedTools` array.
+
+```typescript
+it("should have exactly 7 tools", () => {
+  const expectedTools = [
+    "claude-code",
+    "codex",
+    "cursor",
+    "windsurf",
+    "opencode",
+    "antigravity",
+    "google-antigravity", // Add yours
+  ];
+  // ...
+});
+```
+
+### 2. Update Tool Assets Test
+**File**: `tests/e2e/config/tool-assets.test.ts`
+
+- Add your tool's logo component mapping to `LOGO_COMPONENT_MAP`.
+
+```typescript
+const LOGO_COMPONENT_MAP: Record<string, string> = {
+  // ...
+  antigravity: "antigravity.tsx",
+  "google-antigravity": "google-antigravity.tsx", // Add yours
+};
+```
+
+---
+
+## Step 2.9: Validate Configuration (1 minute)
+
+Run the configuration validation tests to verify all required assets and registration entries are in place:
 
 ```bash
 pnpm test:e2e:config
@@ -385,7 +426,7 @@ pnpm test:e2e:config
 ✓ tests/e2e/config/database-sync.test.ts
 ```
 
-**If tests fail**, you'll see which assets are missing:
+**If tests fail**, they will pinpoint missing assets:
 - Missing logo component → Create in `src/components/logo/`
 - Missing OG SVG case → Add to `getToolLogoSVG()` in `og-utils.tsx`
 - Missing background image → Add PNG to `public/images/tools/`
