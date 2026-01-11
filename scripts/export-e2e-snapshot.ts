@@ -40,7 +40,7 @@ function getReleasesPerTool(slug: string): number {
 async function main() {
   console.log("Starting E2E snapshot export...");
   console.log(`Target tools: ${TARGET_TOOLS.join(", ")}`);
-  console.log(`Deep data tools (${DEEP_RELEASES_COUNT} releases): ${DEEP_DATA_TOOLS.join(", ")}`);
+  console.log(`Deep data tools (${DEEP_RELEASES_COUNT} non-prerelease releases): ${DEEP_DATA_TOOLS.join(", ")}`);
   console.log(`Other tools: ${MINIMAL_RELEASES_COUNT} releases each`);
 
   const snapshot = {
@@ -56,6 +56,8 @@ async function main() {
     changes: [] as any[],
   };
 
+  const missingTools: string[] = [];
+
   for (const slug of TARGET_TOOLS) {
     console.log(`Exporting tool: ${slug}`);
     const tool = await prisma.tool.findUnique({
@@ -63,7 +65,8 @@ async function main() {
     });
 
     if (!tool) {
-      console.warn(`Tool not found: ${slug}`);
+      console.warn(`⚠️ Tool not found in database: ${slug}`);
+      missingTools.push(slug);
       continue;
     }
 
@@ -85,8 +88,13 @@ async function main() {
     });
 
     // Export releases
+    // For deep data tools, exclude prereleases so pagination tests work
+    // (default UI filter is showPrereleases: false)
     const releases = await prisma.release.findMany({
-      where: { toolId: tool.id },
+      where: { 
+        toolId: tool.id,
+        ...(DEEP_DATA_TOOLS.includes(slug) ? { isPrerelease: false } : {}),
+      },
       orderBy: [
         { releaseDate: "desc" },
         { versionSort: "desc" },
@@ -135,6 +143,13 @@ async function main() {
         });
       }
     }
+  }
+
+  // Fail if any target tools are missing from database
+  if (missingTools.length > 0) {
+    console.error(`\n❌ Export incomplete! Missing tools: ${missingTools.join(", ")}`);
+    console.error("Please seed production database first: DATABASE_URL=<prod> pnpm prisma db seed");
+    process.exit(1);
   }
 
   const jsonString = JSON.stringify(snapshot, null, 2);
