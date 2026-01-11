@@ -85,7 +85,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 						hidden: { opacity: 0, y: -10 },
 						visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 					}}
-					className="flex items-center gap-2 font-mono text-sm text-muted-foreground/60"
+					className="flex items-center gap-2 font-mono text-sm text-muted-foreground"
 				>
 					<Link to="/" className="hover:text-foreground transition-colors">
 						~
@@ -259,7 +259,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 														{release?.formattedVersion || version}
 													</span>
 												)}
-												<span className="text-muted-foreground/60 ml-2">
+												<span className="text-muted-foreground ml-2">
 													(LATEST)
 												</span>
 											</span>
@@ -317,7 +317,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 										params={{ slug, version: tool.latestVersion }}
 										className="group flex items-center gap-2 hover:text-foreground transition-colors"
 									>
-										<span className="text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
+										<span className="text-muted-foreground/70 group-hover:text-muted-foreground transition-colors">
 											↗ LATEST:
 										</span>
 										<span className="text-foreground group-hover:text-green-400 transition-colors">
@@ -326,7 +326,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 									</Link>
 								) : (
 									<>
-										<span className="text-muted-foreground/40">
+										<span className="text-muted-foreground/70">
 											LATEST_VER:
 										</span>
 										<span className="text-foreground">
@@ -338,7 +338,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 						)}
 
 						<div className="hidden md:flex items-center gap-2">
-							<span className="text-muted-foreground/40">
+							<span className="text-muted-foreground/70">
 								{release ? 'CHANGES:' : 'TOTAL_RELEASES:'}
 							</span>
 							<span className="text-foreground">

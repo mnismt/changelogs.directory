@@ -46,70 +46,99 @@ export function useSectionObserver(
 	)
 
 	useEffect(() => {
-		const sections = Array.from(sectionRefs.entries()).filter(
-			([, el]) => el !== null,
-		)
+		// Reset state immediately when version changes to avoid stale UI
+		setActiveSection(null)
+		setVisibleSections(new Set())
 
-		if (sections.length === 0) return
+		// CRITICAL: Clear the refs Map to discard stale refs from previous version
+		// This ensures we wait for fresh refs from the new content
+		sectionRefs.clear()
 
-		const visibleSet = new Set<ChangeType>()
+		let cancelled = false
+		let observer: IntersectionObserver | null = null
+		let retryTimeoutId: ReturnType<typeof setTimeout> | null = null
 
-		const observer = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					const sectionType = sections.find(
-						([, el]) => el === entry.target,
-					)?.[0]
+		const setupObserver = (attempt: number) => {
+			if (cancelled) {
+				return
+			}
 
-					if (sectionType) {
-						if (entry.isIntersecting) {
-							visibleSet.add(sectionType)
-						} else {
-							visibleSet.delete(sectionType)
+			// Filter to only valid elements that are still in the DOM
+			const sections = Array.from(sectionRefs.entries()).filter(
+				([, el]) => el !== null && document.contains(el),
+			)
+
+			if (sections.length === 0) {
+				// Retry up to 10 times with increasing delays
+				if (attempt < 10) {
+					const delay = attempt * 50 // 50ms, 100ms, ... up to 500ms
+					retryTimeoutId = setTimeout(() => setupObserver(attempt + 1), delay)
+				}
+				return
+			}
+
+			const visibleSet = new Set<ChangeType>()
+
+			observer = new IntersectionObserver(
+				(entries) => {
+					for (const entry of entries) {
+						const sectionType = sections.find(
+							([, el]) => el === entry.target,
+						)?.[0]
+
+						if (sectionType) {
+							if (entry.isIntersecting) {
+								visibleSet.add(sectionType)
+							} else {
+								visibleSet.delete(sectionType)
+							}
 						}
 					}
+
+					setVisibleSections(new Set(visibleSet))
+
+					// Set active section as the first visible one (topmost)
+					const sectionOrder: ChangeType[] = [
+						'BREAKING',
+						'SECURITY',
+						'FEATURE',
+						'IMPROVEMENT',
+						'PERFORMANCE',
+						'BUGFIX',
+						'DEPRECATION',
+						'DOCUMENTATION',
+						'OTHER',
+					]
+
+					const firstVisible = sectionOrder.find((type) => visibleSet.has(type))
+					if (firstVisible) {
+						setActiveSection(firstVisible)
+					}
+				},
+				{
+					rootMargin,
+					threshold: [0, 0.1],
+				},
+			)
+
+			for (const [, element] of sections) {
+				if (element) {
+					observer.observe(element)
 				}
-
-				setVisibleSections(new Set(visibleSet))
-
-				// Set active section as the first visible one (topmost)
-				const sectionOrder: ChangeType[] = [
-					'BREAKING',
-					'SECURITY',
-					'FEATURE',
-					'IMPROVEMENT',
-					'PERFORMANCE',
-					'BUGFIX',
-					'DEPRECATION',
-					'DOCUMENTATION',
-					'OTHER',
-				]
-
-				const firstVisible = sectionOrder.find((type) => visibleSet.has(type))
-				if (firstVisible) {
-					setActiveSection(firstVisible)
-				}
-			},
-			{
-				rootMargin,
-				threshold: [0, 0.1],
-			},
-		)
-
-		for (const [, element] of sections) {
-			if (element) {
-				observer.observe(element)
 			}
 		}
 
+		// Start first attempt after a short delay to allow React to commit
+		retryTimeoutId = setTimeout(() => setupObserver(1), 50)
+
 		return () => {
-			// Properly cleanup by unobserving all elements
-			for (const [, element] of sections) {
-				if (element) {
-					observer.unobserve(element)
-				}
+			cancelled = true
+			if (retryTimeoutId) {
+				clearTimeout(retryTimeoutId)
 			}
-			observer.disconnect()
+			if (observer) {
+				observer.disconnect()
+			}
 		}
 	}, [sectionRefs, rootMargin, threshold, version])
 

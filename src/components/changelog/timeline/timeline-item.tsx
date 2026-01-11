@@ -55,7 +55,7 @@ export function TimelineItem({
 			: 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]'
 
 	const cardFooter = headline ? (
-		<p className="mt-2 text-xs opacity-70 transition-opacity duration-700 ease-out group-hover:opacity-100">
+		<p className="mt-2 text-xs opacity-80 transition-opacity duration-700 ease-out group-hover:opacity-100">
 			<ChangeCount changeCount={changeCount} changesByType={changesByType} />
 		</p>
 	) : null

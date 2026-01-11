@@ -21,7 +21,26 @@ The palette is strictly monochrome, inspired by high-end developer tools (Cursor
 -   **Accents**: Use subtle glows or specific semantic colors (Green for "Ready", Red for "Error") sparingly.
 -   **Gradients**: Use alpha-masks and fade-outs, not color gradients.
 
-### 2. Typography
+### 2. Accessibility
+
+While maintaining the monochrome dev-vibe, ensure essential content meets WCAG 2.1 Level AA standards:
+
+-   **Text Contrast**: Minimum 4.5:1 for normal text, 3:1 for large text (18px+ or 14px+ bold)
+-   **Color Values**:
+    -   `--muted-foreground: oklch(0.65 0 0)` achieves 5.7:1 contrast on the dark background
+    -   Use full `text-muted-foreground` for essential labels and metadata
+-   **Opacity Modifiers**:
+    -   `/50` and below: **Decorative only** (separators, ornaments)
+    -   `/70`+: Acceptable for secondary content with full `text-muted-foreground` fallback
+    -   Avoid on essential text (labels, navigation, metadata)
+-   **Interactive States**: Maintain sufficient contrast in hover/focus states (use brighter colors or reduce opacity less)
+
+**Guidelines**:
+-   Essential content: Labels, navigation, metadata, user guidance → Full color or `/70`+ minimum
+-   Decorative content: Separators (`/`, `~`), ornaments, background patterns → Can use `/50` or lower
+-   When in doubt, test with browser DevTools color picker contrast ratio
+
+### 3. Typography
 -   **Headings & UI**: `Inter` (Sans-serif) for readability.
 -   **Data & Code**: `Fira Code` (Monospace) for **everything** technical:
     -   Tool names
@@ -30,7 +49,7 @@ The palette is strictly monochrome, inspired by high-end developer tools (Cursor
     -   Stats & Counters
     -   Breadcrumbs
 
-### 3. Layout & Spacing
+### 4. Layout & Spacing
 -   **Grid Systems**: Use CSS Grid for robust, responsive layouts.
 -   **Borders**: Thin, subtle borders (`border-white/10`) to define structure.
 -   **Glassmorphism**: Use `backdrop-blur` and semi-transparent backgrounds (`bg-black/40`) to create depth without clutter.
@@ -133,6 +152,8 @@ When implementing new UI features, ask:
 3.  [ ] Are technical details in monospace?
 4.  [ ] Is the animation smooth and cinematic (not instant)?
 5.  [ ] Does it respect the global background system?
+6.  [ ] Does essential text meet WCAG AA contrast (4.5:1)?
+7.  [ ] Are opacity modifiers (/50, /40) only used for decorative elements?
 
 ## Deeper Context: Page-Specific Flows
 

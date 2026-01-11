@@ -120,7 +120,7 @@ export function ReleaseCardBase({
 								</div>
 							)}
 						</div>
-						<div className="flex items-center gap-2 font-mono text-xs text-muted-foreground/60">
+						<div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
 							<span>
 								{'//'} {relativeDate}
 							</span>
@@ -209,7 +209,7 @@ export function ReleaseCard({
 			headline={headline}
 			changesByType={changesByType}
 			rightAccessory={
-				<div className="font-mono text-xs text-muted-foreground/40">
+				<div className="font-mono text-xs text-muted-foreground/70">
 					{changeCount} changes
 				</div>
 			}

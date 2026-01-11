@@ -123,7 +123,7 @@ function ChangelogPage() {
 						transition={{ delay: 1 }}
 						className="mt-16 border-t border-border/40 pt-8 text-center"
 					>
-						<p className="font-mono text-xs text-muted-foreground/40">
+						<p className="font-mono text-xs text-muted-foreground/70">
 							RECURSION_DEPTH: 1 • SELF_REFERENCE: TRUE • PARADOX_LEVEL: STABLE
 						</p>
 					</motion.div>

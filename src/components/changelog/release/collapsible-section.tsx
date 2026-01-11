@@ -93,10 +93,15 @@ export function CollapsibleSection({
 	}
 
 	return (
-		<div ref={onSectionRef} id={type.toLowerCase()} className="scroll-mt-24">
+		<div
+			ref={onSectionRef}
+			id={type.toLowerCase()}
+			data-testid={`section-${type.toLowerCase()}`}
+			className="scroll-mt-24"
+		>
 			{/* Section Header */}
 			<div className="flex items-center gap-4 pl-2">
-				<h3 className="font-mono text-xs md:text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">
+				<h3 className="font-mono text-xs md:text-sm font-bold text-muted-foreground uppercase tracking-widest">
 					{title}
 				</h3>
 				<div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />

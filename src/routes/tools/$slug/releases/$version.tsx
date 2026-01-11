@@ -124,6 +124,7 @@ function ReleaseDetailPage() {
 	const sectionRefsMap = useRef<Map<ChangeType, HTMLDivElement | null>>(
 		new Map(),
 	)
+
 	const { activeSection, visibleSections, scrollToSection } =
 		useSectionObserver(sectionRefsMap.current, {}, version)
 
@@ -234,6 +235,7 @@ function ReleaseDetailPage() {
 	return (
 		<>
 			<motion.div
+				data-testid="release-content"
 				initial="hidden"
 				animate="visible"
 				variants={{
@@ -371,6 +373,7 @@ function ReleaseDetailPage() {
 				{/* Version List at Bottom - Desktop only */}
 				{allVersions && (
 					<motion.div
+						data-testid="version-list"
 						variants={{
 							hidden: { opacity: 0 },
 							visible: {

@@ -45,6 +45,19 @@ pnpm test --grep "parser"
 
 ## Unit Testing
 
+### Testing Custom Hooks
+
+For React hooks that rely on browser APIs (like `IntersectionObserver`), use `@testing-library/react` with a `jsdom` environment and a mock for the browser API.
+
+**Example files**:
+- `tests/hooks/use-section-observer.test.ts`
+- `tests/hooks/mocks/intersection-observer.ts`
+
+**Key patterns**:
+- Add `// @vitest-environment jsdom` at the top of the test file.
+- Use a reusable mock (e.g., `IntersectionObserver`) to trigger callbacks.
+- Use `waitFor` with reasonable timeouts to account for async setup.
+
 ### Testing Parsers
 
 Parsers are the most critical components to test since they handle external data formats.

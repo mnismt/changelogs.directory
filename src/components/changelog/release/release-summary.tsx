@@ -80,7 +80,7 @@ export function ReleaseSummary({
 								<span className="font-mono text-xs font-bold text-foreground truncate">
 									README.md
 								</span>
-								<span className="font-mono text-[10px] text-muted-foreground/60">
+								<span className="font-mono text-[10px] text-muted-foreground/70">
 									1.2 KB
 								</span>
 							</div>
@@ -90,7 +90,7 @@ export function ReleaseSummary({
 						</div>
 
 						{/* Arrow */}
-						<div className="text-muted-foreground/40 group-hover:text-foreground transition-colors">
+						<div className="text-muted-foreground/70 group-hover:text-foreground transition-colors">
 							<FileText className="size-3.5" />
 						</div>
 					</div>

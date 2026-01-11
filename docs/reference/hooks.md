@@ -84,6 +84,11 @@ function ReleasePage() {
 - Any multi-section page requiring scroll-based highlighting
 - Minimap/viewport bracket indicators
 
+### Tests
+
+- Unit: `tests/hooks/use-section-observer.test.ts`
+- E2E: `tests/e2e/pages/release-detail.spec.ts`
+
 ---
 
 ## useScrollReveal
