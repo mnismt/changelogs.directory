@@ -1,14 +1,21 @@
-import { generateObject } from 'ai'
 import { z } from 'zod'
 import type { ChangeType, ImpactLevel } from '@/generated/prisma/client'
-import { llm } from '@/lib/llm'
+import { hasAvailableModels } from '@/lib/llm/models'
 import { buildBraintrustTelemetry } from '@/lib/llm/telemetry'
 import type { ParsedRelease } from '@/lib/parsers/changelog-md'
+import type { CircuitBreaker } from './circuit-breaker'
+import {
+	generateObjectWithFallback,
+	type LLMLogger,
+	type ResilientLLMResult,
+} from './resilient-llm'
 
 /**
  * LLM-based enrichment for changelog releases
  * Source-agnostic: works with any ParsedRelease regardless of origin
  * (markdown, GitHub releases, RSS, API, etc.)
+ *
+ * Now with resilient retry + model fallback support.
  */
 
 // ============================================================================
@@ -58,61 +65,178 @@ const releaseEnrichmentSchema = z.object({
 		.describe('Classified changes with order preserved'),
 })
 
+type ReleaseEnrichment = z.infer<typeof releaseEnrichmentSchema>
+
 // ============================================================================
-// Enrichment Function
+// Types
 // ============================================================================
 
-/**
- * Enriches a release with LLM-based classification and summary
- *
- * Features:
- * - Processes ALL changes + summary in ONE batch LLM call for efficiency
- * - Falls back to keyword-based classification if LLM unavailable or fails
- * - Source-agnostic: works with any ParsedRelease
- *
- * @param release - Raw parsed release from any source
- * @returns Enriched release with LLM classifications and summary
- */
 interface PreviousReleaseContext {
 	version: string
 	headline?: string | null
 	summary?: string | null
 }
 
-interface EnrichReleaseOptions {
+export interface EnrichReleaseOptions {
 	previousRelease?: PreviousReleaseContext
 	telemetry?: {
 		toolSlug?: string
 		runId?: string
 		source?: string
 	}
+	/** Circuit breaker for tracking consecutive failures */
+	circuitBreaker?: CircuitBreaker
+	/** Logger instance (defaults to console) */
+	logger?: LLMLogger
 }
 
+export interface EnrichReleaseResult {
+	release: ParsedRelease
+	success: boolean
+	modelUsed: string | null
+	circuitBreakerTriggered: boolean
+}
+
+// ============================================================================
+// Enrichment Function
+// ============================================================================
+
+/**
+ * Enriches a release with LLM-based classification and summary.
+ *
+ * Features:
+ * - Processes ALL changes + summary in ONE batch LLM call for efficiency
+ * - Automatic retry with exponential backoff (AI SDK built-in)
+ * - Model fallback chain (gemini-2.5-flash-lite → gemini-2.5-flash)
+ * - Circuit breaker to prevent hammering failed API
+ * - Falls back to keyword-based classification if all else fails
+ * - Source-agnostic: works with any ParsedRelease
+ *
+ * @param release - Raw parsed release from any source
+ * @param options - Configuration options including circuit breaker
+ * @returns Enriched release with LLM classifications and enrichment metadata
+ */
 export async function enrichReleaseWithLLM(
 	release: ParsedRelease,
 	options?: EnrichReleaseOptions,
-): Promise<ParsedRelease> {
-	// Check if LLM is available
-	if (!llm) {
-		console.warn(
-			`LLM not available for ${release.version}, keeping keyword-based classification`,
-		)
-		return release
+): Promise<EnrichReleaseResult> {
+	const logger = options?.logger ?? {
+		debug: console.debug,
+		info: console.info,
+		warn: console.warn,
+		error: console.error,
 	}
 
-	try {
-		// Build changes list for prompt
-		const changesText = release.changes
-			.map(
-				(c, i) =>
-					`${i}. "${c.title}"${c.description ? ` - ${c.description}` : ''}`,
-			)
-			.join('\n')
+	// Check if LLM is available
+	if (!hasAvailableModels()) {
+		logger.warn(
+			`LLM not available for ${release.version}, keeping keyword-based classification`,
+		)
+		return {
+			release,
+			success: false,
+			modelUsed: null,
+			circuitBreakerTriggered: false,
+		}
+	}
 
-		const previousContext = formatPreviousRelease(options?.previousRelease)
+	// Build prompt
+	const prompt = buildEnrichmentPrompt(release, options?.previousRelease)
 
-		// Build comprehensive prompt for batch processing
-		const prompt = `You are analyzing a software release changelog. Please classify ALL changes and generate a summary.
+	// Build telemetry settings
+	const telemetry = buildBraintrustTelemetry({
+		toolSlug: options?.telemetry?.toolSlug,
+		releaseVersion: release.version,
+		ingestionRunId: options?.telemetry?.runId,
+		source: options?.telemetry?.source ?? 'ingestion.enrich',
+		previousVersion: options?.previousRelease?.version,
+	})
+
+	// Call LLM with retry and fallback
+	const result: ResilientLLMResult<ReleaseEnrichment> =
+		await generateObjectWithFallback<ReleaseEnrichment>(
+			releaseEnrichmentSchema,
+			prompt,
+			{
+				temperature: 0.3,
+				telemetry,
+				circuitBreaker: options?.circuitBreaker,
+				logger,
+			},
+		)
+
+	// Handle failure
+	if (!result.success) {
+		logger.warn(
+			`LLM enrichment failed for ${release.version}, keeping keyword-based classification`,
+			{
+				error: result.error?.message,
+				circuitBreakerTriggered: result.circuitBreakerTriggered,
+			},
+		)
+		return {
+			release,
+			success: false,
+			modelUsed: null,
+			circuitBreakerTriggered: result.circuitBreakerTriggered ?? false,
+		}
+	}
+
+	// Apply LLM classifications to changes
+	const enrichedChanges = release.changes.map((change) => {
+		// Find matching classification by order
+		const classification = result.data?.changes.find(
+			(c) => c.order === change.order,
+		)
+
+		if (classification) {
+			return {
+				...change,
+				type: classification.type as ChangeType,
+				impact: classification.impact as ImpactLevel,
+				isBreaking: classification.isBreaking,
+				isSecurity: classification.isSecurity,
+				isDeprecation: classification.isDeprecation,
+			}
+		}
+
+		// No classification found, keep original
+		return change
+	})
+
+	// Return enriched release
+	return {
+		release: {
+			...release,
+			headline: result.data?.headline ?? release.headline,
+			summary: result.data?.summary ?? release.summary,
+			changes: enrichedChanges,
+		},
+		success: true,
+		modelUsed: result.modelUsed ?? null,
+		circuitBreakerTriggered: false,
+	}
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+function buildEnrichmentPrompt(
+	release: ParsedRelease,
+	previousRelease?: PreviousReleaseContext,
+): string {
+	// Build changes list for prompt
+	const changesText = release.changes
+		.map(
+			(c, i) =>
+				`${i}. "${c.title}"${c.description ? ` - ${c.description}` : ''}`,
+		)
+		.join('\n')
+
+	const previousContext = formatPreviousRelease(previousRelease)
+
+	return `You are analyzing a software release changelog. Please classify ALL changes and generate a summary.
 
 Version: ${release.version}
 Release Date: ${release.releaseDate?.toISOString().split('T')[0] || 'N/A'}
@@ -161,59 +285,6 @@ Also generate:
 3. Up to 3 key highlights (optional).
 
 Return the changes array with the SAME order/indices as provided.`
-
-		const telemetry = buildBraintrustTelemetry({
-			toolSlug: options?.telemetry?.toolSlug,
-			releaseVersion: release.version,
-			ingestionRunId: options?.telemetry?.runId,
-			source: options?.telemetry?.source ?? 'ingestion.enrich',
-			previousVersion: options?.previousRelease?.version,
-		})
-
-		const result = await generateObject({
-			model: llm,
-			schema: releaseEnrichmentSchema,
-			prompt,
-			temperature: 0.3,
-			...(telemetry ? { experimental_telemetry: telemetry } : {}),
-		})
-
-		// Apply LLM classifications to changes
-		const enrichedChanges = release.changes.map((change) => {
-			// Find matching classification by order
-			const classification = result.object.changes.find(
-				(c) => c.order === change.order,
-			)
-
-			if (classification) {
-				return {
-					...change,
-					type: classification.type as ChangeType,
-					impact: classification.impact as ImpactLevel,
-					isBreaking: classification.isBreaking,
-					isSecurity: classification.isSecurity,
-					isDeprecation: classification.isDeprecation,
-				}
-			}
-
-			// No classification found, keep original
-			return change
-		})
-
-		// Return enriched release
-		return {
-			...release,
-			headline: result.object.headline,
-			summary: result.object.summary,
-			changes: enrichedChanges,
-		}
-	} catch (error) {
-		console.warn(
-			`LLM enrichment failed for ${release.version}, keeping keyword-based classification`,
-			error,
-		)
-		return release
-	}
 }
 
 function formatPreviousRelease(previous?: PreviousReleaseContext): {

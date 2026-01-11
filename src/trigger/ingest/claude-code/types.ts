@@ -47,6 +47,18 @@ export interface FilterResult {
  */
 export interface EnrichResult {
 	enrichedReleases: ParsedRelease[]
+	stats?: EnrichmentStats
+}
+
+/**
+ * Stats from LLM enrichment
+ */
+export interface EnrichmentStats {
+	total: number
+	succeeded: number
+	failed: number
+	circuitBreakerTriggered: number
+	modelUsage: Record<string, number>
 }
 
 /**

@@ -16,7 +16,9 @@ Context and instructions for AI coding assistants working in this codebase.
 | UI/components | `docs/design/design-rules.md` |
 | Animations | `docs/design/animations/` |
 | Environment setup | `docs/guides/environment-variables.md` |
-| Testing | `docs/guides/testing.md` |
+| Unit testing | `docs/guides/testing.md` |
+| E2E testing | `docs/testing/e2e-architecture.md` |
+| Test snapshots | `docs/testing/snapshots.md` |
 | Deployment | `docs/guides/deployment.md` |
 | Architecture overview | `docs/project/architecture.md` |
 
@@ -29,7 +31,7 @@ Start with `docs/README.md` for full navigation. For complex tasks, spawn parall
 - **Styling**: Tailwind CSS v4 + shadcn/ui
 - **Background Jobs**: Trigger.dev
 - **Linter/Formatter**: Biome
-- **Testing**: Vitest
+- **Testing**: Vitest + Playwright (E2E)
 - **Package Manager**: pnpm
 
 ## Commands

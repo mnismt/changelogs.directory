@@ -17,6 +17,7 @@ const LOGO_COMPONENT_MAP: Record<string, string> = {
   windsurf: "windsurf.tsx",
   opencode: "opencode.tsx",
   antigravity: "antigravity.tsx",
+  "gemini-cli": "gemini-cli.tsx",
 };
 
 const toolSlugs = TOOL_SLUGS;

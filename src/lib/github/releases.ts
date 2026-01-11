@@ -13,6 +13,8 @@ export interface FetchGitHubReleasesOptions {
 	includePreReleases?: boolean
 	/** Number of results per page (max 100) */
 	perPage?: number
+	/** Skip Redis/ETag cache lookup */
+	bypassCache?: boolean
 }
 
 /**
@@ -35,8 +37,10 @@ export async function fetchGitHubReleases(
 		throw new Error(`Invalid GitHub URL: ${repoUrl}`)
 	}
 
-	// Check cache first
-	const cached = await getCachedReleases(repo.owner, repo.name)
+	const bypassCache = options?.bypassCache ?? false
+	const cached = bypassCache
+		? { releases: null, etag: null }
+		: await getCachedReleases(repo.owner, repo.name)
 
 	// Prepare headers for GitHub API request
 	const headers: Record<string, string> = {
@@ -67,6 +71,7 @@ export async function fetchGitHubReleases(
 	logger.info('Fetching GitHub releases', {
 		repo,
 		perPage,
+		bypassCache,
 		hasEtag: !!cached.etag,
 		hasCachedReleases: !!cached.releases,
 	})

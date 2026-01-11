@@ -27,7 +27,7 @@ Quick reference for which code changes require which doc updates.
 | `vite.config.ts` | `docs/project/architecture.md` | Build config changes |
 | `biome.json` | `docs/guides/testing.md` | Lint rule changes |
 | `tsconfig.json` | `docs/project/architecture.md` | TypeScript config |
-| `package.json` (scripts) | `CLAUDE.md` | New commands |
+| `package.json` (scripts) | `AGENTS.md` | New commands |
 | `app.config.ts` | `docs/project/architecture.md` | TanStack Start config |
 
 ## Secondary Mappings
@@ -58,10 +58,10 @@ When updating docs, ensure these patterns are correctly documented:
 
 | Pattern | Relevant Docs |
 |---------|---------------|
-| SSR loader + useLoaderData | `docs/reference/api-patterns.md`, `CLAUDE.md` |
-| Server functions (createServerFn) | `docs/reference/api-patterns.md`, `CLAUDE.md` |
+| SSR loader + useLoaderData | `docs/reference/api-patterns.md`, `AGENTS.md` |
+| Server functions (createServerFn) | `docs/reference/api-patterns.md`, `AGENTS.md` |
 | File-based routing | `docs/reference/api-patterns.md`, `docs/project/architecture.md` |
-| Never import getPrisma in routes | `docs/reference/api-patterns.md`, `CLAUDE.md` |
+| Never import getPrisma in routes | `docs/reference/api-patterns.md`, `AGENTS.md` |
 
 ## TASKS.md Mapping
 

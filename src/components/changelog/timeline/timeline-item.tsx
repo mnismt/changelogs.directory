@@ -98,6 +98,7 @@ export function TimelineItem({
 						params={{ slug: toolSlug, version }}
 						className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-lg"
 						aria-label={ariaLabel}
+						data-testid="release-card"
 						onMouseEnter={() => onHover?.(id)}
 						onMouseLeave={() => onHover?.(null)}
 					>
@@ -137,6 +138,7 @@ export function TimelineItem({
 						params={{ slug: toolSlug, version }}
 						className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-lg"
 						aria-label={ariaLabel}
+						data-testid="release-card"
 						onMouseEnter={() => onHover?.(id)}
 						onMouseLeave={() => onHover?.(null)}
 					>
