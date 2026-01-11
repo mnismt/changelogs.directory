@@ -1,11 +1,13 @@
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { getToolConfig } from '@/lib/tool-registry'
 
 /**
  * Parse markdown links [text](url) and return React elements
  * - Internal links (/path) → TanStack <Link>
  * - External links (http/https) → <a target="_blank">
  * - Relative links (./path) → normalized to internal links
+ * - Tool links (/tools/{slug}) → includes inline logo
  */
 export function parseMarkdownLinks(text: string): ReactNode[] {
 	const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
@@ -25,8 +27,20 @@ export function parseMarkdownLinks(text: string): ReactNode[] {
 		const isExternal = url.startsWith('http://') || url.startsWith('https://')
 
 		if (isInternal) {
+			// Check if this is a tool link to inject logo
+			const toolMatch = url.match(/^\/tools\/([^/]+)$/)
+			const toolConfig = toolMatch ? getToolConfig(toolMatch[1]) : null
+			const LogoComponent = toolConfig?.Logo
+
 			result.push(
-				<Link key={key++} to={url} className="text-primary hover:underline">
+				<Link
+					key={key++}
+					to={url}
+					className="text-primary hover:text-primary/80 transition-colors duration-300"
+				>
+					{LogoComponent && (
+						<LogoComponent className="inline align-[-0.125em] mr-1 size-[1em]" />
+					)}
 					{linkText}
 				</Link>,
 			)
