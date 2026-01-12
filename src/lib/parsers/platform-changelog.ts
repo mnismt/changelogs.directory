@@ -1,13 +1,28 @@
 import matter from 'gray-matter'
 
+export interface PlatformImage {
+	src: string
+	width?: string
+	alt?: string
+}
+
+export type ContentBlock =
+	| { type: 'image'; data: PlatformImage }
+	| { type: 'video'; data: { src: string; width?: string } }
+	| { type: 'change'; data: string }
+
 export interface PlatformRelease {
 	version: string
 	date: string
 	title: string
-	image?: string
-	imageWidth?: string
+	content: ContentBlock[]
+	/** @deprecated Use content instead */
+	images: PlatformImage[]
+	/** @deprecated Use content instead */
 	video?: string
+	/** @deprecated Use content instead */
 	videoWidth?: string
+	/** @deprecated Use content instead */
 	changes: string[]
 }
 
@@ -42,57 +57,105 @@ export function parsePlatformChangelog(content: string): PlatformChangelog {
 		const date = metaMatch?.[1] || ''
 		const title = metaMatch?.[2]?.trim() || ''
 
-		// Extract image: ![alt](/path/to/image.png) or <img src="/path/to/image.png" ... />
-		let image: string | undefined
-		let imageWidth: string | undefined
+		// Parse content blocks in document order
+		const contentBlocks: Array<{ index: number; block: ContentBlock }> = []
 
-		// Try markdown image first: ![alt](path)
-		const mdImageMatch = sectionContent.match(/!\[.*?\]\(([^)]+)\)/)
-		if (mdImageMatch) {
-			image = mdImageMatch[1]
+		// Match markdown images: ![alt](path)
+		const mdImageMatches = sectionContent.matchAll(/!\[(.*?)\]\(([^)]+)\)/g)
+		for (const mdMatch of mdImageMatches) {
+			contentBlocks.push({
+				index: mdMatch.index ?? 0,
+				block: {
+					type: 'image',
+					data: {
+						src: mdMatch[2],
+						alt: mdMatch[1] || undefined,
+					},
+				},
+			})
 		}
 
-		// Try HTML image: <img src="path" ... />
-		const htmlImageMatch = sectionContent.match(
-			/<img\s+[^>]*src=["']([^"']+)["'][^>]*\/?>/i,
+		// Match HTML images: <img src="path" ... />
+		const htmlImageMatches = sectionContent.matchAll(
+			/<img\s+[^>]*src=["']([^"']+)["'][^>]*\/?>/gi,
 		)
-		if (htmlImageMatch) {
-			image = htmlImageMatch[1]
-			// Extract width if present: width="75%" or width='75%'
-			const widthMatch = htmlImageMatch[0].match(/width=["']([^"']+)["']/i)
-			if (widthMatch) {
-				imageWidth = widthMatch[1]
-			}
+		for (const htmlMatch of htmlImageMatches) {
+			const fullTag = htmlMatch[0]
+			const src = htmlMatch[1]
+			const widthMatch = fullTag.match(/width=["']([^"']+)["']/i)
+			const altMatch = fullTag.match(/alt=["']([^"']+)["']/i)
+			contentBlocks.push({
+				index: htmlMatch.index ?? 0,
+				block: {
+					type: 'image',
+					data: {
+						src,
+						width: widthMatch?.[1],
+						alt: altMatch?.[1],
+					},
+				},
+			})
 		}
 
-		// Extract video: <video src="/path/to/video.mp4" ... />
-		let video: string | undefined
-		let videoWidth: string | undefined
-
-		const htmlVideoMatch = sectionContent.match(
-			/<video\s+[^>]*src=["']([^"']+)["'][^>]*\/?>/i,
+		// Match video: <video src="/path/to/video.mp4" ... />
+		const htmlVideoMatches = sectionContent.matchAll(
+			/<video\s+[^>]*src=["']([^"']+)["'][^>]*\/?>/gi,
 		)
-		if (htmlVideoMatch) {
-			video = htmlVideoMatch[1]
-			// Extract width if present
-			const widthMatch = htmlVideoMatch[0].match(/width=["']([^"']+)["']/i)
-			if (widthMatch) {
-				videoWidth = widthMatch[1]
-			}
+		for (const videoMatch of htmlVideoMatches) {
+			const fullTag = videoMatch[0]
+			const src = videoMatch[1]
+			const widthMatch = fullTag.match(/width=["']([^"']+)["']/i)
+			contentBlocks.push({
+				index: videoMatch.index ?? 0,
+				block: {
+					type: 'video',
+					data: {
+						src,
+						width: widthMatch?.[1],
+					},
+				},
+			})
 		}
 
-		// Extract bullet points
-		const changes = sectionContent
-			.split('\n')
-			.filter((line) => /^[-*]\s+/.test(line))
-			.map((line) => line.replace(/^[-*]\s+/, '').trim())
+		// Match bullet points with their positions
+		const bulletRegex = /^[-*]\s+(.+)$/gm
+		const bulletMatches = sectionContent.matchAll(bulletRegex)
+		for (const bulletMatch of bulletMatches) {
+			contentBlocks.push({
+				index: bulletMatch.index ?? 0,
+				block: {
+					type: 'change',
+					data: bulletMatch[1].trim(),
+				},
+			})
+		}
+
+		// Sort by document order
+		const content = contentBlocks
+			.sort((a, b) => a.index - b.index)
+			.map((c) => c.block)
+
+		// Legacy fields for backward compatibility
+		const images = content
+			.filter((c): c is ContentBlock & { type: 'image' } => c.type === 'image')
+			.map((c) => c.data)
+		const changes = content
+			.filter(
+				(c): c is ContentBlock & { type: 'change' } => c.type === 'change',
+			)
+			.map((c) => c.data)
+		const videoBlock = content.find(
+			(c): c is ContentBlock & { type: 'video' } => c.type === 'video',
+		)
+		const video = videoBlock?.data.src
+		const videoWidth = videoBlock?.data.width
 
 		releases.push({
 			version,
 			date,
 			title,
-			image,
-			imageWidth,
+			content,
+			images,
 			video,
 			videoWidth,
 			changes,

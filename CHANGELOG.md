@@ -3,6 +3,19 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.6.2
+
+> **2026-01-12T21:40:00+07:00** — Release Summary Component
+
+- AI-generated release summaries now display on release pages
+
+<img src="/changelog-assets/v0.6.2-desktop.png" alt="Release Summary - Desktop" width="80%" />
+
+- Desktop: inline terminal window showing summary content
+
+<img src="/changelog-assets/v0.6.2-mobile.png" alt="Release Summary - Mobile" width="50%" />
+- Mobile: compact file card with native bottom sheet
+
 ## 0.6.1
 
 > **2026-01-11T23:41:00+07:00** — Accessibility Contrast Updates

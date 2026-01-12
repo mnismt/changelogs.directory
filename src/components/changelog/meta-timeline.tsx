@@ -118,48 +118,55 @@ function MetaReleaseCard({ release, isLatest, index }: MetaReleaseCardProps) {
 				</div>
 
 				{/* Content */}
-				<div className="p-6">
-					{/* Video (if present) */}
-					{release.video && (
-						<CinematicVideoPlayer
-							src={release.video}
-							maxWidth={release.videoWidth}
-							className="mb-6 mx-auto w-full max-sm:!max-w-full"
-						/>
-					)}
-
-					{/* Image (if present and no video) */}
-					{release.image && !release.video && (
-						<div
-							className="mb-6 overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto w-full max-sm:!max-w-full"
-							style={
-								release.imageWidth
-									? { maxWidth: release.imageWidth }
-									: undefined
-							}
-						>
-							<img
-								src={release.image}
-								alt={`Screenshot for v${release.version}`}
-								className="w-full h-auto"
-								onError={(e) => {
-									e.currentTarget.parentElement?.classList.add('hidden')
-								}}
-							/>
-						</div>
-					)}
-
-					{/* Changes List */}
-					<ul className="space-y-2">
-						{release.changes.map((change) => (
-							<li key={change} className="flex items-baseline gap-2">
-								<span className="font-mono text-primary/60 text-xs">•</span>
-								<span className="font-mono text-sm text-muted-foreground">
-									{parseMarkdownLinks(change)}
-								</span>
-							</li>
-						))}
-					</ul>
+				<div className="p-6 space-y-4">
+					{release.content.map((block, idx) => {
+						if (block.type === 'video') {
+							return (
+								<CinematicVideoPlayer
+									key={`${release.version}-video-${idx}`}
+									src={block.data.src}
+									maxWidth={block.data.width}
+									className="mx-auto w-full max-sm:!max-w-full"
+								/>
+							)
+						}
+						if (block.type === 'image') {
+							return (
+								<div
+									key={`${release.version}-img-${idx}`}
+									className="overflow-hidden rounded-lg border border-border/40 bg-black/20 mx-auto w-full max-sm:!max-w-full"
+									style={
+										block.data.width
+											? { maxWidth: block.data.width }
+											: undefined
+									}
+								>
+									<img
+										src={block.data.src}
+										alt={block.data.alt || `Screenshot for v${release.version}`}
+										className="w-full h-auto"
+										onError={(e) => {
+											e.currentTarget.parentElement?.classList.add('hidden')
+										}}
+									/>
+								</div>
+							)
+						}
+						if (block.type === 'change') {
+							return (
+								<div
+									key={`${release.version}-change-${idx}`}
+									className="flex items-baseline gap-2"
+								>
+									<span className="font-mono text-primary/60 text-xs">•</span>
+									<span className="font-mono text-sm text-muted-foreground">
+										{parseMarkdownLinks(block.data)}
+									</span>
+								</div>
+							)
+						}
+						return null
+					})}
 				</div>
 			</GlassCard>
 		</motion.div>
