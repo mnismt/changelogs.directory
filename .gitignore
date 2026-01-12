@@ -19,3 +19,4 @@ todos.json
 src/generated/
 test-results
 playwright-results
+playwright-report

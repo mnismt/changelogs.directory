@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
-import { act, renderHook, waitFor } from "@testing-library/react"
+import { waitFor } from "@testing-library/dom"
+import { act, createElement, type ComponentType } from "react"
+import { flushSync } from "react-dom"
+import { createRoot } from "react-dom/client"
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest"
 import { useSectionObserver } from "@/hooks/use-section-observer"
 import type { ChangeType } from "@/generated/prisma/client"
@@ -9,6 +12,56 @@ import {
 	createMockIntersectionObserver,
 	triggerIntersection,
 } from "./mocks/intersection-observer"
+
+type RenderHookOptions<Props> = {
+	initialProps?: Props
+}
+
+type RenderHookResult<Result, Props> = {
+	result: { current: Result }
+	rerender: (props: Props) => void
+	unmount: () => void
+}
+
+const renderHook = <Result, Props = undefined>(
+	callback: (props: Props) => Result,
+	options?: RenderHookOptions<Props>,
+): RenderHookResult<Result, Props> => {
+	let hookResult: Result
+	const container = document.createElement("div")
+	document.body.appendChild(container)
+	const root = createRoot(container)
+
+	const TestComponent = (props: Props) => {
+		hookResult = callback(props)
+		return null
+	}
+
+	const render = (props: Props) => {
+		act(() => {
+			flushSync(() => {
+				root.render(createElement(TestComponent as ComponentType<any>, props))
+			})
+		})
+	}
+
+	render(options?.initialProps as Props)
+
+	return {
+		result: {
+			get current() {
+				return hookResult
+			},
+		},
+		rerender: (props: Props) => render(props),
+		unmount: () => {
+			act(() => {
+				root.unmount()
+			})
+			container.remove()
+		},
+	}
+}
 
 describe("useSectionObserver", () => {
 	let mockObserver: ReturnType<typeof createMockIntersectionObserver>
@@ -112,7 +165,8 @@ describe("useSectionObserver", () => {
 		document.body.appendChild(featureElement)
 
 		const { result, rerender } = renderHook(
-			({ version }) => useSectionObserver(sectionRefs, {}, version),
+			({ version }: { version: string }) =>
+				useSectionObserver(sectionRefs, {}, version),
 			{ initialProps: { version: "v1.0.0" } },
 		)
 

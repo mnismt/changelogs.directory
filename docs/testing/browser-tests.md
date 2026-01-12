@@ -83,6 +83,32 @@ Tests individual tool pages (`/tools/{slug}`).
 
 ---
 
+### `release-detail.spec.ts`
+
+Tests release detail pages (`/tools/{slug}/releases/{version}`).
+
+| Test | What it verifies |
+|------|------------------|
+| `loads release page with content` | Release content renders and is visible |
+| `displays change sections` | Change sections render with stable test IDs |
+| `sidebar highlights active section on scroll` | Section nav reacts to scrolling |
+| `sidebar works after client-side version navigation` | Regression coverage for version-switching bug |
+| `pressing n/p navigates versions` | Keyboard shortcuts change versions |
+| `FAB opens version picker on mobile` | Mobile version sheet opens correctly |
+
+**Notes**:
+- Keyboard shortcuts are handled at the document level with a fallback redirect if client-side navigation fails; keep E2E assertions focused on the release content being visible after keypresses.
+- Active-section checks should scroll to a real section and wait for the `[data-active="true"]` marker rather than relying on arbitrary scroll offsets.
+
+**Selectors used**:
+- `[data-testid="release-content"]`
+- `[data-testid="section-nav"]`
+- `[data-testid^="section-"]`
+- `[data-testid="version-list"]`
+- `[data-testid="version-picker-sheet"]`
+
+---
+
 ### `og-images.spec.ts`
 
 Tests OG image generation endpoints.
@@ -113,6 +139,11 @@ Components should use `data-testid` attributes for stable test selectors.
 | `tool-card-bg-{slug}` | Hover background image | Tools directory |
 | `tool-logo` | Tool logo on detail page | Tool detail |
 | `release-card` | Release card wrapper | Tool detail |
+| `release-content` | Release page content wrapper | Release detail |
+| `section-nav` | Desktop section navigation | Release detail |
+| `section-{type}` | Release change section wrapper | Release detail |
+| `version-list` | Version list container | Release detail |
+| `version-picker-sheet` | Mobile version picker sheet | Release detail |
 
 ### Adding New TestIDs
 
