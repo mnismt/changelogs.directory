@@ -86,7 +86,7 @@ export const getWaitlistDailySignups = createServerFn({
 
 	const dailySignups = (await prisma.$queryRaw`
 			SELECT "created_at"::date as date, COUNT(*)::int as count
-			FROM waitlist
+			FROM "waitlist"
 			WHERE "created_at" >= ${thirtyDaysAgo}
 			GROUP BY "created_at"::date
 			ORDER BY "created_at"::date ASC
@@ -184,9 +184,9 @@ export const getToolsOverview = createServerFn({ method: 'GET' }).handler(
 				COUNT(CASE WHEN c."isBreaking" THEN 1 END)::int as "breakingCount",
 				COUNT(CASE WHEN c."isSecurity" THEN 1 END)::int as "securityCount",
 				COUNT(CASE WHEN c."isDeprecation" THEN 1 END)::int as "deprecationCount"
-			FROM tool t
-			LEFT JOIN release r ON r."toolId" = t.id
-			LEFT JOIN change c ON c."releaseId" = r.id
+			FROM "tool" t
+			LEFT JOIN "release" r ON r."toolId" = t.id
+			LEFT JOIN "change" c ON c."releaseId" = r.id
 			GROUP BY t.id
 		`) as Array<{
 			toolId: string
@@ -281,7 +281,7 @@ export const getReleaseTrends = createServerFn({ method: 'GET' }).handler(
 		// Use raw query for date truncation
 		const trends = (await prisma.$queryRaw`
 			SELECT "publishedAt"::date as date, COUNT(*)::int as count
-			FROM release
+			FROM "release"
 			WHERE "publishedAt" >= ${eightWeeksAgo}
 			GROUP BY "publishedAt"::date
 			ORDER BY "publishedAt"::date ASC
