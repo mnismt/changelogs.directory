@@ -31,7 +31,7 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 		}
 
 		// 2. Fetch non-critical data in parallel (resilient)
-		const [adjacentVersions, allVersions] = await Promise.all([
+		const [adjacentVersionsResponse, allVersions] = await Promise.all([
 			getAdjacentVersions({
 				data: { toolSlug: params.slug, version: params.version },
 			}).catch(() => ({
@@ -44,6 +44,40 @@ export const Route = createFileRoute('/tools/$slug/releases/$version')({
 				data: { slug: params.slug },
 			}).catch(() => []),
 		])
+
+		let adjacentVersions = adjacentVersionsResponse
+
+		if (allVersions.length > 0) {
+			const normalizedVersion = params.version.startsWith('v')
+				? params.version.slice(1)
+				: params.version
+			const currentIndex = allVersions.findIndex(
+				(item) =>
+					item.version === params.version ||
+					item.version === normalizedVersion ||
+					item.formattedVersion === params.version ||
+					item.formattedVersion === `v${normalizedVersion}`,
+			)
+			const nextFromList =
+				currentIndex > 0 ? allVersions[currentIndex - 1] : null
+			const prevFromList =
+				currentIndex >= 0 && currentIndex < allVersions.length - 1
+					? allVersions[currentIndex + 1]
+					: null
+
+			adjacentVersions = {
+				next: adjacentVersions.next ?? nextFromList?.version ?? null,
+				formattedNext:
+					adjacentVersions.formattedNext ??
+					nextFromList?.formattedVersion ??
+					null,
+				prev: adjacentVersions.prev ?? prevFromList?.version ?? null,
+				formattedPrev:
+					adjacentVersions.formattedPrev ??
+					prevFromList?.formattedVersion ??
+					null,
+			}
+		}
 
 		return {
 			release,
@@ -113,6 +147,41 @@ function ReleaseDetailPage() {
 	const { slug, version } = Route.useParams()
 	const navigate = useNavigate()
 	const { release, adjacentVersions, allVersions } = Route.useLoaderData()
+
+	const resolvedAdjacentVersions = useMemo(() => {
+		if (!allVersions || allVersions.length === 0) {
+			return adjacentVersions
+		}
+
+		const normalizedVersion = version.startsWith('v')
+			? version.slice(1)
+			: version
+		const currentIndex = allVersions.findIndex(
+			(item) =>
+				item.version === version ||
+				item.version === normalizedVersion ||
+				item.formattedVersion === version ||
+				item.formattedVersion === `v${normalizedVersion}`,
+		)
+		const nextFromList = currentIndex > 0 ? allVersions[currentIndex - 1] : null
+		const prevFromList =
+			currentIndex >= 0 && currentIndex < allVersions.length - 1
+				? allVersions[currentIndex + 1]
+				: null
+
+		return {
+			next: adjacentVersions?.next ?? nextFromList?.version ?? null,
+			formattedNext:
+				adjacentVersions?.formattedNext ??
+				nextFromList?.formattedVersion ??
+				null,
+			prev: adjacentVersions?.prev ?? prevFromList?.version ?? null,
+			formattedPrev:
+				adjacentVersions?.formattedPrev ??
+				prevFromList?.formattedVersion ??
+				null,
+		}
+	}, [adjacentVersions, allVersions, version])
 
 	// Version picker state
 	const [isVersionPickerOpen, setIsVersionPickerOpen] = useState(false)
@@ -201,6 +270,23 @@ function ReleaseDetailPage() {
 		[],
 	)
 
+	const navigateToVersion = useCallback(
+		(targetVersion: string) => {
+			const targetPath = `/tools/${slug}/releases/${targetVersion}`
+			navigate({
+				to: '/tools/$slug/releases/$version',
+				params: { slug, version: targetVersion },
+			})
+
+			setTimeout(() => {
+				if (window.location.pathname !== targetPath) {
+					window.location.assign(targetPath)
+				}
+			}, 0)
+		},
+		[navigate, slug],
+	)
+
 	// Keyboard navigation
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -211,22 +297,17 @@ function ReleaseDetailPage() {
 				return
 			}
 
-			if (e.key === 'n' && adjacentVersions?.next) {
-				navigate({
-					to: '/tools/$slug/releases/$version',
-					params: { slug, version: adjacentVersions.next },
-				})
-			} else if (e.key === 'p' && adjacentVersions?.prev) {
-				navigate({
-					to: '/tools/$slug/releases/$version',
-					params: { slug, version: adjacentVersions.prev },
-				})
+			const key = e.key.toLowerCase()
+			if (key === 'n' && resolvedAdjacentVersions?.next) {
+				navigateToVersion(resolvedAdjacentVersions.next)
+			} else if (key === 'p' && resolvedAdjacentVersions?.prev) {
+				navigateToVersion(resolvedAdjacentVersions.prev)
 			}
 		}
 
-		window.addEventListener('keydown', handleKeyDown)
-		return () => window.removeEventListener('keydown', handleKeyDown)
-	}, [adjacentVersions, navigate, slug])
+		document.addEventListener('keydown', handleKeyDown)
+		return () => document.removeEventListener('keydown', handleKeyDown)
+	}, [navigateToVersion, resolvedAdjacentVersions])
 
 	const hasChanges = !Object.values(groupedChanges).every(
 		(changes) => changes.length === 0,
