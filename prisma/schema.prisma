@@ -8,13 +8,18 @@ datasource db {
 }
 
 model Waitlist {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  isTest    Boolean  @default(false) @map("is_test")
-  createdAt DateTime @default(now()) @map("created_at")
+  id               String    @id @default(cuid())
+  email            String    @unique
+  isTest           Boolean   @default(false) @map("is_test")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  // Digest tracking
+  unsubscribeToken String    @unique @default(cuid()) @map("unsubscribe_token")
+  isUnsubscribed   Boolean   @default(false) @map("is_unsubscribed")
+  lastDigestSentAt DateTime? @map("last_digest_sent_at")
 
   @@index([email])
   @@index([createdAt(sort: Desc)])
+  @@index([isUnsubscribed])
   @@map("waitlist")
 }
 
@@ -227,4 +232,36 @@ enum FetchStatus {
   SUCCESS
   FAILED
   PARTIAL
+}
+
+// Weekly digest tracking for observability
+model DigestLog {
+  id               String       @id @default(cuid())
+  period           String       @unique // ISO week: "2026-W02"
+  startedAt        DateTime     @default(now()) @map("started_at")
+  completedAt      DateTime?    @map("completed_at")
+  status           DigestStatus @default(PENDING)
+  // Delivery metrics
+  subscribersTotal Int          @default(0) @map("subscribers_total")
+  emailsSent       Int          @default(0) @map("emails_sent")
+  emailsFailed     Int          @default(0) @map("emails_failed")
+  emailsBounced    Int          @default(0) @map("emails_bounced")
+  // Content summary
+  releasesIncluded Int          @default(0) @map("releases_included")
+  toolsIncluded    Int          @default(0) @map("tools_included")
+  // Error tracking
+  error            String?
+
+  @@index([startedAt(sort: Desc)])
+  @@index([status])
+  @@map("digest_log")
+}
+
+enum DigestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  PARTIAL
+  FAILED
+  SKIPPED
 }

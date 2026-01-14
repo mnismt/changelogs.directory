@@ -16,6 +16,7 @@ export class ResendProvider implements EmailProvider {
 				subject: params.subject,
 				html: params.html,
 				text: params.text,
+				headers: params.headers,
 			})
 
 			if (error) {

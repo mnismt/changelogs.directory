@@ -1,22 +1,7 @@
 ---
 description: Plans features and solutions with deep analysis. Use when asked to plan, design, architect, or think through a problem before implementing.
 mode: primary
-temperature: 0.1
-tools:
-  write: false
-  edit: false
-  bash: false
 model: proxypal/gemini-claude-opus-4-5-thinking
-permission:
-  bash:
-    "git status": allow
-    "git log*": allow
-    "git diff*": allow
-    "ls *": allow
-    "ls": allow
-    "*": deny
-  edit: deny
-  webfetch: allow
 ---
 
 # Planning Agent — Changelogs.directory
@@ -44,20 +29,6 @@ Key documentation:
 - `docs/reference/database-schema.md` - Complete database schema
 - `docs/reference/ingestion-pipeline.md` - 7-phase ingestion architecture
 - `docs/design/design-rules.md` - **MANDATORY read before ANY UI work**
-
-## Constraints
-
-**DO NOT:**
-- Create, edit, or delete any files
-- Run commands that modify state (only read-only commands like `git status`, `ls`, etc.)
-- Implement the solution—only plan it
-
-**DO:**
-- Read files and documentation extensively
-- Search the codebase with glob/grep
-- Browse the web for research (TanStack, Trigger.dev, Prisma docs)
-- Deep analysis and ask clarifying questions
-- Spawn explore/general agents for parallel research
 
 ## Workflow
 

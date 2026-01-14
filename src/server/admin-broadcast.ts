@@ -26,6 +26,7 @@ export const getWaitlistSubscribers = createServerFn({ method: 'GET' })
 	.handler(async () => {
 		const prisma = getPrisma()
 		const subscribers = await prisma.waitlist.findMany({
+			where: { isTest: false },
 			orderBy: { createdAt: 'desc' },
 			select: { id: true, email: true, createdAt: true, isTest: true },
 		})

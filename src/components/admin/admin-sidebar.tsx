@@ -4,6 +4,7 @@ import {
 	ChevronRight,
 	LayoutDashboard,
 	Mail,
+	Newspaper,
 	Radio,
 	Terminal,
 } from 'lucide-react'
@@ -24,22 +25,28 @@ const MENU_ITEMS = [
 		shortcut: '⌘2',
 	},
 	{
+		label: 'Digests',
+		href: '/admin/digests',
+		icon: Newspaper,
+		shortcut: '⌘3',
+	},
+	{
 		label: 'Ingestion',
 		href: '/admin/ingestion',
 		icon: Terminal,
-		shortcut: '⌘3',
+		shortcut: '⌘4',
 	},
 	{
 		label: 'Tools',
 		href: '/admin/tools',
 		icon: Box,
-		shortcut: '⌘4',
+		shortcut: '⌘5',
 	},
 	{
 		label: 'Broadcast',
 		href: '/admin/broadcast',
 		icon: Radio,
-		shortcut: '⌘5',
+		shortcut: '⌘6',
 	},
 ]
 

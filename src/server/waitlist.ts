@@ -133,8 +133,6 @@ export const subscribeToWaitlist = createServerFn({ method: 'POST' })
 				console.error('Database error:', error)
 			}
 			throw new Error('Failed to save email')
-		} finally {
-			await prisma.$disconnect()
 		}
 	})
 
