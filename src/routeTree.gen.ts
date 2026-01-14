@@ -21,13 +21,16 @@ import { Route as OgIndexRouteImport } from './routes/og/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
 import { Route as OgToolsRouteImport } from './routes/og/tools'
+import { Route as ApiUnsubscribeRouteImport } from './routes/api/unsubscribe'
 import { Route as AdminToolsRouteImport } from './routes/admin/tools'
 import { Route as AdminTestEmailRouteImport } from './routes/admin/test-email'
 import { Route as AdminIngestionRouteImport } from './routes/admin/ingestion'
 import { Route as AdminEmailsRouteImport } from './routes/admin/emails'
+import { Route as AdminDigestsRouteImport } from './routes/admin/digests'
 import { Route as AdminBroadcastRouteImport } from './routes/admin/broadcast'
 import { Route as ToolsSlugIndexRouteImport } from './routes/tools/$slug/index'
 import { Route as OgToolsSlugRouteImport } from './routes/og/tools.$slug'
+import { Route as ApiWebhooksResendRouteImport } from './routes/api/webhooks/resend'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminToolsSlugRouteImport } from './routes/admin/tools_.$slug'
 import { Route as ToolsSlugReleasesVersionRouteImport } from './routes/tools/$slug/releases/$version'
@@ -93,6 +96,11 @@ const OgToolsRoute = OgToolsRouteImport.update({
   path: '/og/tools',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiUnsubscribeRoute = ApiUnsubscribeRouteImport.update({
+  id: '/api/unsubscribe',
+  path: '/api/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminToolsRoute = AdminToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -113,6 +121,11 @@ const AdminEmailsRoute = AdminEmailsRouteImport.update({
   path: '/emails',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDigestsRoute = AdminDigestsRouteImport.update({
+  id: '/digests',
+  path: '/digests',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
   id: '/broadcast',
   path: '/broadcast',
@@ -127,6 +140,11 @@ const OgToolsSlugRoute = OgToolsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => OgToolsRoute,
+} as any)
+const ApiWebhooksResendRoute = ApiWebhooksResendRouteImport.update({
+  id: '/api/webhooks/resend',
+  path: '/api/webhooks/resend',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -160,10 +178,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/digests': typeof AdminDigestsRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/api/unsubscribe': typeof ApiUnsubscribeRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
@@ -171,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/tools': typeof ToolsIndexRoute
   '/admin/tools/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/og/tools/$slug': typeof OgToolsSlugRouteWithChildren
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -184,16 +205,19 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/digests': typeof AdminDigestsRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/api/unsubscribe': typeof ApiUnsubscribeRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/admin': typeof AdminIndexRoute
   '/og': typeof OgIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/admin/tools/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/og/tools/$slug': typeof OgToolsSlugRouteWithChildren
   '/tools/$slug': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -209,10 +233,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/digests': typeof AdminDigestsRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/api/unsubscribe': typeof ApiUnsubscribeRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
@@ -220,6 +246,7 @@ export interface FileRoutesById {
   '/tools/': typeof ToolsIndexRoute
   '/admin/tools_/$slug': typeof AdminToolsSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/og/tools/$slug': typeof OgToolsSlugRouteWithChildren
   '/tools/$slug/': typeof ToolsSlugIndexRoute
   '/tools/$slug/releases/$version': typeof ToolsSlugReleasesVersionRoute
@@ -236,10 +263,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/unsubscribe'
     | '/admin/broadcast'
+    | '/admin/digests'
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/test-email'
     | '/admin/tools'
+    | '/api/unsubscribe'
     | '/og/tools'
     | '/tools/$slug'
     | '/admin/'
@@ -247,6 +276,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/admin/tools/$slug'
     | '/api/auth/$'
+    | '/api/webhooks/resend'
     | '/og/tools/$slug'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
@@ -260,16 +290,19 @@ export interface FileRouteTypes {
     | '/login'
     | '/unsubscribe'
     | '/admin/broadcast'
+    | '/admin/digests'
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/test-email'
     | '/admin/tools'
+    | '/api/unsubscribe'
     | '/og/tools'
     | '/admin'
     | '/og'
     | '/tools'
     | '/admin/tools/$slug'
     | '/api/auth/$'
+    | '/api/webhooks/resend'
     | '/og/tools/$slug'
     | '/tools/$slug'
     | '/tools/$slug/releases/$version'
@@ -284,10 +317,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/unsubscribe'
     | '/admin/broadcast'
+    | '/admin/digests'
     | '/admin/emails'
     | '/admin/ingestion'
     | '/admin/test-email'
     | '/admin/tools'
+    | '/api/unsubscribe'
     | '/og/tools'
     | '/tools/$slug'
     | '/admin/'
@@ -295,6 +330,7 @@ export interface FileRouteTypes {
     | '/tools/'
     | '/admin/tools_/$slug'
     | '/api/auth/$'
+    | '/api/webhooks/resend'
     | '/og/tools/$slug'
     | '/tools/$slug/'
     | '/tools/$slug/releases/$version'
@@ -309,11 +345,13 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   LoginRoute: typeof LoginRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  ApiUnsubscribeRoute: typeof ApiUnsubscribeRoute
   OgToolsRoute: typeof OgToolsRouteWithChildren
   ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
   OgIndexRoute: typeof OgIndexRoute
   ToolsIndexRoute: typeof ToolsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -402,6 +440,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OgToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/unsubscribe': {
+      id: '/api/unsubscribe'
+      path: '/api/unsubscribe'
+      fullPath: '/api/unsubscribe'
+      preLoaderRoute: typeof ApiUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/tools': {
       id: '/admin/tools'
       path: '/tools'
@@ -430,6 +475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmailsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/digests': {
+      id: '/admin/digests'
+      path: '/digests'
+      fullPath: '/admin/digests'
+      preLoaderRoute: typeof AdminDigestsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/broadcast': {
       id: '/admin/broadcast'
       path: '/broadcast'
@@ -450,6 +502,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/og/tools/$slug'
       preLoaderRoute: typeof OgToolsSlugRouteImport
       parentRoute: typeof OgToolsRoute
+    }
+    '/api/webhooks/resend': {
+      id: '/api/webhooks/resend'
+      path: '/api/webhooks/resend'
+      fullPath: '/api/webhooks/resend'
+      preLoaderRoute: typeof ApiWebhooksResendRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -484,6 +543,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminBroadcastRoute: typeof AdminBroadcastRoute
+  AdminDigestsRoute: typeof AdminDigestsRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminIngestionRoute: typeof AdminIngestionRoute
   AdminTestEmailRoute: typeof AdminTestEmailRoute
@@ -494,6 +554,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBroadcastRoute: AdminBroadcastRoute,
+  AdminDigestsRoute: AdminDigestsRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminIngestionRoute: AdminIngestionRoute,
   AdminTestEmailRoute: AdminTestEmailRoute,
@@ -549,11 +610,13 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   LoginRoute: LoginRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  ApiUnsubscribeRoute: ApiUnsubscribeRoute,
   OgToolsRoute: OgToolsRouteWithChildren,
   ToolsSlugRoute: ToolsSlugRouteWithChildren,
   OgIndexRoute: OgIndexRoute,
   ToolsIndexRoute: ToolsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiWebhooksResendRoute: ApiWebhooksResendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

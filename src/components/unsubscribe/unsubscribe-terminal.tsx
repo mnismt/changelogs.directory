@@ -3,10 +3,12 @@ import { useServerFn } from '@tanstack/react-start'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { unsubscribeByToken } from '@/server/digest'
 import { unsubscribeFromWaitlist } from '@/server/waitlist'
 
 interface UnsubscribeTerminalProps {
-	email: string
+	email?: string
+	token?: string
 }
 
 type StepStatus = 'pending' | 'running' | 'success' | 'error'
@@ -17,8 +19,12 @@ interface Step {
 	status: StepStatus
 }
 
-export function UnsubscribeTerminal({ email }: UnsubscribeTerminalProps) {
-	const unsubscribe = useServerFn(unsubscribeFromWaitlist)
+export function UnsubscribeTerminal({
+	email,
+	token,
+}: UnsubscribeTerminalProps) {
+	const unsubscribeByEmail = useServerFn(unsubscribeFromWaitlist)
+	const unsubscribeByTokenFn = useServerFn(unsubscribeByToken)
 	const [isMounted, setIsMounted] = useState(false)
 	const [bootSequence, setBootSequence] = useState<
 		{ id: string; text: string }[]
@@ -81,7 +87,9 @@ export function UnsubscribeTerminal({ email }: UnsubscribeTerminalProps) {
 	useEffect(() => {
 		if (!showPrompt) return
 
-		const command = `unsubscribe --email=${email}`
+		const command = token
+			? 'unsubscribe --token=***'
+			: `unsubscribe --email=${email}`
 		let index = 0
 		const interval = setInterval(() => {
 			if (index <= command.length) {
@@ -95,7 +103,7 @@ export function UnsubscribeTerminal({ email }: UnsubscribeTerminalProps) {
 		}, 50)
 
 		return () => clearInterval(interval)
-	}, [showPrompt, email])
+	}, [showPrompt, email, token])
 
 	const updateStep = (id: string, status: StepStatus) => {
 		setSteps((prev) =>
@@ -113,6 +121,49 @@ export function UnsubscribeTerminal({ email }: UnsubscribeTerminalProps) {
 		updateStep('validate', 'running')
 		await new Promise((r) => setTimeout(r, 800))
 
+		// Token-based validation
+		if (token) {
+			if (!token || token.length < 10) {
+				updateStep('validate', 'error')
+				setFinalMessage({
+					text: 'Error: Invalid unsubscribe token.',
+					type: 'error',
+				})
+				return
+			}
+			updateStep('validate', 'success')
+
+			// Step 3: Queue/Process with token
+			updateStep('queue', 'running')
+			try {
+				const result = await unsubscribeByTokenFn({ data: { token } })
+
+				if (result.success) {
+					updateStep('queue', 'success')
+					await new Promise((r) => setTimeout(r, 400))
+					updateStep('done', 'success')
+					setFinalMessage({
+						text: 'You have been successfully unsubscribed.',
+						type: 'success',
+					})
+				} else {
+					updateStep('queue', 'error')
+					setFinalMessage({
+						text: `Error: ${result.message}`,
+						type: 'error',
+					})
+				}
+			} catch (_error) {
+				updateStep('queue', 'error')
+				setFinalMessage({
+					text: 'System Error: Failed to process request.',
+					type: 'error',
+				})
+			}
+			return
+		}
+
+		// Email-based validation (legacy)
 		if (!email || !email.includes('@')) {
 			updateStep('validate', 'error')
 			setFinalMessage({
@@ -123,10 +174,10 @@ export function UnsubscribeTerminal({ email }: UnsubscribeTerminalProps) {
 		}
 		updateStep('validate', 'success')
 
-		// Step 3: Queue/Process
+		// Step 3: Queue/Process with email
 		updateStep('queue', 'running')
 		try {
-			const result = await unsubscribe({ data: { email } })
+			const result = await unsubscribeByEmail({ data: { email } })
 
 			if (result.success) {
 				updateStep('queue', 'success')
@@ -181,7 +232,11 @@ export function UnsubscribeTerminal({ email }: UnsubscribeTerminalProps) {
 						<div className="flex items-center gap-2">
 							<span className="text-green-500">~ %</span>
 							<span className="text-foreground">{typedCommand}</span>
-							{typedCommand.length < `unsubscribe --email=${email}`.length && (
+							{typedCommand.length <
+								(token
+									? 'unsubscribe --token=***'
+									: `unsubscribe --email=${email}`
+								).length && (
 								<span className="animate-pulse bg-foreground/60 w-2 h-4 block" />
 							)}
 						</div>
