@@ -50,10 +50,10 @@ test.describe("Release Detail Page - Desktop", () => {
 
 			// Scroll down to trigger sidebar visibility (appears after 100px scroll)
 			await page.evaluate(() => window.scrollTo(0, 200));
-			await page.waitForTimeout(300);
+			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			const sidebar = page.locator('[data-testid="section-nav"]');
-			await expect(sidebar).toBeVisible({ timeout: 5000 });
+			await expect(sidebar).toBeVisible();
 		});
 
 		test("sidebar highlights active section on scroll", async ({ page }) => {
@@ -72,9 +72,7 @@ test.describe("Release Detail Page - Desktop", () => {
 
 			// Scroll past threshold to show sidebar
 			await page.evaluate(() => window.scrollTo(0, 200));
-			await page.waitForTimeout(300);
-
-			await page.waitForSelector('[data-testid="section-nav"]', { timeout: 5000 });
+			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			await expect(sections.first()).toBeVisible();
 
@@ -128,9 +126,7 @@ test.describe("Release Detail Page - Desktop", () => {
 
 			// Scroll past threshold to show sidebar
 			await page.evaluate(() => window.scrollTo(0, 200));
-			await page.waitForTimeout(300);
-
-			await page.waitForSelector('[data-testid="section-nav"]', { timeout: 5000 });
+			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			const navItem = page.locator('[data-testid="section-nav"] button').first();
 			await navItem.click();
@@ -159,9 +155,7 @@ test.describe("Release Detail Page - Desktop", () => {
 
 			// Scroll past threshold to show sidebar
 			await page.evaluate(() => window.scrollTo(0, 200));
-			await page.waitForTimeout(300);
-
-			await page.waitForSelector('[data-testid="section-nav"]', { timeout: 5000 });
+			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			const initialSection = page.locator('[data-testid^="section-"]').first();
 			await expect(initialSection).toBeVisible();
@@ -190,11 +184,7 @@ test.describe("Release Detail Page - Desktop", () => {
 
 			// Scroll past threshold again after navigation
 			await page.evaluate(() => window.scrollTo(0, 200));
-			await page.waitForTimeout(300);
-
-			await expect(page.locator('[data-testid="section-nav"]')).toBeVisible({
-				timeout: 5000,
-			});
+			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			await page.waitForSelector('[data-testid^="section-"]');
 			await page.evaluate(() => {
@@ -230,11 +220,7 @@ test.describe("Release Detail Page - Desktop", () => {
 
 			// Scroll past threshold to show sidebar
 			await page.evaluate(() => window.scrollTo(0, 200));
-			await page.waitForTimeout(300);
-
-			await expect(page.locator('[data-testid="section-nav"]')).toBeVisible({
-				timeout: 5000,
-			});
+			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 		});
 
 	});

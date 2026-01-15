@@ -219,6 +219,7 @@ export function SectionNav({
 			{/* Desktop: Sidebar TOC on left with viewport bracket */}
 			<motion.nav
 				data-testid="section-nav"
+				data-visible={isVisibleDesktop ? 'true' : 'false'}
 				initial={{ x: -20, opacity: 0 }}
 				animate={{
 					x: isVisibleDesktop ? 0 : -20,

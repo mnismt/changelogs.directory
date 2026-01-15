@@ -10,7 +10,7 @@ import { setupStep } from './steps/setup'
 import { upsertStep } from './steps/upsert'
 import type { IngestionContext } from './types'
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
 const prisma = new PrismaClient({ adapter })
 
 export const ingestAntigravity = task({
