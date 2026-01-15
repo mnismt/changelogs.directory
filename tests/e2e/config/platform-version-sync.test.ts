@@ -1,12 +1,23 @@
 import fs from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { parsePlatformChangelog } from "@/lib/parsers/platform-changelog";
 
 describe("Platform Version Sync", () => {
 	const changelogPath = path.join(process.cwd(), "CHANGELOG.md");
-	const content = fs.readFileSync(changelogPath, "utf-8");
-	const changelog = parsePlatformChangelog(content);
+	let changelog: ReturnType<typeof parsePlatformChangelog>;
+
+	beforeAll(() => {
+		try {
+			const content = fs.readFileSync(changelogPath, "utf-8");
+			changelog = parsePlatformChangelog(content);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			throw new Error(
+				`Failed to read or parse CHANGELOG.md at ${changelogPath}: ${message}`,
+			);
+		}
+	});
 
 	it("should have a valid latest version", () => {
 		expect(changelog.latestVersion).toBeDefined();

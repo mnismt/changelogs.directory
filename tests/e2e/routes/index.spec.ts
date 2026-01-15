@@ -44,6 +44,10 @@ test.describe("Homepage", () => {
 
 		for (const slug of slugs) {
 			const tool = getToolBySlug(slug);
+			
+			// Ensure tool exists before checking (should be guaranteed by registry helper, but safety first)
+			expect(tool, `Tool with slug "${slug}" not found in registry`).toBeDefined();
+			
 			if (tool) {
 				// Assert each tool name is present in the showcase text
 				// We use toContainText instead of stricter locators to avoid flakiness with animation/duplication
