@@ -102,6 +102,7 @@ export function HeroSection({
 					>
 						<Link to="/changelog">
 							<Badge
+								data-testid="hero-version-badge"
 								variant="outline"
 								className="border-border bg-secondary/50 font-mono text-xs uppercase tracking-widest text-muted-foreground backdrop-blur-sm hover:bg-secondary/80 hover:text-foreground transition-colors cursor-pointer"
 							>
