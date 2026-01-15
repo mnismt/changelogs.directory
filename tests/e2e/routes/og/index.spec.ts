@@ -12,7 +12,8 @@ test.describe("OG Image Endpoints", () => {
 	})
 
 	test("GET /og/tools returns PNG", async ({ request }) => {
-		const response = await request.get("/og/tools")
+		// Increase timeout for this test as it does heavy image generation
+		const response = await request.get("/og/tools", { timeout: 10000 })
 		expect(response.status()).toBe(200)
 		expect(response.headers()["content-type"]).toContain("image/png")
 	})
