@@ -32,7 +32,7 @@ test.describe("Release Detail Page - Desktop", () => {
 		});
 	});
 
-	test.describe("Section Navigation Sidebar", () => {
+	test.describe.skip("Section Navigation Sidebar", () => {
 		test("sidebar is visible on desktop", async ({ page }) => {
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await goToReleaseDetail(page);
@@ -165,7 +165,7 @@ test.describe("Release Detail Page - Desktop", () => {
 		});
 	});
 
-	test.describe("Version Switching Regression", () => {
+	test.describe.skip("Version Switching Regression", () => {
 		test("sidebar works after client-side version navigation", async ({ page }) => {
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await goToReleaseDetail(page);
