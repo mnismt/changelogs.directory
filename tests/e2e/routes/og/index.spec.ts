@@ -28,6 +28,15 @@ test.describe("OG Image Endpoints", () => {
 		}
 	})
 
+	test("GET /og/tools/:slug/releases/:version returns PNG", async ({
+		request,
+	}) => {
+		// Using a version from the e2e-db.snapshot.json.gz
+		const response = await request.get("/og/tools/cursor/releases/cursor-2-3")
+		expect(response.status()).toBe(200)
+		expect(response.headers()["content-type"]).toContain("image/png")
+	})
+
 	test("OG image meta tag on /tools page is valid", async ({
 		page,
 		request,

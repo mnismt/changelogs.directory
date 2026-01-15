@@ -1,7 +1,6 @@
 import { render } from '@react-email/components'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import { createEmailProvider } from '@/lib/email'
 import { ReleaseDigestEmail } from '@/lib/email/templates/release-digest'
 import { formatVersionForDisplay } from '@/lib/version-formatter'
 import { getPrisma } from './db'
@@ -358,56 +357,20 @@ export const getDigestPreviewData = createServerFn({ method: 'GET' }).handler(
 )
 
 /**
- * Send a test digest email to a specified address.
+ * Send a test digest email to a specified address via Trigger.dev.
+ * This uses the same flow as production for accurate testing.
  */
 export const sendTestDigest = createServerFn({ method: 'POST' })
 	.inputValidator((input: { email: string }) =>
 		z.object({ email: z.string().email() }).parse(input),
 	)
 	.handler(async ({ data }) => {
-		const { releases, totalReleases, totalTools, periodLabel } =
-			await fetchWeeklyReleases()
+		const { sendWeeklyDigest } = await import('@/trigger/digest/index')
 
-		if (totalReleases === 0) {
-			return {
-				success: false,
-				message: 'No releases in the last 7 days to include in digest.',
-			}
-		}
+		const handle = await sendWeeklyDigest.trigger({ testEmail: data.email })
 
-		const emailProvider = createEmailProvider()
-
-		const html = await render(
-			ReleaseDigestEmail({
-				period: periodLabel,
-				releases: releases.slice(0, 10),
-				totalReleases,
-				totalTools,
-			}),
-		)
-
-		const subject = `[TEST] Weekly Digest: ${totalReleases} releases from ${totalTools} tools — ${periodLabel}`
-
-		try {
-			await emailProvider.sendEmail({
-				from: {
-					email: 'digest@changelogs.directory',
-					name: 'changelogs.directory',
-				},
-				to: data.email,
-				subject,
-				html,
-			})
-
-			return {
-				success: true,
-				message: `Test digest sent to ${data.email}`,
-			}
-		} catch (error) {
-			return {
-				success: false,
-				message:
-					error instanceof Error ? error.message : 'Failed to send email',
-			}
+		return {
+			success: true,
+			message: `Test digest triggered for ${data.email}. Task ID: ${handle.id}`,
 		}
 	})
