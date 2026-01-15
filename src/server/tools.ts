@@ -92,6 +92,38 @@ const getDateRange = (preset?: string) => {
 }
 
 /**
+ * Builds a where clause for filtering releases across tools.
+ * Exported for testability.
+ */
+export function buildLatestReleasesWhereClause(params: {
+	changeTypes?: string[]
+	toolSlugs?: string[]
+	includePrereleases: boolean
+}): Prisma.ReleaseWhereInput {
+	const whereClause: Prisma.ReleaseWhereInput = {}
+
+	if (params.changeTypes && params.changeTypes.length > 0) {
+		whereClause.changes = {
+			some: {
+				type: { in: params.changeTypes as Prisma.Enumerable<any> },
+			},
+		}
+	}
+
+	if (params.toolSlugs && params.toolSlugs.length > 0) {
+		whereClause.tool = {
+			slug: { in: params.toolSlugs },
+		}
+	}
+
+	if (!params.includePrereleases) {
+		whereClause.isPrerelease = false
+	}
+
+	return whereClause
+}
+
+/**
  * Get tool metadata (without releases)
  * Used for tool header display
  */
@@ -508,27 +540,12 @@ export const getLatestReleasesAcrossTools = createServerFn({ method: 'GET' })
 		const prisma = getPrisma()
 
 		try {
-			// Build where clause for change type filtering
-			const whereClause: Prisma.ReleaseWhereInput = {}
-
-			if (data.changeTypes && data.changeTypes.length > 0) {
-				// If filtering by change types, we need to find releases that have changes of those types
-				whereClause.changes = {
-					some: {
-						type: { in: data.changeTypes },
-					},
-				}
-			}
-
-			if (data.toolSlugs && data.toolSlugs.length > 0) {
-				whereClause.tool = {
-					slug: { in: data.toolSlugs },
-				}
-			}
-
-			if (!data.includePrereleases) {
-				whereClause.isPrerelease = false
-			}
+			// Build where clause using the extracted helper
+			const whereClause = buildLatestReleasesWhereClause({
+				changeTypes: data.changeTypes,
+				toolSlugs: data.toolSlugs,
+				includePrereleases: data.includePrereleases,
+			})
 
 			// Get total count for pagination metadata
 			const totalCount = await prisma.release.count({

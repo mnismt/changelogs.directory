@@ -93,4 +93,50 @@ test.describe("Homepage", () => {
 		const ogImage = page.locator('meta[property="og:image"]');
 		await expect(ogImage).toHaveCount(1);
 	});
+
+	test("hero release should display stable version, not prerelease", async ({
+		page,
+	}) => {
+		// Wait for hero section to be visible
+		const heroSection = page.locator('[data-testid="hero-section"]');
+		await expect(heroSection).toBeVisible();
+
+		// The hero release card contains the version in the command simulation
+		// Pattern: view release --tool=xxx --version=VERSION
+		// Wait for the typing animation to complete (the command text should be visible)
+		const commandPrompt = heroSection.locator(".font-mono >> text=/--version=/");
+		await expect(commandPrompt).toBeVisible({ timeout: 10000 });
+
+		const fullCommand = await commandPrompt.textContent();
+
+		// Extract version from command: --version=X.X.X or --version=X.X.X-suffix
+		const versionMatch = fullCommand?.match(/--version=([^\s]+)/);
+		expect(
+			versionMatch,
+			"Version should be present in hero command",
+		).toBeTruthy();
+
+		const version = versionMatch?.[1] || "";
+
+		// Version should NOT contain prerelease indicators
+		const prereleasePatterns = [
+			"-nightly",
+			"-alpha",
+			"-beta",
+			"-rc",
+			"-preview",
+			"-pre",
+			"-dev",
+			"-canary",
+			"-next",
+			"-snapshot",
+		];
+
+		for (const pattern of prereleasePatterns) {
+			expect(
+				version.toLowerCase(),
+				`Hero version "${version}" should not contain "${pattern}"`,
+			).not.toContain(pattern);
+		}
+	});
 });
