@@ -101,12 +101,14 @@ test.describe("Homepage", () => {
 		const heroSection = page.locator('[data-testid="hero-section"]');
 		await expect(heroSection).toBeVisible();
 
-		// The hero release card contains the version in the command simulation
-		// Pattern: view release --tool=xxx --version=VERSION
-		// Wait for the typing animation to complete (the command text should be visible)
-		const commandPrompt = heroSection.locator(".font-mono >> text=/--version=/");
-		await expect(commandPrompt).toBeVisible({ timeout: 10000 });
+		// The hero release card has a typing animation for the command.
+		// Wait for the output section to appear (indicates typing is complete).
+		// The output section contains the tool name heading after the animation finishes.
+		const outputSection = heroSection.locator("text=files changed");
+		await expect(outputSection).toBeVisible({ timeout: 15000 });
 
+		// Now the command is fully typed - get it from the command prompt area
+		const commandPrompt = heroSection.locator(".font-mono >> text=/--version=/");
 		const fullCommand = await commandPrompt.textContent();
 
 		// Extract version from command: --version=X.X.X or --version=X.X.X-suffix

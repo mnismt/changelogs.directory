@@ -161,6 +161,108 @@ async function sendDigestEmail(
 }
 
 /**
+ * Send a test digest to a single email address.
+ * Uses the same email rendering but skips DigestLog tracking.
+ */
+async function sendTestDigestEmail(
+	testEmail: string,
+	since: Date,
+): Promise<{
+	success: boolean
+	message: string
+	releasesIncluded?: number
+	toolsIncluded?: number
+}> {
+	const releases = await getWeeklyReleases(since)
+
+	if (releases.length === 0) {
+		return {
+			success: false,
+			message: 'No releases in the last 7 days to include in digest.',
+		}
+	}
+
+	const uniqueTools = new Set(releases.map((r) => r.toolSlug))
+
+	// Dedupe: keep only latest release per tool
+	const latestPerTool = new Map<string, (typeof releases)[0]>()
+	for (const release of releases) {
+		if (!latestPerTool.has(release.toolSlug)) {
+			latestPerTool.set(release.toolSlug, release)
+		}
+	}
+	const dedupedReleases = Array.from(latestPerTool.values())
+
+	// Check if test email is an existing subscriber (to use their unsubscribe token)
+	const existingSubscriber = await prisma.waitlist.findUnique({
+		where: { email: testEmail },
+		select: { unsubscribeToken: true },
+	})
+
+	// Use real token if subscriber, otherwise use a preview token
+	const unsubscribeToken = existingSubscriber?.unsubscribeToken || 'preview'
+	const unsubscribeUrl = `${BASE_URL}/api/unsubscribe?token=${unsubscribeToken}`
+
+	const now = new Date()
+	const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+	const periodLabel = `${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(weekAgo)} - ${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(now)}`
+
+	const emailContent: ReleaseDigestEmailProps = {
+		period: periodLabel,
+		releases: dedupedReleases.slice(0, 10),
+		totalReleases: releases.length,
+		totalTools: uniqueTools.size,
+	}
+
+	const emailProvider = createEmailProvider()
+
+	try {
+		const html = await render(ReleaseDigestEmail(emailContent))
+		const text = await render(ReleaseDigestEmail(emailContent), {
+			plainText: true,
+		})
+
+		const subject = `[TEST] Weekly Digest: ${releases.length} releases from ${uniqueTools.size} tools — ${periodLabel}`
+
+		await emailProvider.sendEmail({
+			from: {
+				email: 'digest@changelogs.directory',
+				name: 'Changelogs Directory',
+			},
+			to: testEmail,
+			subject,
+			html,
+			text,
+			headers: {
+				'List-Unsubscribe': `<${unsubscribeUrl}>`,
+				'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+			},
+		})
+
+		logger.info('Test digest sent', {
+			email: testEmail,
+			releases: releases.length,
+			tools: uniqueTools.size,
+		})
+
+		return {
+			success: true,
+			message: `Test digest sent to ${testEmail}`,
+			releasesIncluded: releases.length,
+			toolsIncluded: uniqueTools.size,
+		}
+	} catch (error) {
+		const errorMessage =
+			error instanceof Error ? error.message : 'Unknown error'
+		logger.error('Failed to send test digest', { email: testEmail, error })
+		return {
+			success: false,
+			message: errorMessage,
+		}
+	}
+}
+
+/**
  * Weekly digest task - sends curated release summaries to subscribers.
  */
 export const sendWeeklyDigest = task({
@@ -169,10 +271,16 @@ export const sendWeeklyDigest = task({
 		concurrencyLimit: 1,
 	},
 	maxDuration: 600, // 10 minutes max
-	run: async (payload: { force?: boolean } = {}) => {
+	run: async (payload: { force?: boolean; testEmail?: string } = {}) => {
 		const now = new Date()
 		const period = getISOWeek(now)
 		const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+		// Handle test mode - send to single email and return early
+		if (payload.testEmail) {
+			logger.info('Running in test mode', { testEmail: payload.testEmail })
+			return await sendTestDigestEmail(payload.testEmail, weekAgo)
+		}
 
 		logger.info('Starting weekly digest', { period, since: weekAgo })
 
