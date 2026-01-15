@@ -52,6 +52,7 @@ test.describe("Release Detail Page - Desktop", () => {
 			await page.evaluate(() => {
 				document.body.style.minHeight = "2000px";
 				window.scrollTo(0, 200);
+				window.dispatchEvent(new Event('scroll'));
 			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
@@ -77,6 +78,7 @@ test.describe("Release Detail Page - Desktop", () => {
 			await page.evaluate(() => {
 				document.body.style.minHeight = "2000px";
 				window.scrollTo(0, 200);
+				window.dispatchEvent(new Event('scroll'));
 			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
@@ -134,6 +136,7 @@ test.describe("Release Detail Page - Desktop", () => {
 			await page.evaluate(() => {
 				document.body.style.minHeight = "2000px";
 				window.scrollTo(0, 200);
+				window.dispatchEvent(new Event('scroll'));
 			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
@@ -166,6 +169,7 @@ test.describe("Release Detail Page - Desktop", () => {
 			await page.evaluate(() => {
 				document.body.style.minHeight = "2000px";
 				window.scrollTo(0, 200);
+				window.dispatchEvent(new Event('scroll'));
 			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
@@ -198,6 +202,7 @@ test.describe("Release Detail Page - Desktop", () => {
 			await page.evaluate(() => {
 				document.body.style.minHeight = "2000px";
 				window.scrollTo(0, 200);
+				window.dispatchEvent(new Event('scroll'));
 			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
@@ -237,6 +242,7 @@ test.describe("Release Detail Page - Desktop", () => {
 			await page.evaluate(() => {
 				document.body.style.minHeight = "2000px";
 				window.scrollTo(0, 200);
+				window.dispatchEvent(new Event('scroll'));
 			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 		});
@@ -256,6 +262,7 @@ test.describe("Release Detail Page - Desktop", () => {
 			await page.evaluate(() => {
 				document.body.style.minHeight = "2000px";
 				window.scrollTo(0, 200);
+				window.dispatchEvent(new Event('scroll'));
 			});
 			await page.waitForTimeout(300);
 
@@ -289,6 +296,7 @@ test.describe("Release Detail Page - Desktop", () => {
 			await page.evaluate(() => {
 				document.body.style.minHeight = "2000px";
 				window.scrollTo(0, 200);
+				window.dispatchEvent(new Event('scroll'));
 			});
 			await page.waitForTimeout(300);
 
