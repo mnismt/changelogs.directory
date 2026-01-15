@@ -49,7 +49,10 @@ test.describe("Release Detail Page - Desktop", () => {
 			}
 
 			// Scroll down to trigger sidebar visibility (appears after 100px scroll)
-			await page.evaluate(() => window.scrollTo(0, 200));
+			await page.evaluate(() => {
+				document.body.style.minHeight = "2000px";
+				window.scrollTo(0, 200);
+			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			const sidebar = page.locator('[data-testid="section-nav"]');
@@ -71,7 +74,10 @@ test.describe("Release Detail Page - Desktop", () => {
 			}
 
 			// Scroll past threshold to show sidebar
-			await page.evaluate(() => window.scrollTo(0, 200));
+			await page.evaluate(() => {
+				document.body.style.minHeight = "2000px";
+				window.scrollTo(0, 200);
+			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			await expect(sections.first()).toBeVisible();
@@ -125,7 +131,10 @@ test.describe("Release Detail Page - Desktop", () => {
 			}
 
 			// Scroll past threshold to show sidebar
-			await page.evaluate(() => window.scrollTo(0, 200));
+			await page.evaluate(() => {
+				document.body.style.minHeight = "2000px";
+				window.scrollTo(0, 200);
+			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			const navItem = page.locator('[data-testid="section-nav"] button').first();
@@ -154,7 +163,10 @@ test.describe("Release Detail Page - Desktop", () => {
 			}
 
 			// Scroll past threshold to show sidebar
-			await page.evaluate(() => window.scrollTo(0, 200));
+			await page.evaluate(() => {
+				document.body.style.minHeight = "2000px";
+				window.scrollTo(0, 200);
+			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			const initialSection = page.locator('[data-testid^="section-"]').first();
@@ -183,7 +195,10 @@ test.describe("Release Detail Page - Desktop", () => {
 			}
 
 			// Scroll past threshold again after navigation
-			await page.evaluate(() => window.scrollTo(0, 200));
+			await page.evaluate(() => {
+				document.body.style.minHeight = "2000px";
+				window.scrollTo(0, 200);
+			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 
 			await page.waitForSelector('[data-testid^="section-"]');
@@ -219,7 +234,10 @@ test.describe("Release Detail Page - Desktop", () => {
 			}
 
 			// Scroll past threshold to show sidebar
-			await page.evaluate(() => window.scrollTo(0, 200));
+			await page.evaluate(() => {
+				document.body.style.minHeight = "2000px";
+				window.scrollTo(0, 200);
+			});
 			await page.waitForSelector('[data-testid="section-nav"][data-visible="true"]', { timeout: 5000 });
 		});
 
@@ -235,7 +253,10 @@ test.describe("Release Detail Page - Desktop", () => {
 			).toBeVisible();
 
 			// Scroll past threshold to show sidebar
-			await page.evaluate(() => window.scrollTo(0, 200));
+			await page.evaluate(() => {
+				document.body.style.minHeight = "2000px";
+				window.scrollTo(0, 200);
+			});
 			await page.waitForTimeout(300);
 
 			// Sidebar may not show if only 1 section type - that's ok for keyboard nav test
@@ -265,7 +286,10 @@ test.describe("Release Detail Page - Desktop", () => {
 			).toBeVisible();
 
 			// Scroll past threshold to show sidebar
-			await page.evaluate(() => window.scrollTo(0, 200));
+			await page.evaluate(() => {
+				document.body.style.minHeight = "2000px";
+				window.scrollTo(0, 200);
+			});
 			await page.waitForTimeout(300);
 
 			// Sidebar may not show if only 1 section type - that's ok for keyboard nav test
