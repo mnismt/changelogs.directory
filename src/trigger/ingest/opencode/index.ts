@@ -9,7 +9,7 @@ import { parseStep } from './steps/parse'
 import { setupStep } from './steps/setup'
 import { upsertStep } from './steps/upsert'
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
 const prisma = new PrismaClient({ adapter })
 
 /**
