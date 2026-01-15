@@ -116,7 +116,7 @@ export const Route = createFileRoute('/')({
 		// Fetch hero release, grouped releases, and platform version in parallel
 		const [heroData, groupedData, platformChangelog] = await Promise.all([
 			getLatestReleasesAcrossTools({
-				data: { limit: 1, offset: 0 },
+				data: { limit: 1, offset: 0, includePrereleases: false },
 			}),
 			getReleasesGroupedByTool({
 				data: { releasesPerTool: 8 },
