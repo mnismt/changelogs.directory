@@ -9,12 +9,13 @@ This document describes the architecture and design of the end-to-end testing su
 The E2E testing suite uses a **two-tier approach**:
 
 1. **Configuration Validation** (Static) - Fast Vitest tests that validate file existence and configuration consistency without a browser
-2. **Browser E2E Tests** (Dynamic) - Playwright tests that verify actual UI rendering and user flows
+2. **Browser E2E Tests** (Dynamic) - Playwright tests that verify actual UI rendering and user flows, organized by route structure
 
 This design enables:
 - **Fast feedback** - Config tests run in ~500ms, catching missing assets immediately
 - **Realistic testing** - Browser tests use production-derived data snapshots
 - **CI efficiency** - Config tests fail fast before expensive browser tests run
+- **Maintainability** - Route-based test organization mirrors the application structure
 
 ---
 
@@ -48,7 +49,7 @@ See [config-validation.md](config-validation.md) for details.
 | Characteristic | Value |
 |----------------|-------|
 | Runner | Playwright |
-| Location | `tests/e2e/pages/` |
+| Location | `tests/e2e/routes/` |
 | Duration | ~30-60s |
 | Requirements | Database with seeded data |
 | CI Stage | Second (after config validation) |
@@ -60,6 +61,7 @@ See [config-validation.md](config-validation.md) for details.
 - Pagination/infinite scroll works
 - OG image endpoints return valid PNGs
 - Navigation between pages works
+- Desktop/Mobile specific interactions
 
 See [browser-tests.md](browser-tests.md) for details.
 
@@ -72,14 +74,22 @@ tests/e2e/
 ├── config/                      # Configuration validation (Vitest)
 │   ├── tool-assets.test.ts     # Logo, images, OG, pipelines
 │   └── database-sync.test.ts   # Registry ↔ seed.ts sync
-├── pages/                       # Browser E2E (Playwright)
-│   ├── homepage.spec.ts        # Landing page tests
-│   ├── tools-directory.spec.ts # /tools page tests
-│   ├── tool-detail.spec.ts     # /tools/{slug} page tests
-│   └── og-images.spec.ts       # OG image endpoint tests
+├── routes/                      # Browser E2E (Playwright) - Mirrors src/routes/
+│   ├── index.spec.ts           # Homepage
+│   ├── og/
+│   │   └── index.spec.ts       # OG image endpoint tests
+│   └── tools/
+│       ├── index.spec.ts       # /tools page tests
+│       └── $slug/
+│           ├── index.spec.ts   # Tool detail tests
+│           └── releases/
+│               └── $version/
+│                   ├── desktop.spec.ts # Release page (desktop)
+│                   └── mobile.spec.ts  # Release page (mobile)
 └── utils/                       # Shared utilities
     ├── registry.ts             # TOOL_REGISTRY access helpers
-    └── fixtures.ts             # Custom Playwright fixtures
+    ├── fixtures.ts             # Custom Playwright fixtures
+    └── release-helpers.ts      # Shared release page helpers
 
 tests/fixtures/
 └── e2e-db.snapshot.json.gz     # Production-derived test data
