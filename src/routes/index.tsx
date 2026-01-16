@@ -264,7 +264,7 @@ function HomePage() {
 				{/* Connector Line */}
 				<div
 					className={cn(
-						'w-px bg-gradient-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
+						'w-px bg-linear-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
 						animationStep === 'hero' ? 'h-0 opacity-0' : 'h-12 opacity-100',
 					)}
 				/>
@@ -274,7 +274,7 @@ function HomePage() {
 					className={cn(
 						'font-mono text-sm transition-all duration-300 flex items-center gap-2 relative',
 						animationStep === 'hero' || animationStep === 'connector'
-							? 'opacity-0 translate-y-[-10px]'
+							? 'opacity-0 -translate-y-2.5'
 							: 'opacity-100 translate-y-0',
 					)}
 				>
@@ -298,7 +298,7 @@ function HomePage() {
 				{/* Connector Line to Feed */}
 				<div
 					className={cn(
-						'w-px bg-gradient-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
+						'w-px bg-linear-to-b from-border/0 via-border to-border/0 transition-all duration-500 ease-out',
 						showFeed ? 'h-12 opacity-100' : 'h-0 opacity-0',
 					)}
 				/>
