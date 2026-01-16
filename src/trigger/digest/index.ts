@@ -1,114 +1,29 @@
-import { PrismaPg } from '@prisma/adapter-pg'
 import { render } from '@react-email/components'
 import { logger, schedules, task } from '@trigger.dev/sdk'
-import { DigestStatus, PrismaClient } from '@/generated/prisma/client'
+import { DigestStatus } from '@/generated/prisma/client'
 import { createEmailProvider } from '@/lib/email'
 import type { ReleaseDigestEmailProps } from '@/lib/email/templates/release-digest'
 import { ReleaseDigestEmail } from '@/lib/email/templates/release-digest'
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
-const prisma = new PrismaClient({ adapter })
+import {
+	BASE_URL,
+	dedupeReleases,
+	formatPeriodLabel,
+	generateTestPeriod,
+	getActiveSubscribers,
+	getISOWeek,
+	getWeeklyReleases,
+	prisma,
+} from './shared'
 
 const BATCH_SIZE = 50
 const BATCH_DELAY_MS = 100
-const BASE_URL = process.env.BASE_URL || 'https://changelogs.directory'
 
-/**
- * Get the ISO week string for a date (e.g., "2026-W02")
- */
-function getISOWeek(date: Date): string {
-	const d = new Date(
-		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-	)
-	const dayNum = d.getUTCDay() || 7
-	d.setUTCDate(d.getUTCDate() + 4 - dayNum)
-	const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-	const weekNum = Math.ceil(
-		((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
-	)
-	return `${d.getUTCFullYear()}-W${weekNum.toString().padStart(2, '0')}`
-}
-
-/**
- * Get releases from the past week for the digest email.
- */
-async function getWeeklyReleases(since: Date) {
-	const releases = await prisma.release.findMany({
-		where: {
-			releaseDate: { gte: since },
-			isPrerelease: false,
-		},
-		include: {
-			tool: {
-				select: {
-					slug: true,
-					name: true,
-					vendor: true,
-					logoUrl: true,
-				},
-			},
-			changes: {
-				select: {
-					type: true,
-					isBreaking: true,
-				},
-			},
-		},
-		orderBy: [{ releaseDate: 'desc' }, { tool: { name: 'asc' } }],
-	})
-
-	return releases.map((release) => {
-		const changeCounts = release.changes.reduce(
-			(acc, change) => {
-				if (change.type === 'FEATURE') acc.features++
-				else if (change.type === 'BUGFIX') acc.bugfixes++
-				else if (change.type === 'IMPROVEMENT') acc.improvements++
-				if (change.isBreaking) acc.breaking++
-				return acc
-			},
-			{ features: 0, bugfixes: 0, improvements: 0, breaking: 0 },
-		)
-
-		return {
-			toolName: release.tool.name,
-			toolSlug: release.tool.slug,
-			toolLogo: `https://changelogs.directory/images/tools/${release.tool.slug}.png`,
-			vendor: release.tool.vendor,
-			version: release.version,
-			releaseDate: release.releaseDate
-				? new Intl.DateTimeFormat('en-US', {
-						month: 'short',
-						day: 'numeric',
-						year: 'numeric',
-					}).format(release.releaseDate)
-				: 'Unknown',
-			headline: release.headline,
-			changeCount: release.changes.length,
-			...changeCounts,
-		}
-	})
-}
-
-/**
- * Get active subscribers who haven't received this period's digest.
- */
-async function getActiveSubscribers(periodStart: Date) {
-	return prisma.waitlist.findMany({
-		where: {
-			isUnsubscribed: false,
-			isTest: false,
-			OR: [
-				{ lastDigestSentAt: null },
-				{ lastDigestSentAt: { lt: periodStart } },
-			],
-		},
-		select: {
-			id: true,
-			email: true,
-			unsubscribeToken: true,
-		},
-		orderBy: { createdAt: 'asc' },
-	})
+interface DigestPayload {
+	force?: boolean
+	/** When true, sends a test digest to a single email address */
+	test?: {
+		email: string
+	}
 }
 
 /**
@@ -118,6 +33,7 @@ async function sendDigestEmail(
 	subscriber: { id: string; email: string; unsubscribeToken: string },
 	emailContent: ReleaseDigestEmailProps,
 	period: string,
+	{ skipLastDigestUpdate }: { skipLastDigestUpdate?: boolean } = {},
 ): Promise<{ success: boolean; error?: string }> {
 	const emailProvider = createEmailProvider()
 
@@ -145,7 +61,7 @@ async function sendDigestEmail(
 			},
 		})
 
-		if (result.success) {
+		if (result.success && !skipLastDigestUpdate) {
 			await prisma.waitlist.update({
 				where: { id: subscriber.id },
 				data: { lastDigestSentAt: new Date() },
@@ -161,109 +77,11 @@ async function sendDigestEmail(
 }
 
 /**
- * Send a test digest to a single email address.
- * Uses the same email rendering but skips DigestLog tracking.
- */
-async function sendTestDigestEmail(
-	testEmail: string,
-	since: Date,
-): Promise<{
-	success: boolean
-	message: string
-	releasesIncluded?: number
-	toolsIncluded?: number
-}> {
-	const releases = await getWeeklyReleases(since)
-
-	if (releases.length === 0) {
-		return {
-			success: false,
-			message: 'No releases in the last 7 days to include in digest.',
-		}
-	}
-
-	const uniqueTools = new Set(releases.map((r) => r.toolSlug))
-
-	// Dedupe: keep only latest release per tool
-	const latestPerTool = new Map<string, (typeof releases)[0]>()
-	for (const release of releases) {
-		if (!latestPerTool.has(release.toolSlug)) {
-			latestPerTool.set(release.toolSlug, release)
-		}
-	}
-	const dedupedReleases = Array.from(latestPerTool.values())
-
-	// Check if test email is an existing subscriber (to use their unsubscribe token)
-	const existingSubscriber = await prisma.waitlist.findUnique({
-		where: { email: testEmail },
-		select: { unsubscribeToken: true },
-	})
-
-	// Use real token if subscriber, otherwise use a preview token
-	const unsubscribeToken = existingSubscriber?.unsubscribeToken || 'preview'
-	const unsubscribeUrl = `${BASE_URL}/api/unsubscribe?token=${unsubscribeToken}`
-
-	const now = new Date()
-	const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-	const periodLabel = `${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(weekAgo)} - ${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(now)}`
-
-	const emailContent: ReleaseDigestEmailProps = {
-		period: periodLabel,
-		releases: dedupedReleases.slice(0, 10),
-		totalReleases: releases.length,
-		totalTools: uniqueTools.size,
-	}
-
-	const emailProvider = createEmailProvider()
-
-	try {
-		const html = await render(ReleaseDigestEmail(emailContent))
-		const text = await render(ReleaseDigestEmail(emailContent), {
-			plainText: true,
-		})
-
-		const subject = `[TEST] Weekly Digest: ${releases.length} releases from ${uniqueTools.size} tools — ${periodLabel}`
-
-		await emailProvider.sendEmail({
-			from: {
-				email: 'digest@changelogs.directory',
-				name: 'Changelogs Directory',
-			},
-			to: testEmail,
-			subject,
-			html,
-			text,
-			headers: {
-				'List-Unsubscribe': `<${unsubscribeUrl}>`,
-				'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-			},
-		})
-
-		logger.info('Test digest sent', {
-			email: testEmail,
-			releases: releases.length,
-			tools: uniqueTools.size,
-		})
-
-		return {
-			success: true,
-			message: `Test digest sent to ${testEmail}`,
-			releasesIncluded: releases.length,
-			toolsIncluded: uniqueTools.size,
-		}
-	} catch (error) {
-		const errorMessage =
-			error instanceof Error ? error.message : 'Unknown error'
-		logger.error('Failed to send test digest', { email: testEmail, error })
-		return {
-			success: false,
-			message: errorMessage,
-		}
-	}
-}
-
-/**
  * Weekly digest task - sends curated release summaries to subscribers.
+ *
+ * Modes:
+ * - Production: Sends to all active subscribers, uses ISO week period
+ * - Test: Sends to a single email, uses unique test period, marks as isTest
  */
 export const sendWeeklyDigest = task({
 	id: 'send-weekly-digest',
@@ -271,31 +89,36 @@ export const sendWeeklyDigest = task({
 		concurrencyLimit: 1,
 	},
 	maxDuration: 600, // 10 minutes max
-	run: async (payload: { force?: boolean; testEmail?: string } = {}) => {
+	run: async (payload: DigestPayload = {}) => {
+		const isTest = !!payload.test
 		const now = new Date()
-		const period = getISOWeek(now)
 		const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-		// Handle test mode - send to single email and return early
-		if (payload.testEmail) {
-			logger.info('Running in test mode', { testEmail: payload.testEmail })
-			return await sendTestDigestEmail(payload.testEmail, weekAgo)
-		}
+		// Period: ISO week for production, unique string for tests
+		const period = isTest ? generateTestPeriod() : getISOWeek(now)
+		const periodLabel = formatPeriodLabel(weekAgo, now)
 
-		logger.info('Starting weekly digest', { period, since: weekAgo })
-
-		// Check for existing digest this period (idempotency)
-		const existingDigest = await prisma.digestLog.findUnique({
-			where: { period },
+		logger.info('Starting weekly digest', {
+			period,
+			since: weekAgo,
+			isTest,
+			testEmail: payload.test?.email,
 		})
 
-		if (
-			existingDigest &&
-			existingDigest.status === 'COMPLETED' &&
-			!payload.force
-		) {
-			logger.info('Digest already sent for this period', { period })
-			return { skipped: true, reason: 'already_sent', period }
+		// Check for existing digest this period (idempotency) - skip for tests
+		if (!isTest) {
+			const existingDigest = await prisma.digestLog.findUnique({
+				where: { period },
+			})
+
+			if (
+				existingDigest &&
+				existingDigest.status === 'COMPLETED' &&
+				!payload.force
+			) {
+				logger.info('Digest already sent for this period', { period })
+				return { skipped: true, reason: 'already_sent', period }
+			}
 		}
 
 		// Get releases from the past week
@@ -303,6 +126,27 @@ export const sendWeeklyDigest = task({
 
 		if (releases.length === 0) {
 			logger.info('No releases this week, skipping digest')
+
+			if (isTest) {
+				// For tests, create a log entry noting the skip
+				await prisma.digestLog.create({
+					data: {
+						period,
+						isTest: true,
+						status: DigestStatus.SKIPPED,
+						completedAt: new Date(),
+						subscribersTotal: 1,
+						error: 'No releases in the last 7 days',
+					},
+				})
+				return {
+					success: false,
+					skipped: true,
+					reason: 'no_releases',
+					period,
+					message: 'No releases in the last 7 days to include in digest.',
+				}
+			}
 
 			await prisma.digestLog.upsert({
 				where: { period },
@@ -323,75 +167,101 @@ export const sendWeeklyDigest = task({
 		// Get unique tools
 		const uniqueTools = new Set(releases.map((r) => r.toolSlug))
 
-		// Get active subscribers
-		const subscribers = await getActiveSubscribers(weekAgo)
+		// Get subscribers - for test mode, create a virtual subscriber
+		let subscribers: { id: string; email: string; unsubscribeToken: string }[]
 
-		if (subscribers.length === 0) {
-			logger.info('No active subscribers, skipping digest')
-
-			await prisma.digestLog.upsert({
-				where: { period },
-				create: {
-					period,
-					status: DigestStatus.SKIPPED,
-					completedAt: new Date(),
-					releasesIncluded: releases.length,
-					toolsIncluded: uniqueTools.size,
-				},
-				update: {
-					status: DigestStatus.SKIPPED,
-					completedAt: new Date(),
-					releasesIncluded: releases.length,
-					toolsIncluded: uniqueTools.size,
-				},
+		if (isTest) {
+			// Check if test email is an existing subscriber (use their real unsubscribe token)
+			const existingSubscriber = await prisma.waitlist.findUnique({
+				where: { email: payload.test!.email },
+				select: { id: true, email: true, unsubscribeToken: true },
 			})
 
-			return { skipped: true, reason: 'no_subscribers', period }
+			subscribers = existingSubscriber
+				? [existingSubscriber]
+				: [
+						{
+							id: 'test',
+							email: payload.test!.email,
+							unsubscribeToken: 'preview',
+						},
+					]
+		} else {
+			subscribers = await getActiveSubscribers(weekAgo)
+
+			if (subscribers.length === 0) {
+				logger.info('No active subscribers, skipping digest')
+
+				await prisma.digestLog.upsert({
+					where: { period },
+					create: {
+						period,
+						status: DigestStatus.SKIPPED,
+						completedAt: new Date(),
+						releasesIncluded: releases.length,
+						toolsIncluded: uniqueTools.size,
+					},
+					update: {
+						status: DigestStatus.SKIPPED,
+						completedAt: new Date(),
+						releasesIncluded: releases.length,
+						toolsIncluded: uniqueTools.size,
+					},
+				})
+
+				return { skipped: true, reason: 'no_subscribers', period }
+			}
 		}
 
 		// Create or update digest log
-		const digestLog = await prisma.digestLog.upsert({
-			where: { period },
-			create: {
-				period,
-				status: DigestStatus.IN_PROGRESS,
-				subscribersTotal: subscribers.length,
-				releasesIncluded: releases.length,
-				toolsIncluded: uniqueTools.size,
-			},
-			update: {
-				status: DigestStatus.IN_PROGRESS,
-				subscribersTotal: subscribers.length,
-				releasesIncluded: releases.length,
-				toolsIncluded: uniqueTools.size,
-				error: null,
-			},
-		})
+		const digestLog = isTest
+			? await prisma.digestLog.create({
+					data: {
+						period,
+						isTest: true,
+						status: DigestStatus.IN_PROGRESS,
+						subscribersTotal: 1,
+						releasesIncluded: releases.length,
+						toolsIncluded: uniqueTools.size,
+					},
+				})
+			: await prisma.digestLog.upsert({
+					where: { period },
+					create: {
+						period,
+						status: DigestStatus.IN_PROGRESS,
+						subscribersTotal: subscribers.length,
+						releasesIncluded: releases.length,
+						toolsIncluded: uniqueTools.size,
+					},
+					update: {
+						status: DigestStatus.IN_PROGRESS,
+						subscribersTotal: subscribers.length,
+						releasesIncluded: releases.length,
+						toolsIncluded: uniqueTools.size,
+						error: null,
+					},
+				})
 
 		logger.info('Sending digest', {
 			subscribers: subscribers.length,
 			releases: releases.length,
 			tools: uniqueTools.size,
+			isTest,
 		})
 
-		// Dedupe: keep only latest release per tool (already sorted by date desc)
-		const latestPerTool = new Map<string, (typeof releases)[0]>()
-		for (const release of releases) {
-			if (!latestPerTool.has(release.toolSlug)) {
-				latestPerTool.set(release.toolSlug, release)
-			}
-		}
-		const dedupedReleases = Array.from(latestPerTool.values())
+		// Dedupe: keep only latest release per tool
+		const dedupedReleases = dedupeReleases(releases)
 
 		// Prepare email content (same for all subscribers)
 		const emailContent: ReleaseDigestEmailProps = {
-			period: 'This Week',
+			period: isTest ? periodLabel : 'This Week',
 			releases: dedupedReleases.slice(0, 10), // Top 10 tools (latest release each)
 			totalReleases: releases.length,
 			totalTools: uniqueTools.size,
 		}
 
-		// Send in batches
+		// Send in batches (or single email for test)
 		let emailsSent = 0
 		let emailsFailed = 0
 
@@ -399,7 +269,12 @@ export const sendWeeklyDigest = task({
 			const batch = subscribers.slice(i, i + BATCH_SIZE)
 
 			const results = await Promise.allSettled(
-				batch.map((sub) => sendDigestEmail(sub, emailContent, period)),
+				batch.map((sub) =>
+					sendDigestEmail(sub, emailContent, isTest ? periodLabel : period, {
+						// Don't update lastDigestSentAt for test emails
+						skipLastDigestUpdate: isTest,
+					}),
+				),
 			)
 
 			for (const result of results) {
@@ -419,8 +294,8 @@ export const sendWeeklyDigest = task({
 				data: { emailsSent, emailsFailed },
 			})
 
-			// Delay between batches to avoid rate limiting
-			if (i + BATCH_SIZE < subscribers.length) {
+			// Delay between batches to avoid rate limiting (skip for single test email)
+			if (!isTest && i + BATCH_SIZE < subscribers.length) {
 				await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS))
 			}
 
@@ -448,20 +323,22 @@ export const sendWeeklyDigest = task({
 				completedAt: new Date(),
 				emailsSent,
 				emailsFailed,
+				error:
+					emailsFailed > 0 && emailsSent === 0 ? 'All emails failed' : null,
 			},
 		})
 
-		// Alert on high failure rate (> 10%)
-		const failureRate = emailsFailed / subscribers.length
-		if (failureRate > 0.1) {
-			logger.warn('High digest failure rate detected', {
-				period,
-				failureRate: `${(failureRate * 100).toFixed(1)}%`,
-				emailsFailed,
-				emailsSent,
-			})
-			// Sentry alerting is handled by Trigger.dev's error tracking
-			// For custom alerts, integrate with Sentry SDK in production
+		// Alert on high failure rate (> 10%) - skip for tests
+		if (!isTest) {
+			const failureRate = emailsFailed / subscribers.length
+			if (failureRate > 0.1) {
+				logger.warn('High digest failure rate detected', {
+					period,
+					failureRate: `${(failureRate * 100).toFixed(1)}%`,
+					emailsFailed,
+					emailsSent,
+				})
+			}
 		}
 
 		// Alert on complete failure
@@ -469,6 +346,7 @@ export const sendWeeklyDigest = task({
 			logger.error('Weekly digest completely failed', {
 				period,
 				subscribersTotal: subscribers.length,
+				isTest,
 			})
 		}
 
@@ -478,16 +356,19 @@ export const sendWeeklyDigest = task({
 			emailsSent,
 			emailsFailed,
 			releases: releases.length,
+			isTest,
 		})
 
 		return {
-			success: true,
+			success: finalStatus !== DigestStatus.FAILED,
 			period,
 			status: finalStatus,
 			emailsSent,
 			emailsFailed,
 			releasesIncluded: releases.length,
 			toolsIncluded: uniqueTools.size,
+			isTest,
+			...(isTest && { message: `Test digest sent to ${payload.test!.email}` }),
 		}
 	},
 })
