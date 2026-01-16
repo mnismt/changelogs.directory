@@ -237,7 +237,8 @@ enum FetchStatus {
 // Weekly digest tracking for observability
 model DigestLog {
   id               String       @id @default(cuid())
-  period           String       @unique // ISO week: "2026-W02"
+  period           String       @unique // ISO week: "2026-W02" or "TEST-{timestamp}" for tests
+  isTest           Boolean      @default(false) @map("is_test")
   startedAt        DateTime     @default(now()) @map("started_at")
   completedAt      DateTime?    @map("completed_at")
   status           DigestStatus @default(PENDING)
@@ -254,6 +255,7 @@ model DigestLog {
 
   @@index([startedAt(sort: Desc)])
   @@index([status])
+  @@index([isTest])
   @@map("digest_log")
 }
 

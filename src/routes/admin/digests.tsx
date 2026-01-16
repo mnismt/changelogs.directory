@@ -77,6 +77,7 @@ function PreviewModal({
 function AdminDigests() {
 	const { logs, stats, preview } = Route.useLoaderData()
 	const [showPreview, setShowPreview] = useState(false)
+	const [showTests, setShowTests] = useState(false)
 	const [testEmail, setTestEmail] = useState('')
 	const [isSending, setIsSending] = useState(false)
 	const [sendResult, setSendResult] = useState<{
@@ -85,6 +86,23 @@ function AdminDigests() {
 	} | null>(null)
 
 	const sendTest = useServerFn(sendTestDigest)
+	const fetchLogs = useServerFn(getDigestLogs)
+	const [displayLogs, setDisplayLogs] = useState(logs)
+	const [isLoadingLogs, setIsLoadingLogs] = useState(false)
+
+	const handleToggleTests = async () => {
+		const newShowTests = !showTests
+		setShowTests(newShowTests)
+		setIsLoadingLogs(true)
+		try {
+			const newLogs = await fetchLogs({
+				data: { limit: 20, includeTests: newShowTests },
+			})
+			setDisplayLogs(newLogs)
+		} finally {
+			setIsLoadingLogs(false)
+		}
+	}
 
 	const handleSendTest = async () => {
 		if (!testEmail) return
@@ -233,8 +251,21 @@ function AdminDigests() {
 
 			{/* Digest History Table */}
 			<div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900">
-				<div className="border-b border-neutral-800 bg-neutral-950 px-6 py-3">
+				<div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-950 px-6 py-3">
 					<h3 className="font-medium text-neutral-300">Digest History</h3>
+					<label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-400">
+						<input
+							type="checkbox"
+							checked={showTests}
+							onChange={handleToggleTests}
+							disabled={isLoadingLogs}
+							className="h-4 w-4 rounded border-neutral-600 bg-neutral-800 text-green-500 focus:ring-green-500 focus:ring-offset-neutral-900"
+						/>
+						<span>Show test runs</span>
+						{isLoadingLogs && (
+							<Loader2 className="h-3 w-3 animate-spin text-neutral-500" />
+						)}
+					</label>
 				</div>
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm">
@@ -252,7 +283,7 @@ function AdminDigests() {
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-neutral-800">
-							{logs.length === 0 ? (
+							{displayLogs.length === 0 ? (
 								<tr>
 									<td
 										colSpan={9}
@@ -263,10 +294,11 @@ function AdminDigests() {
 									</td>
 								</tr>
 							) : (
-								logs.map(
+								displayLogs.map(
 									(log: {
 										id: string
 										period: string
+										isTest: boolean
 										status: string
 										subscribersTotal: number
 										emailsSent: number
@@ -280,8 +312,16 @@ function AdminDigests() {
 										completedAt: Date | null
 										error: string | null
 									}) => (
-										<tr key={log.id} className="hover:bg-neutral-800/50">
+										<tr
+											key={log.id}
+											className={`hover:bg-neutral-800/50 ${log.isTest ? 'bg-neutral-800/20' : ''}`}
+										>
 											<td className="px-6 py-4 font-mono text-neutral-300">
+												{log.isTest && (
+													<span className="mr-2 inline-flex items-center rounded-full bg-purple-500/10 px-1.5 py-0.5 text-xs font-medium text-purple-400">
+														TEST
+													</span>
+												)}
 												{log.period}
 											</td>
 											<td className="px-6 py-4">

@@ -145,13 +145,19 @@ export const unsubscribeByToken = createServerFn({ method: 'POST' })
  * Get digest logs for admin dashboard.
  */
 export const getDigestLogs = createServerFn({ method: 'GET' })
-	.inputValidator((input: { limit?: number }) =>
-		z.object({ limit: z.number().optional().default(20) }).parse(input),
+	.inputValidator((input: { limit?: number; includeTests?: boolean }) =>
+		z
+			.object({
+				limit: z.number().optional().default(20),
+				includeTests: z.boolean().optional().default(false),
+			})
+			.parse(input),
 	)
 	.handler(async ({ data }) => {
 		const prisma = getPrisma()
 
 		const logs = await prisma.digestLog.findMany({
+			where: data.includeTests ? {} : { isTest: false },
 			orderBy: { startedAt: 'desc' },
 			take: data.limit,
 		})
@@ -358,19 +364,26 @@ export const getDigestPreviewData = createServerFn({ method: 'GET' }).handler(
 
 /**
  * Send a test digest email to a specified address via Trigger.dev.
- * This uses the same flow as production for accurate testing.
+ * Uses the same sendWeeklyDigest task with test flag.
  */
 export const sendTestDigest = createServerFn({ method: 'POST' })
 	.inputValidator((input: { email: string }) =>
 		z.object({ email: z.string().email() }).parse(input),
 	)
 	.handler(async ({ data }) => {
-		const { sendWeeklyDigest } = await import('@/trigger/digest/index')
+		try {
+			const { sendWeeklyDigest } = await import('@/trigger/digest')
+			const handle = await sendWeeklyDigest.trigger({
+				test: { email: data.email },
+			})
 
-		const handle = await sendWeeklyDigest.trigger({ testEmail: data.email })
-
-		return {
-			success: true,
-			message: `Test digest triggered for ${data.email}. Task ID: ${handle.id}`,
+			return {
+				success: true,
+				message: `Test digest triggered for ${data.email}`,
+				taskId: handle.id,
+			}
+		} catch (error) {
+			console.error('[sendTestDigest] Error:', error)
+			throw error
 		}
 	})
