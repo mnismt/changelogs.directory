@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ChangelogRouteImport } from './routes/changelog'
@@ -39,6 +40,11 @@ import { Route as OgToolsSlugReleasesVersionRouteImport } from './routes/og/tool
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscribeRoute = SubscribeRouteImport.update({
+  id: '/subscribe',
+  path: '/subscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
+  '/subscribe': typeof SubscribeRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/digests': typeof AdminDigestsRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
+  '/subscribe': typeof SubscribeRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/digests': typeof AdminDigestsRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/login': typeof LoginRoute
+  '/subscribe': typeof SubscribeRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/digests': typeof AdminDigestsRoute
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/compare'
     | '/login'
+    | '/subscribe'
     | '/unsubscribe'
     | '/admin/broadcast'
     | '/admin/digests'
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/compare'
     | '/login'
+    | '/subscribe'
     | '/unsubscribe'
     | '/admin/broadcast'
     | '/admin/digests'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/compare'
     | '/login'
+    | '/subscribe'
     | '/unsubscribe'
     | '/admin/broadcast'
     | '/admin/digests'
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   ChangelogRoute: typeof ChangelogRoute
   CompareRoute: typeof CompareRoute
   LoginRoute: typeof LoginRoute
+  SubscribeRoute: typeof SubscribeRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   ApiUnsubscribeRoute: typeof ApiUnsubscribeRoute
   OgToolsRoute: typeof OgToolsRouteWithChildren
@@ -361,6 +374,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscribe': {
+      id: '/subscribe'
+      path: '/subscribe'
+      fullPath: '/subscribe'
+      preLoaderRoute: typeof SubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -609,6 +629,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChangelogRoute: ChangelogRoute,
   CompareRoute: CompareRoute,
   LoginRoute: LoginRoute,
+  SubscribeRoute: SubscribeRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   ApiUnsubscribeRoute: ApiUnsubscribeRoute,
   OgToolsRoute: OgToolsRouteWithChildren,

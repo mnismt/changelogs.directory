@@ -15,300 +15,109 @@ This document describes the complete database schema for Changelogs.directory, a
 
 ---
 
-## Core Models
+## Schema Models
 
-### 1. Tool (CLI Developer Tools)
+### Core Models
 
-Represents a CLI developer tool being tracked (e.g., Claude Code, OpenAI Codex, AMP Code).
+#### Tool
+Represents a developer tool (e.g., Claude Code, Cursor).
 
-```prisma
-model Tool {
-  id              String      @id @default(cuid())
-  slug            String      @unique  // URL-friendly: "claude-code", "openai-codex"
-  name            String                // Display name: "Claude Code"
-  vendor          String                // Company: "Anthropic", "OpenAI"
-  description     String?               // Short description for directory listing
-  homepage        String                // Official website: https://claude.ai/code
-  repositoryUrl   String                // GitHub repo: https://github.com/anthropics/claude-code
+- `id`: CUID (PK)
+- `slug`: URL-friendly identifier (unique)
+- `name`: Display name
+- `vendor`: Company/Organization name
+- `sourceType`: Enum (CHANGELOG_MD, GITHUB_RELEASES, RSS_FEED, CUSTOM_API)
+- `sourceUrl`: Primary source for fetching updates
+- `lastFetchedAt`: Timestamp of last successful sync
 
-  // Source configuration (flexible connector system)
-  sourceType      SourceType            // CHANGELOG_MD, GITHUB_RELEASES, etc.
-  sourceUrl       String                // Direct URL to changelog source
-  sourceConfig    Json?                 // Additional connector-specific config
+#### Release
+A specific version of a tool.
 
-  // Metadata
-  logoUrl         String?               // Logo for directory display
-  tags            String[]              // ["ai", "cli", "code-editor", "agent"]
-  isActive        Boolean     @default(true)  // For pausing ingestion
+- `id`: CUID (PK)
+- `toolId`: FK to Tool
+- `version`: Version string (e.g., "v1.2.0")
+- `releaseDate`: Official release date
+- `publishedAt`: When it was detected/published in our system
+- `isPrerelease`: Boolean (beta/alpha/rc)
+- `headline`: LLM-generated one-line summary (max 140 chars)
+- `contentHash`: Hash of raw content for change detection
 
-  // Timestamps
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  lastFetchedAt   DateTime?             // Last successful ingestion run
+#### Change
+An individual item within a release.
 
-  // Relations
-  releases        Release[]
-  fetchLogs       FetchLog[]
+- `id`: CUID (PK)
+- `releaseId`: FK to Release
+- `type`: Enum (FEATURE, BUGFIX, IMPROVEMENT, BREAKING, SECURITY, etc.)
+- `title`: Short description of change
+- `isBreaking`: Boolean flag
+- `isSecurity`: Boolean flag
 
-  @@index([slug])
-  @@index([isActive])
-  @@index([lastFetchedAt])
-  @@map("tool")
-}
+### Ingestion & Monitoring
 
-enum SourceType {
-  CHANGELOG_MD      // CHANGELOG.md file (like Claude Code)
-  GITHUB_RELEASES   // GitHub Releases API
-  RSS_FEED          // RSS/Atom feed
-  CUSTOM_API        // Custom endpoint
-}
-```
+#### FetchLog
+Audit trail for every ingestion run.
 
-#### Key Design Decisions
+- `status`: Enum (PENDING, IN_PROGRESS, SUCCESS, FAILED, PARTIAL)
+- `releasesFound/New/Updated`: Metrics
+- `duration`: Execution time in ms
 
-- **`slug`**: Unique, URL-friendly identifier for routing (`/tools/claude-code`)
-- **`sourceType` + `sourceUrl` + `sourceConfig`**: Flexible connector system
-  - `sourceConfig` (JSON) allows connector-specific settings without schema changes
-  - Example: `{ "branch": "main", "path": "CHANGELOG.md" }`
-- **`tags[]`**: PostgreSQL native array for multi-tag filtering
-- **`isActive`**: Pause ingestion without deleting data
-- **`lastFetchedAt`**: Quick status check for admin dashboard
+#### DigestLog
+Weekly email digest tracking.
 
----
+- `period`: ISO week identifier (e.g., "2026-W02")
+- `subscribersTotal`: Snapshot of recipient count
+- `emailsSent/Failed/Bounced`: Delivery metrics
+- `releasesIncluded`: Content metric
 
-### 2. Release (Versions)
+#### EmailLog
+Transactional email history (signups, etc.).
 
-Represents a single version/release of a tool.
+- `to`: Recipient email
+- `status`: Delivery status (sent, delivered, bounced)
+- `provider`: Service used (Resend, ZeptoMail)
 
-```prisma
-model Release {
-  id              String      @id @default(cuid())
-  toolId          String
-  tool            Tool        @relation(fields: [toolId], references: [id], onDelete: Cascade)
+### User & Auth (Better Auth)
 
-  // Version info
-  version         String                // "2.0.31", "1.5.0-beta.1"
-  versionSort     String                // For semantic version sorting
+Standard Better Auth models: `User`, `Session`, `Account`, `Verification`.
 
-  // Dates
-  releaseDate     DateTime?             // Actual release date (if available in source)
-  publishedAt     DateTime    @default(now())  // When WE ingested it
+### Waitlist
+Early access and subscription management.
 
-  // Source tracking
-  sourceUrl       String                // Direct link to release (GitHub tag, etc.)
-  rawContent      String      @db.Text  // Original markdown/JSON for re-parsing
-  contentHash     String                // SHA256 hash for change detection
-
-  // Parsed metadata
-  title           String?               // Optional release title
-  summary         String?     @db.Text  // Auto-generated summary (first N chars)
-
-  // Classification tags
-  tags            String[]              // ["breaking", "security", "deprecation"]
-
-  // Relations
-  changes         Change[]
-
-  // Timestamps
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  @@unique([toolId, version])  // Prevent duplicate versions per tool
-  @@index([toolId, releaseDate(sort: Desc)])
-  @@index([publishedAt(sort: Desc)])
-  @@index([tags])
-  @@map("release")
-}
-```
-
-#### Key Design Decisions
-
-- **`version` + `versionSort`**:
-  - `version` stores the original string ("2.0.31")
-  - `versionSort` enables proper semantic version ordering in SQL queries
-
-- **`releaseDate` vs `publishedAt`**:
-  - `releaseDate`: When the tool vendor released it (from changelog)
-  - `publishedAt`: When we discovered/ingested it (for "What's new" feed)
-
-- **`rawContent` + `contentHash`**:
-  - Store original source for re-parsing without re-fetching
-  - Hash detects if upstream changelog was edited (enables update detection)
-
-- **`tags[]`**: Release-level flags (breaking, security, deprecation)
-  - Different from `Change.type` (which is per-entry)
-  - Enables "Show only breaking releases" filter
-
-#### Version Sorting Strategy
-
-**Problem**: Pre-release versions need special handling. Simple string comparison makes `"1.5.0-beta.1"` sort AFTER `"1.5.0"` (incorrect!).
-
-**Solution**: Use prefix-based sorting:
-
-```typescript
-function generateVersionSort(version: string): string {
-  const match = version.match(/^(\d+)\.(\d+)\.(\d+)(.*)$/);
-  if (!match) return version; // Fallback for non-semver
-
-  const [_, major, minor, patch, suffix] = match;
-  const base = `${major.padStart(3, '0')}${minor.padStart(3, '0')}${patch.padStart(3, '0')}`;
-
-  // Stable (no suffix) gets 'z' prefix to sort AFTER pre-releases
-  if (!suffix) return `${base}-z`;
-
-  // Pre-release gets 'a' prefix to sort BEFORE stable
-  return `${base}-a${suffix}`;
-}
-```
-
-**Examples**:
-
-- `"2.0.31"` → `"002000031-z"` (stable)
-- `"1.5.0-beta.1"` → `"001005000-a-beta.1"` (pre-release)
-- `"1.5.0"` → `"001005000-z"` (stable)
-
-Now `"001005000-a-beta.1"` correctly sorts before `"001005000-z"` ✅
+- `email`: User email (unique)
+- `isUnsubscribed`: Global opt-out flag
+- `unsubscribeToken`: Secure token for one-click unsubscribe
 
 ---
 
-### 3. Change (Individual Changelog Entries)
+## ER Diagram
 
-Represents a single bullet point/change within a release.
+```mermaid
+erDiagram
+    Tool ||--o{ Release : "has"
+    Tool ||--o{ FetchLog : "logs"
+    Release ||--o{ Change : "contains"
+    
+    User ||--o{ Session : "has"
+    User ||--o{ Account : "has"
+    
+    DigestLog {
+        string period PK
+        int subscribersTotal
+        int emailsSent
+        string status
+    }
 
-```prisma
-model Change {
-  id              String      @id @default(cuid())
-  releaseId       String
-  release         Release     @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+    Waitlist {
+        string email UK
+        boolean isUnsubscribed
+    }
 
-  // Change classification (inferred from text)
-  type            ChangeType            // FEATURE, BUGFIX, IMPROVEMENT, etc.
-
-  // Content
-  title           String                // The bullet point text (cleaned)
-  description     String?     @db.Text  // Extended description (if multi-line)
-
-  // Context
-  platform        String?               // "windows", "macos", "linux", "vscode", "ide"
-  component       String?               // Affected component/module (if known)
-
-  // Flags (inferred from text)
-  isBreaking      Boolean     @default(false)
-  isSecurity      Boolean     @default(false)
-  isDeprecation   Boolean     @default(false)
-
-  // Impact assessment
-  impact          ImpactLevel?          // MAJOR, MINOR, PATCH
-
-  // Links (extracted from markdown)
-  links           Json?                 // [{ url: "...", text: "...", type: "docs|issue|pr" }]
-
-  // Order within release
-  order           Int         @default(0)  // Preserve original order from changelog
-
-  // Timestamps
-  createdAt       DateTime    @default(now())
-
-  @@index([releaseId, order])
-  @@index([type])
-  @@index([isBreaking])
-  @@index([isSecurity])
-  @@index([platform])
-  @@map("change")
-}
-
-enum ChangeType {
-  FEATURE           // New functionality ("Added", "Implemented")
-  BUGFIX            // Bug fixes ("Fixed", "Resolved")
-  IMPROVEMENT       // Enhancements ("Improved", "Enhanced", "Updated")
-  BREAKING          // Breaking changes
-  SECURITY          // Security patches
-  DEPRECATION       // Deprecated features
-  PERFORMANCE       // Performance improvements
-  DOCUMENTATION     // Docs updates
-  OTHER             // Misc changes
-}
-
-enum ImpactLevel {
-  MAJOR             // Breaking changes, major features
-  MINOR             // New features, non-breaking
-  PATCH             // Bug fixes, small improvements
-}
+    EmailLog {
+        string to
+        string status
+        string provider
+    }
 ```
-
-#### Key Design Decisions
-
-- **`type` inference**: Since changelogs rarely categorize changes, infer from text patterns:
-  - Check for keywords: "breaking change", "security", "deprecated", "fixed", "added", etc.
-  - Order matters - check breaking/security first before generic patterns
-
-- **`platform` extraction**: Parse platform prefixes like `"Windows:"`, `"macOS:"`, `"VSCode:"` from text
-
-- **Boolean flags**: Enable fast filtering without parsing text
-  - Indexed for performance
-  - Set during ingestion based on text patterns
-
-- **`links` (JSON field)**: Stores extracted URLs with metadata
-  - Example: `[{ url: "https://...", text: "Read more", type: "docs" }]`
-
-- **`order` field**: Preserves original changelog order for display
-
----
-
-### 4. FetchLog (Ingestion Tracking)
-
-Tracks every ingestion job for observability and debugging.
-
-```prisma
-model FetchLog {
-  id              String      @id @default(cuid())
-  toolId          String
-  tool            Tool        @relation(fields: [toolId], references: [id], onDelete: Cascade)
-
-  // Job metadata
-  status          FetchStatus
-  startedAt       DateTime    @default(now())
-  completedAt     DateTime?
-  duration        Int?                  // milliseconds
-
-  // Results
-  releasesFound   Int         @default(0)  // Total releases in source
-  releasesNew     Int         @default(0)  // New releases created
-  releasesUpdated Int         @default(0)  // Existing releases updated
-  changesCreated  Int         @default(0)  // Total changes inserted
-
-  // Error tracking
-  error           String?     @db.Text
-  errorStack      String?     @db.Text
-
-  // Source info
-  sourceUrl       String                   // URL fetched
-  sourceEtag      String?                  // For HTTP caching (if supported)
-
-  @@index([toolId, startedAt(sort: Desc)])
-  @@index([status])
-  @@map("fetch_log")
-}
-
-enum FetchStatus {
-  PENDING           // Job queued but not started
-  IN_PROGRESS       // Currently running
-  SUCCESS           // Completed successfully
-  FAILED            // Failed (all releases)
-  PARTIAL           // Some releases succeeded, some failed
-}
-```
-
-#### Key Design Decisions
-
-- **Observability**: Every ingestion run is logged
-- **Metrics**: Track new vs updated releases, total changes
-- **Debugging**: Store error messages and stack traces
-- **HTTP caching**: `sourceEtag` for conditional requests (GitHub supports ETags)
-- **Force rescan visibility**: No explicit flag stored; use Trigger.dev payloads/logs to identify `forceFullRescan` runs
-- **Admin dashboard**: Query latest logs per tool to show status
-
----
 
 ## Indexes & Performance
 
@@ -369,6 +178,31 @@ enum FetchStatus {
 ---
 
 ## Implementation Guide
+
+### ⚠️ Critical: Schema Change Rules
+
+**AI Agents and developers MUST follow this workflow for ANY schema change:**
+
+| Step | Command | Purpose |
+|------|---------|---------|
+| 1. Edit schema | Edit `prisma/schema.prisma` | Define the change |
+| 2. Generate migration | `pnpm prisma migrate dev --name <name>` | Create versioned SQL |
+| 3. Review migration | Check `prisma/migrations/<timestamp>/` | Verify SQL is correct |
+| 4. Commit files | `git add prisma/` | Version control both schema + migration |
+| 5. Deploy to prod | `DATABASE_URL="..." pnpm prisma migrate deploy` | Apply to production |
+
+**NEVER do these:**
+- ❌ Run raw SQL (`ALTER TABLE`, `CREATE TABLE`) directly on production
+- ❌ Use `prisma db push` in production (it doesn't create migrations)
+- ❌ Edit `schema.prisma` without running `prisma migrate dev`
+- ❌ Deploy code that references new columns before running migrations
+
+**Consequences of violations:**
+- Prisma client expects columns that don't exist → **runtime crashes**
+- Migration history becomes out of sync → future migrations fail
+- No rollback capability → manual cleanup required
+
+---
 
 ### Migration Steps
 

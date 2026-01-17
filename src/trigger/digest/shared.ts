@@ -1,5 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@/generated/prisma/client'
+import { formatVersionForDisplay } from '@/lib/version-formatter'
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 export const prisma = new PrismaClient({ adapter })
@@ -83,9 +84,9 @@ export async function getWeeklyReleases(since: Date): Promise<DigestRelease[]> {
 		return {
 			toolName: release.tool.name,
 			toolSlug: release.tool.slug,
-			toolLogo: `https://changelogs.directory/images/tools/${release.tool.slug}.png`,
+			toolLogo: `https://changelogs.directory/images/logos/${release.tool.slug}.png`,
 			vendor: release.tool.vendor,
-			version: release.version,
+			version: formatVersionForDisplay(release.version, release.tool.slug),
 			releaseDate: release.releaseDate
 				? new Intl.DateTimeFormat('en-US', {
 						month: 'short',

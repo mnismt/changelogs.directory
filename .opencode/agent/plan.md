@@ -1,7 +1,7 @@
 ---
 description: Plans features and solutions with deep analysis. Use when asked to plan, design, architect, or think through a problem before implementing.
 mode: primary
-model: proxypal/gemini-claude-opus-4-5-thinking
+model: antigravity-tools/claude-opus-4-5-thinking
 ---
 
 # Planning Agent — Changelogs.directory

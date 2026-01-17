@@ -18,10 +18,10 @@
   },
   "agent": {
     "plan": {
-      "model": "proxypal/gemini-claude-opus-4-5-thinking"
+      "model": "antigravity-tools/claude-opus-4-5-thinking"
     },
     "explore": {
-      "model": "proxypal/gemini-3-flash-preview"
+      "model": "antigravity-tools/gemini-3-flash"
     }
   }
 }
