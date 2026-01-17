@@ -1,7 +1,7 @@
+import { Link } from '@tanstack/react-router'
 import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { SubscribeDialog } from '@/components/shared/subscribe-dialog'
 import { Button } from '@/components/ui/button'
 import { HoverBorderGradient } from '@/components/ui/hover-border-gradient'
 
@@ -14,7 +14,6 @@ export function CompareDialog({ open, onClose }: CompareDialogProps) {
 	const [isMounted, setIsMounted] = useState(false)
 	const [isVisible, setIsVisible] = useState(open)
 	const [phase, setPhase] = useState<'enter' | 'exit' | null>(null)
-	const [subscribeOpen, setSubscribeOpen] = useState(false)
 
 	useEffect(() => {
 		setIsMounted(true)
@@ -139,26 +138,20 @@ export function CompareDialog({ open, onClose }: CompareDialogProps) {
 										Ping us if you want early access—we'll pull you into the
 										private build as soon as it's spicy enough.
 									</p>
-									<HoverBorderGradient
-										containerClassName="mt-2 w-full"
-										className="flex w-full items-center justify-center font-mono text-xs uppercase"
-										onClick={() => {
-											onClose()
-											setSubscribeOpen(true)
-										}}
-									>
-										Join the Waitlist
-									</HoverBorderGradient>
+									<Link to="/subscribe" onClick={onClose}>
+										<HoverBorderGradient
+											containerClassName="mt-2 w-full"
+											className="flex w-full items-center justify-center font-mono text-xs uppercase"
+										>
+											Join the Waitlist
+										</HoverBorderGradient>
+									</Link>
 								</div>
 							</div>
 						</div>
 					</div>,
 					document.body,
 				)}
-			<SubscribeDialog
-				open={subscribeOpen}
-				onClose={() => setSubscribeOpen(false)}
-			/>
 		</>
 	)
 }

@@ -47,11 +47,46 @@ export function createMockPrisma(): MockPrismaClient {
 		delete: vi.fn(),
 	}
 
+	const mockWaitlist = {
+		findUnique: vi.fn(),
+		findFirst: vi.fn(),
+		findMany: vi.fn(),
+		create: vi.fn(),
+		update: vi.fn(),
+		updateMany: vi.fn(),
+		delete: vi.fn(),
+		count: vi.fn(),
+	}
+
+	const mockDigestLog = {
+		findUnique: vi.fn(),
+		findFirst: vi.fn(),
+		findMany: vi.fn(),
+		create: vi.fn(),
+		update: vi.fn(),
+		updateMany: vi.fn(),
+		upsert: vi.fn(),
+		delete: vi.fn(),
+	}
+
+	const mockEmailLog = {
+		findUnique: vi.fn(),
+		findFirst: vi.fn(),
+		findMany: vi.fn(),
+		create: vi.fn(),
+		update: vi.fn(),
+		updateMany: vi.fn(),
+		delete: vi.fn(),
+	}
+
 	return {
 		tool: mockTool as any,
 		release: mockRelease as any,
 		change: mockChange as any,
 		fetchLog: mockFetchLog as any,
+		waitlist: mockWaitlist as any,
+		digestLog: mockDigestLog as any,
+		emailLog: mockEmailLog as any,
 	} as any
 }
 
@@ -59,25 +94,25 @@ export function createMockPrisma(): MockPrismaClient {
  * Reset all mocks in a PrismaClient mock
  */
 export function resetMockPrisma(mockPrisma: MockPrismaClient): void {
-	Object.values(mockPrisma.tool).forEach((fn) => {
-		if (typeof fn === 'function' && 'mockReset' in fn) {
-			fn.mockReset()
+	const models = [
+		'tool',
+		'release',
+		'change',
+		'fetchLog',
+		'waitlist',
+		'digestLog',
+		'emailLog',
+	] as const
+
+	for (const model of models) {
+		const modelMock = mockPrisma[model as keyof typeof mockPrisma]
+		if (modelMock && typeof modelMock === 'object') {
+			Object.values(modelMock).forEach((fn) => {
+				if (typeof fn === 'function' && 'mockReset' in fn) {
+					;(fn as ReturnType<typeof vi.fn>).mockReset()
+				}
+			})
 		}
-	})
-	Object.values(mockPrisma.release).forEach((fn) => {
-		if (typeof fn === 'function' && 'mockReset' in fn) {
-			fn.mockReset()
-		}
-	})
-	Object.values(mockPrisma.change).forEach((fn) => {
-		if (typeof fn === 'function' && 'mockReset' in fn) {
-			fn.mockReset()
-		}
-	})
-	Object.values(mockPrisma.fetchLog).forEach((fn) => {
-		if (typeof fn === 'function' && 'mockReset' in fn) {
-			fn.mockReset()
-		}
-	})
+	}
 }
 

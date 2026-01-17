@@ -47,15 +47,14 @@ export const getWaitlistStats = createServerFn({ method: 'GET' }).handler(
 				prisma.waitlist.count({ where: { isTest: true } }),
 				prisma.waitlist.findMany({
 					take: 5,
-					where: { isTest: false },
 					orderBy: { createdAt: 'desc' },
 					select: { id: true, email: true, createdAt: true, isTest: true },
 				}),
 				prisma.waitlist.count({
-					where: { createdAt: { gte: twentyFourHoursAgo }, isTest: false },
+					where: { createdAt: { gte: twentyFourHoursAgo } },
 				}),
 				prisma.waitlist.count({
-					where: { createdAt: { gte: sevenDaysAgo }, isTest: false },
+					where: { createdAt: { gte: sevenDaysAgo } },
 				}),
 			])
 

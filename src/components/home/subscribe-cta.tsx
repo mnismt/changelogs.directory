@@ -38,7 +38,7 @@ export function SubscribeCta({ showStats = false }: SubscribeCtaProps) {
 	// Stats state
 	const [statsData, setStatsData] = useState<{
 		totalCount: number
-		recentSignups: Array<{ id: number; email: string; createdAt: Date }>
+		recentSignups: Array<{ id: string; email: string; createdAt: Date }>
 	} | null>(null)
 	const [chartData, setChartData] = useState<
 		Array<{ date: string; count: number; displayDate: string }>
@@ -60,7 +60,10 @@ export function SubscribeCta({ showStats = false }: SubscribeCtaProps) {
 					fetchStats(),
 					fetchDailySignups(),
 				])
-				setStatsData(stats)
+				setStatsData({
+					totalCount: stats.totalCount,
+					recentSignups: stats.recentSignups,
+				})
 				setChartData(
 					dailySignups.map((item) => {
 						const date = new Date(item.date)
