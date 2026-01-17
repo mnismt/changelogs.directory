@@ -1,8 +1,6 @@
 import { Link, useMatches } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
 
-import { SubscribeDialog } from '@/components/shared/subscribe-dialog'
 import { Button } from '@/components/ui/button'
 import {
 	Tooltip,
@@ -11,11 +9,7 @@ import {
 } from '@/components/ui/tooltip'
 import { getToolLogo } from '@/lib/tool-logos'
 
-// ... existing imports ...
-
 export function Header() {
-	const [isDialogOpen, setIsDialogOpen] = useState(false)
-
 	return (
 		<>
 			{/* Gradient shadow below header for mobile - creates visual separation */}
@@ -114,20 +108,18 @@ export function Header() {
 							variant="ghost"
 							size="sm"
 							className="h-8 gap-2 rounded-md border border-border/50 bg-background px-3 font-mono text-xs text-foreground transition-all hover:border-foreground/20 hover:bg-muted/50"
-							onClick={() => setIsDialogOpen(true)}
+							asChild
 						>
-							<span className="relative flex h-2 w-2">
-								<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
-								<span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
-							</span>
-							SUBSCRIBE
+							<Link to="/subscribe">
+								<span className="relative flex h-2 w-2">
+									<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
+									<span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+								</span>
+								SUBSCRIBE
+							</Link>
 						</Button>
 					</nav>
 				</div>
-				<SubscribeDialog
-					open={isDialogOpen}
-					onClose={() => setIsDialogOpen(false)}
-				/>
 			</header>
 		</>
 	)

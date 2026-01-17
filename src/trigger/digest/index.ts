@@ -33,12 +33,20 @@ async function sendDigestEmail(
 	subscriber: { id: string; email: string; unsubscribeToken: string },
 	emailContent: ReleaseDigestEmailProps,
 	period: string,
-	{ skipLastDigestUpdate }: { skipLastDigestUpdate?: boolean } = {},
+	{
+		skipLastDigestUpdate,
+		weekNumber,
+	}: { skipLastDigestUpdate?: boolean; weekNumber?: number } = {},
 ): Promise<{ success: boolean; error?: string }> {
 	const emailProvider = createEmailProvider()
 
 	// CAN-SPAM compliant one-click unsubscribe
 	const unsubscribeUrl = `${BASE_URL}/api/unsubscribe?token=${subscriber.unsubscribeToken}`
+
+	// Format subject line: "Changelogs Weekly #3 · Jan 10-17, 2026"
+	const subject = weekNumber
+		? `Changelogs Weekly #${weekNumber} · ${period}`
+		: `Changelogs Weekly · ${period}`
 
 	try {
 		const html = await render(ReleaseDigestEmail(emailContent))
@@ -52,7 +60,7 @@ async function sendDigestEmail(
 				name: 'Changelogs Directory',
 			},
 			to: subscriber.email,
-			subject: `> DIGEST: ${emailContent.totalReleases} releases from ${emailContent.totalTools} tools — ${period}`,
+			subject,
 			html,
 			text,
 			headers: {
@@ -97,6 +105,11 @@ export const sendWeeklyDigest = task({
 		// Period: ISO week for production, unique string for tests
 		const period = isTest ? generateTestPeriod() : getISOWeek(now)
 		const periodLabel = formatPeriodLabel(weekAgo, now)
+
+		// Extract week number from ISO week (e.g., "2026-W03" → 3)
+		const weekNumber = isTest
+			? undefined
+			: Number.parseInt(period.split('-W')[1], 10)
 
 		logger.info('Starting weekly digest', {
 			period,
@@ -270,9 +283,10 @@ export const sendWeeklyDigest = task({
 
 			const results = await Promise.allSettled(
 				batch.map((sub) =>
-					sendDigestEmail(sub, emailContent, isTest ? periodLabel : period, {
+					sendDigestEmail(sub, emailContent, periodLabel, {
 						// Don't update lastDigestSentAt for test emails
 						skipLastDigestUpdate: isTest,
+						weekNumber,
 					}),
 				),
 			)

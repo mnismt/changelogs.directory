@@ -62,6 +62,7 @@ High-level roadmap to launch Changelogs.directory as a functional MVP.
 - [x] Add a footer
 - [x] Set up error monitoring (Sentry or similar)
 - [x] Design email subscription flow for product updates (UI + backend using existing waitlist data)
+- [x] Refine Subscribe page layout: Full-width master-detail preview pattern
 - [x] Implement generic email provider factory (`lib/email`) with Resend provider for MVP and ZeptoMail as drop-in replacement
 - [x] Configure environment toggles (`EMAIL_PROVIDER`, provider API keys) and document provider switching process
 - [x] Deploy to production (Vercel or Cloudflare)

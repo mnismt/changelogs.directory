@@ -16,6 +16,7 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 - 🔍 **Understand ingestion architecture** → [reference/ingestion-pipeline.md](reference/ingestion-pipeline.md)
 - 📦 **Develop custom parsers** → [reference/parsers.md](reference/parsers.md)
 - 🏗️ **Learn system architecture** → [project/architecture.md](project/architecture.md)
+- ⚖️ **Work on the compare page** → [compare/README.md](compare/README.md)
 
 ## Documentation Structure
 
@@ -50,6 +51,17 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
   - [release-detail.md](design/animations/release-detail.md) - Release page transitions
   - [analytics.md](design/animations/analytics.md) - Analytics page animations
   - [system-errors.md](design/animations/system-errors.md) - Error page choreography (404/500)
+
+### ⚖️ compare/
+**Tool comparison feature documentation** - pricing, models, and editorial research.
+
+- [README.md](compare/README.md) - Overview and implementation status
+- [data-model.md](compare/data-model.md) - TypeScript types and data structure spec
+- [ui-design.md](compare/ui-design.md) - UI components and layout design
+- [cursor.md](compare/cursor.md) - Cursor pricing, models, and editorial
+- [windsurf.md](compare/windsurf.md) - Windsurf pricing, models, and editorial
+- [claude-code.md](compare/claude-code.md) - Claude Code pricing, models, and editorial
+- [gemini-cli.md](compare/gemini-cli.md) - Gemini CLI pricing, models, and editorial
 
 ### 🧪 testing/
 **End-to-end testing documentation** for comprehensive test coverage.
@@ -168,5 +180,5 @@ This documentation is updated as the codebase evolves. If you notice outdated co
 
 ---
 
-**Last Updated**: 2026-01-11
-**Documentation Version**: 2.2 (Gemini CLI ingestion updates, cache bypass docs)
+**Last Updated**: 2026-01-16
+**Documentation Version**: 2.3 (Compare feature documentation added)

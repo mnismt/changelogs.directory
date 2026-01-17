@@ -1,7 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { SubscribeDialog } from '@/components/shared/subscribe-dialog'
 import { HoverBorderGradient } from '@/components/ui/hover-border-gradient'
 
 export const Route = createFileRoute('/compare')({
@@ -9,8 +8,6 @@ export const Route = createFileRoute('/compare')({
 })
 
 function ComparePage() {
-	const [subscribeOpen, setSubscribeOpen] = useState(false)
-
 	return (
 		<div className="relative flex min-h-[calc(100vh-14rem)] flex-col items-center justify-center px-4 py-20 overflow-hidden">
 			<BackgroundGrid />
@@ -91,23 +88,19 @@ function ComparePage() {
 					transition={{ duration: 0.5, delay: 0.4 }}
 					className="mx-auto max-w-xs"
 				>
-					<HoverBorderGradient
-						containerClassName="w-full"
-						className="flex w-full items-center justify-center font-mono text-sm uppercase tracking-wider bg-background/50 backdrop-blur-sm"
-						onClick={() => setSubscribeOpen(true)}
-					>
-						Join the Waitlist
-					</HoverBorderGradient>
+					<Link to="/subscribe">
+						<HoverBorderGradient
+							containerClassName="w-full"
+							className="flex w-full items-center justify-center font-mono text-sm uppercase tracking-wider bg-background/50 backdrop-blur-sm"
+						>
+							Join the Waitlist
+						</HoverBorderGradient>
+					</Link>
 					<p className="mt-4 font-mono text-[10px] text-muted-foreground/60">
 						Ping us if you want early access to the private build.
 					</p>
 				</motion.div>
 			</div>
-
-			<SubscribeDialog
-				open={subscribeOpen}
-				onClose={() => setSubscribeOpen(false)}
-			/>
 		</div>
 	)
 }

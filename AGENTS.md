@@ -90,6 +90,39 @@ These patterns prevent real bugs. See `docs/reference/api-patterns.md` for full 
 
 Violating these causes client-side bundling errors during navigation.
 
+### Database Schema Changes (CRITICAL)
+
+**NEVER manually write SQL to modify the production database schema.** Always use Prisma migrations.
+
+**Required workflow for ANY schema change:**
+
+```bash
+# 1. Edit prisma/schema.prisma (add/modify fields)
+
+# 2. Generate migration (creates SQL file + updates client)
+pnpm prisma migrate dev --name descriptive_name
+
+# 3. Review generated SQL in prisma/migrations/<timestamp>/migration.sql
+
+# 4. Commit BOTH schema and migration files
+git add prisma/
+
+# 5. Deploy to production (after merging to main)
+DATABASE_URL="..." pnpm prisma migrate deploy
+```
+
+**Forbidden actions:**
+- ❌ Running `ALTER TABLE` / `CREATE TABLE` directly on production
+- ❌ Editing `schema.prisma` without running `prisma migrate dev`
+- ❌ Using `prisma db push` in production (only for dev prototyping)
+
+**Why this matters:**
+- Prisma client is generated from schema, not from the database
+- Schema/database mismatch causes runtime errors: `"column does not exist"`
+- Migrations provide version control, rollback capability, and team sync
+
+See `docs/reference/database-schema.md` for detailed schema documentation.
+
 ## Code Conventions
 
 ### Formatting
