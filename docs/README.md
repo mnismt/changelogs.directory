@@ -17,6 +17,7 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 - 📦 **Develop custom parsers** → [reference/parsers.md](reference/parsers.md)
 - 🏗️ **Learn system architecture** → [project/architecture.md](project/architecture.md)
 - ⚖️ **Work on the compare page** → [compare/README.md](compare/README.md)
+- 📧 **Understand the email system** → [email/README.md](email/README.md)
 
 ## Documentation Structure
 
@@ -62,6 +63,15 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 - [windsurf.md](compare/windsurf.md) - Windsurf pricing, models, and editorial
 - [claude-code.md](compare/claude-code.md) - Claude Code pricing, models, and editorial
 - [gemini-cli.md](compare/gemini-cli.md) - Gemini CLI pricing, models, and editorial
+
+### 📧 email/
+**Email system documentation** - weekly digest, templates, and webhook handling.
+
+- [README.md](email/README.md) - Overview and architecture
+- [architecture.md](email/architecture.md) - Provider abstraction, directory structure
+- [weekly-digest.md](email/weekly-digest.md) - Scheduled digest pipeline
+- [templates.md](email/templates.md) - React Email templates
+- [webhooks.md](email/webhooks.md) - Bounce/complaint handling, CAN-SPAM
 
 ### 🧪 testing/
 **End-to-end testing documentation** for comprehensive test coverage.
@@ -137,6 +147,7 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
 - **Frontend**: TanStack Start (React 19), TanStack Router, TailwindCSS v4
 - **Backend**: TanStack Start SSR, Prisma ORM, PostgreSQL
 - **Ingestion**: Trigger.dev, Google Vertex AI (Gemini 2.5 Flash)
+- **Email**: Resend (primary), React Email templates
 - **Caching**: Upstash Redis
 - **Auth**: Better Auth
 - **Deployment**: Vercel
@@ -180,5 +191,5 @@ This documentation is updated as the codebase evolves. If you notice outdated co
 
 ---
 
-**Last Updated**: 2026-01-16
-**Documentation Version**: 2.3 (Compare feature documentation added)
+**Last Updated**: 2026-01-17
+**Documentation Version**: 2.4 (Email system documentation added)

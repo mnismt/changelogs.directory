@@ -21,7 +21,7 @@
       "model": "antigravity-tools/claude-opus-4-5-thinking"
     },
     "explore": {
-      "model": "antigravity-tools/gemini-3-flash"
+      "model": "proxypal/gemini-3-flash-preview"
     }
   }
 }
