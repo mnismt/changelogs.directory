@@ -177,6 +177,8 @@ it('skips cache when bypassCache is true', async () => {
 
 Server functions should be tested with a test database to verify query logic.
 
+> **⚠️ Warning:** These tests run `deleteMany()` to clear data. Always use `TEST_DATABASE_URL` pointing to a dedicated test database or disposable container—never your shared local development database.
+
 #### Setup Test Database
 
 **File**: `tests/setup.ts`

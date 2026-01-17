@@ -15,6 +15,7 @@ Context and instructions for AI coding assistants working in this codebase.
 | API/server functions | `docs/reference/api-patterns.md` |
 | UI/components | `docs/design/design-rules.md` |
 | Animations | `docs/design/animations/` |
+| Email/digest system | `docs/email/README.md` |
 | Environment setup | `docs/guides/environment-variables.md` |
 | Unit testing | `docs/guides/testing.md` |
 | E2E testing | `docs/testing/e2e-architecture.md` |
