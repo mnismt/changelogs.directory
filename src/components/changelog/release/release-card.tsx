@@ -121,7 +121,7 @@ export function ReleaseCardBase({
 							)}
 						</div>
 						<div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-							<span>
+							<span suppressHydrationWarning>
 								{'//'} {relativeDate}
 							</span>
 							<span className="text-muted-foreground/20">•</span>

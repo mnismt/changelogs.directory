@@ -60,12 +60,32 @@ export function CinematicVideoPlayer({
 	// Toggle fullscreen
 	const toggleFullscreen = () => {
 		const container = containerRef.current
+		const video = videoRef.current
 		if (!container) return
 
-		if (!document.fullscreenElement) {
-			container.requestFullscreen().catch(() => {})
+		const doc = document as any
+		const elem = container as any
+
+		// Check if currently fullscreen
+		const isFullscreen = doc.fullscreenElement || doc.webkitFullscreenElement
+
+		if (!isFullscreen) {
+			// Try standard API first, then webkit prefix, then video-only fallback
+			if (elem.requestFullscreen) {
+				elem.requestFullscreen().catch(() => {})
+			} else if (elem.webkitRequestFullscreen) {
+				elem.webkitRequestFullscreen()
+			} else if ((video as any)?.webkitEnterFullscreen) {
+				// iOS Safari: video-only fullscreen
+				;(video as any).webkitEnterFullscreen()
+			}
 		} else {
-			document.exitFullscreen().catch(() => {})
+			// Exit fullscreen
+			if (doc.exitFullscreen) {
+				doc.exitFullscreen().catch(() => {})
+			} else if (doc.webkitExitFullscreen) {
+				doc.webkitExitFullscreen()
+			}
 		}
 	}
 

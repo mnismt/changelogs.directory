@@ -56,7 +56,7 @@ export class AppErrorBoundary extends Component<
 			return (
 				<div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
 					<ErrorBoundaryCard
-						title="Unexpected error"
+						title="Something went wrong"
 						message="The interface crashed unexpectedly."
 						detail={this.state.showDetail ? this.state.errorMessage : undefined}
 						onRetry={this.handleRetry}

@@ -1,3 +1,4 @@
+import { ItemErrorBoundary } from '@/components/shared/item-error-boundary'
 import type { getReleasesGroupedByTool } from '@/server/tools'
 import { ToolLane } from './tool-lane'
 
@@ -61,19 +62,20 @@ export function ToolLanesFeed({
 	return (
 		<div className="space-y-8">
 			{toolsWithFilteredReleases.map((tool, index) => (
-				<ToolLane
-					key={tool.id}
-					tool={{
-						slug: tool.slug,
-						name: tool.name,
-						vendor: tool.vendor,
-						totalReleases: tool.totalReleases,
-						velocity: tool.velocity,
-					}}
-					releases={tool.releases}
-					hasMatchingReleases={tool.hasMatchingReleases}
-					animationDelay={200 + index * 100}
-				/>
+				<ItemErrorBoundary key={tool.id}>
+					<ToolLane
+						tool={{
+							slug: tool.slug,
+							name: tool.name,
+							vendor: tool.vendor,
+							totalReleases: tool.totalReleases,
+							velocity: tool.velocity,
+						}}
+						releases={tool.releases}
+						hasMatchingReleases={tool.hasMatchingReleases}
+						animationDelay={200 + index * 100}
+					/>
+				</ItemErrorBoundary>
 			))}
 		</div>
 	)
