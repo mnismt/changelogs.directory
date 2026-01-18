@@ -178,8 +178,7 @@ function BroadcastPage() {
 	}
 
 	const canLoadPreview =
-		selectedTemplateId === 'welcome' ||
-		(selectedTemplateId === 'new-tool-announcement' && templateProps.toolSlug)
+		selectedTemplateId !== 'new-tool-announcement' || templateProps.toolSlug
 
 	return (
 		<div className="space-y-6 max-w-4xl">

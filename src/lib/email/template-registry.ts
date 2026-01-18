@@ -11,6 +11,7 @@ import {
 	ToolReleaseUpdateEmail,
 	type ToolReleaseUpdateEmailProps,
 } from './templates/tool-release-update'
+import { V070AnnouncementEmail } from './templates/v0-7-0-announcement'
 import { WelcomeEmail, type WelcomeEmailProps } from './templates/welcome'
 
 export type TemplateId =
@@ -18,6 +19,7 @@ export type TemplateId =
 	| 'welcome'
 	| 'release-digest'
 	| 'tool-release-update'
+	| 'v0-7-0-announcement'
 
 export interface TemplateDefinition<TProps = Record<string, unknown>> {
 	id: TemplateId
@@ -94,6 +96,15 @@ export const EMAIL_TEMPLATES: Record<TemplateId, TemplateDefinition> = {
 			}),
 			changes: [],
 		} as ToolReleaseUpdateEmailProps,
+	},
+	'v0-7-0-announcement': {
+		id: 'v0-7-0-announcement',
+		name: 'Version 0.7.0 Announcement',
+		description: 'Announce v0.7.0 Release - Weekly Digest',
+		category: 'announcement',
+		defaultSubject: () => '[changelogs.directory] v0.7.0 — Weekly Digest',
+		component: () => V070AnnouncementEmail(),
+		defaultProps: {},
 	},
 }
 
