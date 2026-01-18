@@ -1,7 +1,7 @@
 ---
 description: A specialized agent for monitoring Sentry errors and debugging issues for the 'changelogs' project.
 mode: subagent
-model: antigravity-tools/gemini-3-flash
+model: proxypal/gemini-3-flash-preview
 tools:
   sentry_*: true
   read: true

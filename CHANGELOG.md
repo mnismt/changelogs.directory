@@ -3,6 +3,14 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.7.0
+
+> **2026-01-18T09:00:00+07:00** — Changelogs Weekly
+
+<img src="/changelog-assets/v0.7.0.png" alt="Changelogs Weekly Email" width="80%" />
+
+- Changelogs weekly is live — a weekly inbox digest of recent releases (tool-level tracking soon)
+
 ## 0.6.2
 
 > **2026-01-12T21:40:00+07:00** — Release Summary Component
