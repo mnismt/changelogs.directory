@@ -50,9 +50,33 @@ function BroadcastPage() {
 		description: string | null
 	} | null>(null)
 
+	const [customSubject, setCustomSubject] = useState('')
+	const [customFromName, setCustomFromName] = useState('Changelogs Directory')
+	const [customFromEmail, setCustomFromEmail] = useState(
+		'system@changelogs.directory',
+	)
+
+	const VERIFIED_FROM_EMAILS = [
+		{
+			value: 'system@changelogs.directory',
+			label: 'system@changelogs.directory',
+		},
+		{
+			value: 'hello@changelogs.directory',
+			label: 'hello@changelogs.directory',
+		},
+		{
+			value: 'digest@changelogs.directory',
+			label: 'digest@changelogs.directory',
+		},
+	]
+
 	const searchId = useId()
 	const templateSelectId = useId()
 	const toolSlugId = useId()
+	const customSubjectId = useId()
+	const customFromNameId = useId()
+	const customFromEmailId = useId()
 
 	const selectedTemplate = templates.find((t) => t.id === selectedTemplateId)
 
@@ -123,6 +147,7 @@ function BroadcastPage() {
 			})
 			setPreviewHtml(result.html)
 			setPreviewSubject(result.subject)
+			setCustomSubject(result.subject)
 			setShowPreview(true)
 		} catch (error) {
 			console.error('Failed to load preview:', error)
@@ -155,6 +180,11 @@ function BroadcastPage() {
 					recipientIds: Array.from(selectedIds),
 					templateId: selectedTemplateId,
 					templateProps: props,
+					customSubject,
+					customFrom: {
+						email: customFromEmail,
+						name: customFromName,
+					},
 				},
 			})
 			setSendResult(result)
@@ -266,6 +296,68 @@ function BroadcastPage() {
 			{/* Email Preview */}
 			{previewHtml && (
 				<div className="rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden">
+					{/* Email Settings - Above Preview */}
+					<div className="p-4 border-b border-neutral-800 space-y-3">
+						<h3 className="text-sm font-medium text-neutral-300">
+							Email Settings
+						</h3>
+
+						{/* Subject */}
+						<div>
+							<label
+								htmlFor={customSubjectId}
+								className="block text-xs text-neutral-500 mb-1"
+							>
+								Subject
+							</label>
+							<input
+								id={customSubjectId}
+								value={customSubject}
+								onChange={(e) => setCustomSubject(e.target.value)}
+								className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 font-mono"
+							/>
+						</div>
+
+						{/* From Name */}
+						<div className="grid grid-cols-2 gap-3">
+							<div>
+								<label
+									htmlFor={customFromNameId}
+									className="block text-xs text-neutral-500 mb-1"
+								>
+									From Name
+								</label>
+								<input
+									id={customFromNameId}
+									value={customFromName}
+									onChange={(e) => setCustomFromName(e.target.value)}
+									className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-200"
+								/>
+							</div>
+
+							{/* From Email (Dropdown) */}
+							<div>
+								<label
+									htmlFor={customFromEmailId}
+									className="block text-xs text-neutral-500 mb-1"
+								>
+									From Email
+								</label>
+								<select
+									id={customFromEmailId}
+									value={customFromEmail}
+									onChange={(e) => setCustomFromEmail(e.target.value)}
+									className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-200"
+								>
+									{VERIFIED_FROM_EMAILS.map((email) => (
+										<option key={email.value} value={email.value}>
+											{email.label}
+										</option>
+									))}
+								</select>
+							</div>
+						</div>
+					</div>
 					<div className="p-4 border-b border-neutral-800 flex items-center justify-between">
 						<div>
 							<h3 className="text-sm font-medium text-neutral-400 mb-1">

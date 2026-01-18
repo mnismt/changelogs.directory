@@ -85,6 +85,12 @@ const SendBroadcastSchema = z.object({
 	templateId: z.string().min(1, 'Template required'),
 	templateProps: z.record(z.string(), z.any()).optional(),
 	customSubject: z.string().optional(),
+	customFrom: z
+		.object({
+			email: z.string().email(),
+			name: z.string(),
+		})
+		.optional(),
 })
 
 export const sendBroadcast = createServerFn({ method: 'POST' })
@@ -123,7 +129,7 @@ export const sendBroadcast = createServerFn({ method: 'POST' })
 
 			try {
 				const result = await emailProvider.sendEmail({
-					from: {
+					from: data.customFrom ?? {
 						email: 'system@changelogs.directory',
 						name: 'Changelogs Directory',
 					},
