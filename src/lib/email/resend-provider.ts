@@ -13,6 +13,7 @@ export class ResendProvider implements EmailProvider {
 			const { error } = await this.client.emails.send({
 				from: `${params.from.name} <${params.from.email}>`,
 				to: params.to,
+				replyTo: params.replyTo,
 				subject: params.subject,
 				html: params.html,
 				text: params.text,

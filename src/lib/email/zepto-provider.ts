@@ -26,6 +26,14 @@ export class ZeptoMailProvider implements EmailProvider {
 						},
 					},
 				],
+				reply_to: params.replyTo
+					? [
+							{
+								address: params.replyTo,
+								name: '',
+							},
+						]
+					: undefined,
 				subject: params.subject,
 				htmlbody: params.html,
 				textbody: params.text || '',

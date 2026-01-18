@@ -55,6 +55,9 @@ function BroadcastPage() {
 	const [customFromEmail, setCustomFromEmail] = useState(
 		'system@changelogs.directory',
 	)
+	const [customReplyTo, setCustomReplyTo] = useState(
+		'admin@example.com',
+	)
 
 	const VERIFIED_FROM_EMAILS = [
 		{
@@ -77,6 +80,7 @@ function BroadcastPage() {
 	const customSubjectId = useId()
 	const customFromNameId = useId()
 	const customFromEmailId = useId()
+	const customReplyToId = useId()
 
 	const selectedTemplate = templates.find((t) => t.id === selectedTemplateId)
 
@@ -185,6 +189,7 @@ function BroadcastPage() {
 						email: customFromEmail,
 						name: customFromName,
 					},
+					customReplyTo,
 				},
 			})
 			setSendResult(result)
@@ -356,6 +361,23 @@ function BroadcastPage() {
 									))}
 								</select>
 							</div>
+						</div>
+
+						{/* Reply-To */}
+						<div>
+							<label
+								htmlFor={customReplyToId}
+								className="block text-xs text-neutral-500 mb-1"
+							>
+								Reply-To <span className="text-neutral-600">(Optional)</span>
+							</label>
+							<input
+								id={customReplyToId}
+								value={customReplyTo}
+								onChange={(e) => setCustomReplyTo(e.target.value)}
+								placeholder="e.g. admin@example.com"
+								className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-200"
+							/>
 						</div>
 					</div>
 					<div className="p-4 border-b border-neutral-800 flex items-center justify-between">

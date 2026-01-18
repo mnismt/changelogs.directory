@@ -91,6 +91,7 @@ const SendBroadcastSchema = z.object({
 			name: z.string(),
 		})
 		.optional(),
+	customReplyTo: z.string().email().optional(),
 })
 
 export const sendBroadcast = createServerFn({ method: 'POST' })
@@ -134,6 +135,7 @@ export const sendBroadcast = createServerFn({ method: 'POST' })
 						name: 'Changelogs Directory',
 					},
 					to: recipient.email,
+					replyTo: data.customReplyTo,
 					subject,
 					html,
 				})
