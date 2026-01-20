@@ -7,9 +7,11 @@ import { CollapsibleSection } from '@/components/changelog/release/collapsible-s
 import { ReleaseDetailSkeleton } from '@/components/changelog/release/release-detail-skeleton'
 import { ReleaseSummary } from '@/components/changelog/release/release-summary'
 import { SectionNav } from '@/components/changelog/release/section-nav'
+import { ShareSheet } from '@/components/changelog/release/share-sheet'
 import { VersionList } from '@/components/changelog/release/version-list'
 import { VersionPickerSheet } from '@/components/changelog/release/version-picker-sheet'
 import { ErrorBoundaryCard } from '@/components/shared/error-boundary'
+import { ShareProvider } from '@/contexts/share-context'
 import type { Change, ChangeType } from '@/generated/prisma/client'
 import { useSectionObserver } from '@/hooks/use-section-observer'
 import { captureException } from '@/integrations/sentry'
@@ -189,6 +191,9 @@ function ReleaseDetailPage() {
 	// Summary sheet state
 	const [isSummaryOpen, setIsSummaryOpen] = useState(false)
 
+	// Share sheet state
+	const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
+
 	// Section refs for scroll observation
 	const sectionRefsMap = useRef<Map<ChangeType, HTMLDivElement | null>>(
 		new Map(),
@@ -237,7 +242,7 @@ function ReleaseDetailPage() {
 
 	// Section definitions
 	const sections: Array<{ type: ChangeType; title: string }> = [
-		{ type: 'BREAKING', title: '⚠️ Breaking Changes' },
+		{ type: 'BREAKING', title: '! Breaking Changes' },
 		{ type: 'SECURITY', title: '🔒 Security Updates' },
 		{ type: 'FEATURE', title: '✨ New Features' },
 		{ type: 'IMPROVEMENT', title: '🚀 Improvements' },
@@ -314,208 +319,226 @@ function ReleaseDetailPage() {
 	)
 
 	return (
-		<>
-			<motion.div
-				data-testid="release-content"
-				initial="hidden"
-				animate="visible"
-				variants={{
-					hidden: { opacity: 0 },
-					visible: {
-						opacity: 1,
-						transition: {
-							staggerChildren: 0.1,
-							delayChildren: 0.05,
+		<ShareProvider onShare={() => setIsShareSheetOpen(true)}>
+			<>
+				<motion.div
+					data-testid="release-content"
+					initial="hidden"
+					animate="visible"
+					variants={{
+						hidden: { opacity: 0 },
+						visible: {
+							opacity: 1,
+							transition: {
+								staggerChildren: 0.1,
+								delayChildren: 0.05,
+							},
 						},
-					},
-				}}
-				className="space-y-8 pb-24 md:pb-8"
-			>
-				{/* Summary */}
-				<ReleaseSummary
-					headline={release?.headline || null}
-					summary={release?.summary || null}
-					open={isSummaryOpen}
-					onOpenChange={setIsSummaryOpen}
-				/>
+					}}
+					className="space-y-8 pb-24 md:pb-8"
+				>
+					{/* Summary */}
+					<ReleaseSummary
+						headline={release?.headline || null}
+						summary={release?.summary || null}
+						open={isSummaryOpen}
+						onOpenChange={setIsSummaryOpen}
+					/>
 
-				{/* Changes by Type */}
-				<AnimatePresence mode="wait">
-					{!hasChanges ? (
+					{/* Changes by Type */}
+					<AnimatePresence mode="wait">
+						{!hasChanges ? (
+							<motion.div
+								key={`empty-${version}`}
+								initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+								animate={{
+									opacity: 1,
+									y: 0,
+									filter: 'blur(0px)',
+									transition: { duration: 0.4, ease: 'easeOut' },
+								}}
+								exit={{
+									opacity: 0,
+									y: -20,
+									filter: 'blur(10px)',
+									transition: { duration: 0.3, ease: 'easeIn' },
+								}}
+								className="rounded-lg border border-dashed border-white/10 bg-white/5 p-12 text-center"
+							>
+								<p className="font-mono text-muted-foreground">
+									No changes found in this release.
+								</p>
+							</motion.div>
+						) : (
+							<motion.div
+								key={`content-${version}`}
+								initial="hidden"
+								animate="visible"
+								exit="exit"
+								variants={{
+									hidden: { opacity: 0 },
+									visible: {
+										opacity: 1,
+										transition: {
+											staggerChildren: 0.1,
+											delayChildren: 0.05,
+										},
+									},
+									exit: {
+										opacity: 0,
+										transition: { duration: 0.2 },
+									},
+								}}
+								className="space-y-10"
+							>
+								{sections.map((section) => {
+									const changes = groupedChanges[section.type]
+									if (!changes || changes.length === 0) return null
+
+									return (
+										<motion.div
+											key={`${section.type}-${version}`}
+											variants={{
+												hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+												visible: {
+													opacity: 1,
+													y: 0,
+													filter: 'blur(0px)',
+													transition: {
+														duration: 0.5,
+														ease: [0.2, 0.8, 0.2, 1],
+													},
+												},
+												exit: {
+													opacity: 0,
+													y: -10,
+													filter: 'blur(5px)',
+													transition: { duration: 0.3, ease: 'easeInOut' },
+												},
+											}}
+										>
+											<CollapsibleSection
+												type={section.type}
+												title={section.title}
+												changes={changes}
+												onSectionRef={setSectionRef(section.type)}
+											>
+												{changes.map((change) => (
+													<ChangeItem
+														key={change.id}
+														title={change.title}
+														description={change.description}
+														platform={change.platform}
+														isBreaking={change.isBreaking}
+														isSecurity={change.isSecurity}
+														isDeprecation={change.isDeprecation}
+														links={
+															change.links
+																? (change.links as Array<{
+																		url: string
+																		text: string
+																		type?: string
+																	}>)
+																: null
+														}
+														media={
+															change.media
+																? (change.media as Array<{
+																		type: 'video' | 'image'
+																		url: string
+																		alt?: string
+																	}>)
+																: null
+														}
+													/>
+												))}
+											</CollapsibleSection>
+										</motion.div>
+									)
+								})}
+							</motion.div>
+						)}
+					</AnimatePresence>
+
+					{/* Version List at Bottom - Desktop only */}
+					{allVersions && (
 						<motion.div
-							key={`empty-${version}`}
-							initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-							animate={{
-								opacity: 1,
-								y: 0,
-								filter: 'blur(0px)',
-								transition: { duration: 0.4, ease: 'easeOut' },
-							}}
-							exit={{
-								opacity: 0,
-								y: -20,
-								filter: 'blur(10px)',
-								transition: { duration: 0.3, ease: 'easeIn' },
-							}}
-							className="rounded-lg border border-dashed border-white/10 bg-white/5 p-12 text-center"
-						>
-							<p className="font-mono text-muted-foreground">
-								No changes found in this release.
-							</p>
-						</motion.div>
-					) : (
-						<motion.div
-							key={`content-${version}`}
-							initial="hidden"
-							animate="visible"
-							exit="exit"
+							data-testid="version-list"
 							variants={{
 								hidden: { opacity: 0 },
 								visible: {
 									opacity: 1,
-									transition: {
-										staggerChildren: 0.1,
-										delayChildren: 0.05,
-									},
-								},
-								exit: {
-									opacity: 0,
-									transition: { duration: 0.2 },
+									transition: { duration: 0.5, delay: 0.3 },
 								},
 							}}
-							className="space-y-10"
+							className="hidden md:block"
 						>
-							{sections.map((section) => {
-								const changes = groupedChanges[section.type]
-								if (!changes || changes.length === 0) return null
-
-								return (
-									<motion.div
-										key={`${section.type}-${version}`}
-										variants={{
-											hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
-											visible: {
-												opacity: 1,
-												y: 0,
-												filter: 'blur(0px)',
-												transition: { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] },
-											},
-											exit: {
-												opacity: 0,
-												y: -10,
-												filter: 'blur(5px)',
-												transition: { duration: 0.3, ease: 'easeInOut' },
-											},
-										}}
-									>
-										<CollapsibleSection
-											type={section.type}
-											title={section.title}
-											changes={changes}
-											onSectionRef={setSectionRef(section.type)}
-										>
-											{changes.map((change) => (
-												<ChangeItem
-													key={change.id}
-													title={change.title}
-													description={change.description}
-													platform={change.platform}
-													isBreaking={change.isBreaking}
-													isSecurity={change.isSecurity}
-													isDeprecation={change.isDeprecation}
-													links={
-														change.links
-															? (change.links as Array<{
-																	url: string
-																	text: string
-																	type?: string
-																}>)
-															: null
-													}
-													media={
-														change.media
-															? (change.media as Array<{
-																	type: 'video' | 'image'
-																	url: string
-																	alt?: string
-																}>)
-															: null
-													}
-												/>
-											))}
-										</CollapsibleSection>
-									</motion.div>
-								)
-							})}
+							<VersionList
+								toolSlug={slug}
+								currentVersion={version}
+								versions={allVersions}
+							/>
 						</motion.div>
 					)}
-				</AnimatePresence>
+				</motion.div>
 
-				{/* Version List at Bottom - Desktop only */}
+				{/* Section Nav */}
+				{hasChanges && (
+					<SectionNav
+						sections={activeSections}
+						activeSection={activeSection}
+						visibleSections={visibleSections}
+						onSectionClick={scrollToSection}
+						hasSummary={!!(release?.headline || release?.summary)}
+						onSummaryClick={() => setIsSummaryOpen(true)}
+					/>
+				)}
+
+				{/* Mobile Version Picker FAB + Sheet */}
 				{allVersions && (
-					<motion.div
-						data-testid="version-list"
-						variants={{
-							hidden: { opacity: 0 },
-							visible: {
-								opacity: 1,
-								transition: { duration: 0.5, delay: 0.3 },
-							},
-						}}
-						className="hidden md:block"
-					>
-						<VersionList
-							toolSlug={slug}
+					<>
+						<motion.button
+							type="button"
+							onClick={() => setIsVersionPickerOpen(true)}
+							initial={{ scale: 0, opacity: 0 }}
+							animate={{ scale: 1, opacity: 1 }}
+							transition={{
+								type: 'spring',
+								stiffness: 260,
+								damping: 20,
+								delay: 0.5,
+							}}
+							whileTap={{ scale: 0.9 }}
+							className="fixed bottom-24 right-4 z-40 md:hidden flex items-center justify-center size-12 rounded-full bg-black/80 backdrop-blur-xl border border-white/20 shadow-lg"
+							aria-label="Open version picker"
+						>
+							<Layers className="size-5 text-foreground" />
+						</motion.button>
+
+						<VersionPickerSheet
+							open={isVersionPickerOpen}
+							onClose={() => setIsVersionPickerOpen(false)}
 							currentVersion={version}
 							versions={allVersions}
+							toolSlug={slug}
 						/>
-					</motion.div>
+					</>
 				)}
-			</motion.div>
 
-			{/* Section Nav */}
-			{hasChanges && (
-				<SectionNav
-					sections={activeSections}
-					activeSection={activeSection}
-					visibleSections={visibleSections}
-					onSectionClick={scrollToSection}
-					hasSummary={!!(release?.headline || release?.summary)}
-					onSummaryClick={() => setIsSummaryOpen(true)}
-				/>
-			)}
-
-			{/* Mobile Version Picker FAB + Sheet */}
-			{allVersions && (
-				<>
-					<motion.button
-						type="button"
-						onClick={() => setIsVersionPickerOpen(true)}
-						initial={{ scale: 0, opacity: 0 }}
-						animate={{ scale: 1, opacity: 1 }}
-						transition={{
-							type: 'spring',
-							stiffness: 260,
-							damping: 20,
-							delay: 0.5,
-						}}
-						whileTap={{ scale: 0.9 }}
-						className="fixed bottom-20 right-4 z-40 md:hidden flex items-center justify-center size-12 rounded-full bg-black/80 backdrop-blur-xl border border-white/20 shadow-lg"
-						aria-label="Open version picker"
-					>
-						<Layers className="size-5 text-foreground" />
-					</motion.button>
-
-					<VersionPickerSheet
-						open={isVersionPickerOpen}
-						onClose={() => setIsVersionPickerOpen(false)}
-						currentVersion={version}
-						versions={allVersions}
+				{/* Mobile Share Sheet */}
+				{release && (
+					<ShareSheet
+						open={isShareSheetOpen}
+						onClose={() => setIsShareSheetOpen(false)}
+						toolName={release.tool?.name ?? 'Release'}
 						toolSlug={slug}
+						version={version}
+						formattedVersion={release.formattedVersion ?? version}
+						changes={release.changes}
 					/>
-				</>
-			)}
-		</>
+				)}
+			</>
+		</ShareProvider>
 	)
 }
 

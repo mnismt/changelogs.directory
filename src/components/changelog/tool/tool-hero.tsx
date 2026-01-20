@@ -1,7 +1,9 @@
 import { Link, useMatches } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { ShareMenu } from '@/components/changelog/release/share-menu'
 import { SparklesCore } from '@/components/ui/sparkles'
+import type { Change } from '@/generated/prisma/client'
 import { getToolLogo } from '@/lib/tool-logos'
 
 interface ToolHeroProps {
@@ -30,7 +32,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 	const releaseData = versionMatch?.loaderData as
 		| {
 				release: {
-					changes: unknown[]
+					changes: Change[]
 					sourceUrl: string
 					formattedVersion?: string
 				}
@@ -52,7 +54,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 		version && tool.latestVersion && version === tool.latestVersion
 
 	return (
-		<div className="mb-16 relative">
+		<div className="mb-8 lg:mb-16 relative">
 			<div className="absolute inset-x-0 -top-20 -bottom-20 opacity-20 pointer-events-none">
 				<SparklesCore
 					background="transparent"
@@ -357,6 +359,18 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 									[ {release ? 'OPEN_CHANGELOG' : 'OPEN_HOMEPAGE'} ]
 								</span>
 							</a>
+						)}
+
+						{/* Share Menu - only visible when viewing a release */}
+						{release && version && (
+							<ShareMenu
+								toolName={tool.name}
+								toolSlug={slug}
+								version={version}
+								formattedVersion={release.formattedVersion || version}
+								changes={release.changes}
+								className="hidden md:flex"
+							/>
 						)}
 					</motion.div>
 				</motion.div>

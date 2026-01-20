@@ -1,12 +1,21 @@
 import { Link, useLocation } from '@tanstack/react-router'
-import { BarChart2, GitCompare, Home, Mail, Terminal } from 'lucide-react'
+import {
+	BarChart2,
+	GitCompare,
+	Home,
+	Mail,
+	Share2,
+	Terminal,
+} from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { useShare } from '@/contexts/share-context'
 import { cn } from '@/lib/utils'
 
 export function MobileDock() {
 	const location = useLocation()
 	const [isHidden, setIsHidden] = useState(false)
+	const { isAvailable: isShareAvailable, onShare } = useShare()
 
 	// Listen for bottom sheet open state
 	useEffect(() => {
@@ -140,6 +149,23 @@ export function MobileDock() {
 								)}
 							</motion.div>
 						</Link>
+
+						{/* Share button - only visible on release pages */}
+						{isShareAvailable && (
+							<>
+								<div className="mx-1 h-6 w-px bg-white/10" />
+								<motion.button
+									type="button"
+									onClick={onShare}
+									className="relative flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground transition-colors"
+									whileTap={{ scale: 0.9 }}
+									whileHover={{ scale: 1.1 }}
+									aria-label="Share"
+								>
+									<Share2 className="h-5 w-5" />
+								</motion.button>
+							</>
+						)}
 					</div>
 				</motion.div>
 			)}
