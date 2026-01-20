@@ -186,6 +186,35 @@ The release summary uses a bifurcated interaction model to optimize for screen r
         -   **Content**: Full terminal view rendered inside the sheet.
         -   **Header**: Sticky header with file metadata.
 
+### K. Share System (v0.8.0)
+
+Release pages include a share system for distributing changelogs across platforms.
+
+**Components**: `ShareMenu` (desktop), `ShareSheet` (mobile), `ShareProvider` (context bridge).
+
+#### Desktop: Dropdown Menu
+- **Trigger**: `[ SHARE ]` button in the release hero section.
+- **Options**:
+  - `COPY_LINK` — Copies canonical URL with visual feedback (green checkmark).
+  - `SHARE_TO_X` — Opens Twitter/X intent with simple tweet format.
+  - `SHARE_TO_X --verbose` — (Admin only) Terminal-style tweet with change counts.
+  - `COPY_AS_MARKDOWN` — Full changelog export for docs/READMEs.
+- **Feedback Animation**: Copy states show green checkmark, auto-dismiss after 1.5s.
+
+#### Mobile: Bottom Sheet
+- **Trigger**: Share button in MobileDock (appears on release pages).
+- **Entry Animation**: Spring from bottom with drag-to-dismiss.
+- **Options**: Same as desktop, with larger touch targets (48px).
+- **Visual Feedback**: Background color transitions to `bg-green-500/10` on copy success.
+
+#### Cross-Tree Communication
+The MobileDock (in root layout) and ShareProvider (in route) use DOM attributes as a bridge:
+- `ShareProvider` sets `data-share-available="true"` on `document.body`
+- `MobileDock` observes via `MutationObserver`
+- Share action triggered via `CustomEvent('share-release')`
+
+See [hooks.md](../../reference/hooks.md#useshare) for API details.
+
 ## 3. Visual Aesthetics ("Dev-Vibe")
 
 ### Breadcrumbs as Navigation

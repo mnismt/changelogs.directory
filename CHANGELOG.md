@@ -3,6 +3,14 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.8.0
+
+> **2026-01-20T20:55:00+07:00** — Release Sharing System
+
+<img src="/changelog-assets/v0.8.0.png" alt="Changelogs Weekly Email" width="80%" />
+
+- Share releases to X, copy a permalink or export as Markdown — with a new sharing system that works seamlessly across desktop and mobile 🔗
+
 ## 0.7.0
 
 > **2026-01-18T09:00:00+07:00** — Changelogs Weekly

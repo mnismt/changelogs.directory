@@ -97,4 +97,91 @@ For internal changelog content (admin-controlled), this is safe to use directly.
 
 ---
 
-**Last Updated**: 2026-01-11
+## Share Utilities
+
+Functions for generating share content and handling clipboard/social sharing.
+
+**File**: `src/lib/share.ts`
+
+### generateShareUrl
+
+Generate the canonical URL for a release.
+
+```tsx
+function generateShareUrl(slug: string, version: string): string
+```
+
+**Example**: `generateShareUrl('cursor', 'v0.50')` → `https://changelogs.directory/tools/cursor/releases/v0.50`
+
+### generateSimpleTweet
+
+Simple tweet format with tool name, version, and URL.
+
+```tsx
+function generateSimpleTweet(toolName: string, formattedVersion: string, url: string): string
+```
+
+**Output**:
+```
+cursor v0.50 changelog
+
+https://changelogs.directory/tools/cursor/releases/v0.50
+```
+
+### generateTerminalTweet
+
+Terminal-style tweet with change type counts (max 4 types shown).
+
+```tsx
+function generateTerminalTweet(
+  toolName: string,
+  formattedVersion: string,
+  changes: Change[],
+  url: string
+): string
+```
+
+**Output**:
+```
+$ changelog cursor v0.50
+> ✨ 3 features
+> 🐛 5 bugfixes
+
+full changelogs 👇
+https://changelogs.directory/tools/cursor/releases/v0.50
+```
+
+### generateMarkdown
+
+Full markdown changelog grouped by change type.
+
+```tsx
+function generateMarkdown(
+  toolName: string,
+  formattedVersion: string,
+  changes: Change[],
+  url: string
+): string
+```
+
+### copyToClipboard
+
+Copy text to clipboard with fallback for older browsers.
+
+```tsx
+async function copyToClipboard(text: string): Promise<boolean>
+```
+
+Uses `navigator.clipboard` when available, falls back to `execCommand('copy')`.
+
+### openTwitterShare
+
+Open Twitter/X share intent in a popup window.
+
+```tsx
+function openTwitterShare(text: string): void
+```
+
+---
+
+**Last Updated**: 2026-01-20

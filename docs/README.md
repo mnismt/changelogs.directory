@@ -191,5 +191,5 @@ This documentation is updated as the codebase evolves. If you notice outdated co
 
 ---
 
-**Last Updated**: 2026-01-17
-**Documentation Version**: 2.4 (Email system documentation added)
+**Last Updated**: 2026-01-20
+**Documentation Version**: 2.5 (Release sharing system documentation added)

@@ -260,4 +260,82 @@ transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
 
 ---
 
-**Last Updated**: 2026-01-09
+## useShare
+
+Hook for cross-tree share availability detection and triggering. Used by MobileDock to communicate with route-level ShareProvider.
+
+**File**: `src/contexts/share-context.tsx`
+
+### Signature
+
+```tsx
+function useShare(): {
+  isAvailable: boolean
+  onShare: () => void
+}
+```
+
+### Returns
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `isAvailable` | `boolean` | Whether share is available on current page |
+| `onShare` | `() => void` | Dispatch share event to open share UI |
+
+### Usage (MobileDock)
+
+```tsx
+import { useShare } from '@/contexts/share-context'
+
+function MobileDock() {
+  const { isAvailable, onShare } = useShare()
+
+  return (
+    <nav>
+      {isAvailable && (
+        <button onClick={onShare}>
+          <Share2 />
+        </button>
+      )}
+    </nav>
+  )
+}
+```
+
+### ShareProvider
+
+Wrap route content to enable sharing on that page.
+
+```tsx
+import { ShareProvider } from '@/contexts/share-context'
+
+function ReleasePage() {
+  const [sheetOpen, setSheetOpen] = useState(false)
+
+  return (
+    <ShareProvider onShare={() => setSheetOpen(true)}>
+      <ReleaseContent />
+      <ShareSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
+    </ShareProvider>
+  )
+}
+```
+
+### How It Works
+
+1. `ShareProvider` sets `data-share-available="true"` on `document.body` on mount
+2. `useShare` observes this attribute via `MutationObserver`
+3. `onShare()` dispatches `CustomEvent('share-release')`
+4. `ShareProvider` listens for this event and calls its `onShare` prop
+
+This pattern enables communication between the MobileDock (rendered in root layout) and route components (separate React trees).
+
+### When to Use
+
+- Mobile dock share button integration
+- Any cross-tree feature availability detection
+- When React context can't span component boundaries
+
+---
+
+**Last Updated**: 2026-01-20
