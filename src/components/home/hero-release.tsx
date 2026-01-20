@@ -71,7 +71,7 @@ export function HeroRelease({
 	const [showOutput, setShowOutput] = useState(false)
 	const [isTypingDone, setIsTypingDone] = useState(false)
 
-	const fullCommand = `view release --tool=${toolSlug} --version=${version}`
+	const fullCommand = `view release --tool=${toolSlug} --version=${formattedVersion || version}`
 
 	useEffect(() => {
 		let currentIndex = 0

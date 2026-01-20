@@ -93,7 +93,7 @@ function ToolsDirectoryPage() {
 				</AnimatePresence>
 			</div>
 			{/* Header Section */}
-			<div className="mb-16 relative">
+			<div className="lg:mb-16 relative">
 				<div className="absolute inset-x-0 -top-20 -bottom-20 opacity-30 pointer-events-none">
 					<SparklesCore
 						background="transparent"
