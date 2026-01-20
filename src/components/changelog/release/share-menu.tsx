@@ -1,6 +1,9 @@
 import { Check, Copy, FileText, Share2 } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { Bluesky } from '@/components/logo/bluesky'
+import { HackerNews } from '@/components/logo/hackernews'
+import { Reddit } from '@/components/logo/reddit'
 import { XformerlyTwitter } from '@/components/logo/x'
 import {
 	DropdownMenu,
@@ -10,17 +13,19 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Change } from '@/generated/prisma/client'
-import { UserRole } from '@/lib/auth/types'
 import {
 	copyToClipboard,
+	generateHNTitle,
 	generateMarkdown,
+	generateRedditTitle,
 	generateShareUrl,
-	generateSimpleTweet,
 	generateTerminalTweet,
+	openBlueskyShare,
+	openHackerNewsShare,
+	openRedditShare,
 	openTwitterShare,
 } from '@/lib/share'
 import { cn } from '@/lib/utils'
-import { getSessionFn } from '@/server/auth'
 
 interface ShareMenuProps {
 	toolName: string
@@ -43,14 +48,6 @@ export function ShareMenu({
 }: ShareMenuProps) {
 	const [copyState, setCopyState] = useState<CopyState>('idle')
 	const [open, setOpen] = useState(false)
-	const [isAdmin, setIsAdmin] = useState(false)
-
-	// Check if user is admin on mount
-	useEffect(() => {
-		getSessionFn().then((session) => {
-			setIsAdmin(session?.user?.role === UserRole.ADMIN)
-		})
-	}, [])
 
 	const shareUrl = generateShareUrl(toolSlug, version)
 
@@ -65,13 +62,7 @@ export function ShareMenu({
 		}
 	}
 
-	const handleShareTwitterSimple = () => {
-		const text = generateSimpleTweet(toolName, formattedVersion, shareUrl)
-		openTwitterShare(text)
-		setOpen(false)
-	}
-
-	const handleShareTwitterVerbose = () => {
+	const handleShareTwitter = () => {
 		const text = generateTerminalTweet(
 			toolName,
 			formattedVersion,
@@ -79,6 +70,29 @@ export function ShareMenu({
 			shareUrl,
 		)
 		openTwitterShare(text)
+		setOpen(false)
+	}
+
+	const handleShareBluesky = () => {
+		const text = generateTerminalTweet(
+			toolName,
+			formattedVersion,
+			changes,
+			shareUrl,
+		)
+		openBlueskyShare(text)
+		setOpen(false)
+	}
+
+	const handleShareReddit = () => {
+		const title = generateRedditTitle(toolName, formattedVersion)
+		openRedditShare(shareUrl, title)
+		setOpen(false)
+	}
+
+	const handleShareHN = () => {
+		const title = generateHNTitle(toolName, formattedVersion)
+		openHackerNewsShare(shareUrl, title)
 		setOpen(false)
 	}
 
@@ -146,32 +160,41 @@ export function ShareMenu({
 					</span>
 				</DropdownMenuItem>
 
-				{/* Share to X (simple) */}
+				{/* Share to X */}
 				<DropdownMenuItem
-					onClick={handleShareTwitterSimple}
+					onClick={handleShareTwitter}
 					className="gap-3 py-2.5 cursor-pointer"
 				>
 					<XformerlyTwitter className="size-3.5" />
 					<span className="text-xs tracking-wider">SHARE_TO_X</span>
 				</DropdownMenuItem>
 
-				{/* Share to X (verbose) - Admin only */}
-				{isAdmin && (
-					<DropdownMenuItem
-						onClick={handleShareTwitterVerbose}
-						className="gap-3 py-2.5 cursor-pointer"
-					>
-						<XformerlyTwitter className="size-3.5" />
-						<div className="flex flex-col gap-0.5">
-							<span className="text-xs tracking-wider">
-								SHARE_TO_X --verbose
-							</span>
-							<span className="text-[10px] text-muted-foreground">
-								includes change summary
-							</span>
-						</div>
-					</DropdownMenuItem>
-				)}
+				{/* Share to Bluesky */}
+				<DropdownMenuItem
+					onClick={handleShareBluesky}
+					className="gap-3 py-2.5 cursor-pointer"
+				>
+					<Bluesky className="size-3.5" />
+					<span className="text-xs tracking-wider">SHARE_TO_BLUESKY</span>
+				</DropdownMenuItem>
+
+				{/* Share to Reddit */}
+				<DropdownMenuItem
+					onClick={handleShareReddit}
+					className="gap-3 py-2.5 cursor-pointer"
+				>
+					<Reddit className="size-3.5" />
+					<span className="text-xs tracking-wider">SHARE_TO_REDDIT</span>
+				</DropdownMenuItem>
+
+				{/* Share to Hacker News */}
+				<DropdownMenuItem
+					onClick={handleShareHN}
+					className="gap-3 py-2.5 cursor-pointer"
+				>
+					<HackerNews className="size-3.5" />
+					<span className="text-xs tracking-wider">SHARE_TO_HN</span>
+				</DropdownMenuItem>
 
 				<DropdownMenuSeparator className="bg-white/10" />
 

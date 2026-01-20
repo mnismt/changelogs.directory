@@ -1,19 +1,24 @@
 import { Check, Copy, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Bluesky } from '@/components/logo/bluesky'
+import { HackerNews } from '@/components/logo/hackernews'
+import { RedditMono } from '@/components/logo/reddit-mono'
 import { XformerlyTwitter } from '@/components/logo/x'
 import { BottomSheet } from '@/components/ui/bottom-sheet'
 import type { Change } from '@/generated/prisma/client'
-import { UserRole } from '@/lib/auth/types'
 import {
 	copyToClipboard,
+	generateHNTitle,
 	generateMarkdown,
+	generateRedditTitle,
 	generateShareUrl,
-	generateSimpleTweet,
 	generateTerminalTweet,
+	openBlueskyShare,
+	openHackerNewsShare,
+	openRedditShare,
 	openTwitterShare,
 } from '@/lib/share'
 import { cn } from '@/lib/utils'
-import { getSessionFn } from '@/server/auth'
 
 /**
  * Mobile share bottom sheet with native-feel UX.
@@ -21,7 +26,9 @@ import { getSessionFn } from '@/server/auth'
  * Features:
  * - Copy Link with visual feedback
  * - Share to X (Twitter)
- * - Share to X --verbose (admin only)
+ * - Share to Bluesky
+ * - Share to Reddit
+ * - Share to Hacker News
  * - Copy as Markdown for docs
  * - Drag-to-dismiss gesture support
  *
@@ -50,16 +57,8 @@ export function ShareSheet({
 	changes,
 }: ShareSheetProps) {
 	const [copyState, setCopyState] = useState<CopyState>('idle')
-	const [isAdmin, setIsAdmin] = useState(false)
 
 	const shareUrl = generateShareUrl(toolSlug, version)
-
-	// Check if user is admin on mount
-	useEffect(() => {
-		getSessionFn().then((session) => {
-			setIsAdmin(session?.user?.role === UserRole.ADMIN)
-		})
-	}, [])
 
 	// Reset copy state on close
 	useEffect(() => {
@@ -79,13 +78,7 @@ export function ShareSheet({
 		}
 	}
 
-	const handleShareTwitterSimple = () => {
-		const text = generateSimpleTweet(toolName, formattedVersion, shareUrl)
-		openTwitterShare(text)
-		onClose()
-	}
-
-	const handleShareTwitterVerbose = () => {
+	const handleShareTwitter = () => {
 		const text = generateTerminalTweet(
 			toolName,
 			formattedVersion,
@@ -93,6 +86,29 @@ export function ShareSheet({
 			shareUrl,
 		)
 		openTwitterShare(text)
+		onClose()
+	}
+
+	const handleShareBluesky = () => {
+		const text = generateTerminalTweet(
+			toolName,
+			formattedVersion,
+			changes,
+			shareUrl,
+		)
+		openBlueskyShare(text)
+		onClose()
+	}
+
+	const handleShareReddit = () => {
+		const title = generateRedditTitle(toolName, formattedVersion)
+		openRedditShare(shareUrl, title)
+		onClose()
+	}
+
+	const handleShareHN = () => {
+		const title = generateHNTitle(toolName, formattedVersion)
+		openHackerNewsShare(shareUrl, title)
 		onClose()
 	}
 
@@ -155,7 +171,7 @@ export function ShareSheet({
 					{/* Share to X */}
 					<button
 						type="button"
-						onClick={handleShareTwitterSimple}
+						onClick={handleShareTwitter}
 						className={cn(
 							'flex w-full items-center gap-4 rounded-xl p-4',
 							'bg-white/5 hover:bg-white/10',
@@ -175,30 +191,74 @@ export function ShareSheet({
 						</div>
 					</button>
 
-					{/* Share to X --verbose (Admin only) */}
-					{isAdmin && (
-						<button
-							type="button"
-							onClick={handleShareTwitterVerbose}
-							className={cn(
-								'flex w-full items-center gap-4 rounded-xl p-4',
-								'bg-white/5 hover:bg-white/10',
-								'active:scale-[0.98] transition-all duration-150',
-							)}
-						>
-							<div className="flex size-10 items-center justify-center rounded-full bg-white/10">
-								<XformerlyTwitter className="size-5" />
-							</div>
-							<div className="flex-1 text-left">
-								<p className="font-mono text-sm font-medium text-foreground">
-									Share to X --verbose
-								</p>
-								<p className="font-mono text-xs text-muted-foreground">
-									Include change summary
-								</p>
-							</div>
-						</button>
-					)}
+					{/* Share to Bluesky */}
+					<button
+						type="button"
+						onClick={handleShareBluesky}
+						className={cn(
+							'flex w-full items-center gap-4 rounded-xl p-4',
+							'bg-white/5 hover:bg-white/10',
+							'active:scale-[0.98] transition-all duration-150',
+						)}
+					>
+						<div className="flex size-10 items-center justify-center rounded-full bg-white/10">
+							<Bluesky className="size-5" />
+						</div>
+						<div className="flex-1 text-left">
+							<p className="font-mono text-sm font-medium text-foreground">
+								Share to Bluesky
+							</p>
+							<p className="font-mono text-xs text-muted-foreground">
+								Post to network
+							</p>
+						</div>
+					</button>
+
+					{/* Share to Reddit */}
+					<button
+						type="button"
+						onClick={handleShareReddit}
+						className={cn(
+							'flex w-full items-center gap-4 rounded-xl p-4',
+							'bg-white/5 hover:bg-white/10',
+							'active:scale-[0.98] transition-all duration-150',
+						)}
+					>
+						<div className="flex size-10 items-center justify-center rounded-full bg-white/10">
+							<RedditMono className="size-5" />
+						</div>
+						<div className="flex-1 text-left">
+							<p className="font-mono text-sm font-medium text-foreground">
+								Share to Reddit
+							</p>
+							<p className="font-mono text-xs text-muted-foreground">
+								Submit to subreddit
+							</p>
+						</div>
+					</button>
+
+					{/* Share to Hacker News */}
+					<button
+						type="button"
+						onClick={handleShareHN}
+						className={cn(
+							'flex w-full items-center gap-4 rounded-xl p-4',
+							'bg-white/5 hover:bg-white/10',
+							'active:scale-[0.98] transition-all duration-150',
+						)}
+					>
+						<div className="flex size-10 items-center justify-center rounded-full bg-white/10">
+							<HackerNews className="size-5" />
+						</div>
+						<div className="flex-1 text-left">
+							<p className="font-mono text-sm font-medium text-foreground">
+								Share to HN
+							</p>
+							<p className="font-mono text-xs text-muted-foreground">
+								Submit story
+							</p>
+						</div>
+					</button>
 
 					{/* Divider */}
 					<div className="my-2 h-px bg-white/10" />

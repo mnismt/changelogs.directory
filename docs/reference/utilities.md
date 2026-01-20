@@ -113,24 +113,9 @@ function generateShareUrl(slug: string, version: string): string
 
 **Example**: `generateShareUrl('cursor', 'v0.50')` → `https://changelogs.directory/tools/cursor/releases/v0.50`
 
-### generateSimpleTweet
-
-Simple tweet format with tool name, version, and URL.
-
-```tsx
-function generateSimpleTweet(toolName: string, formattedVersion: string, url: string): string
-```
-
-**Output**:
-```
-cursor v0.50 changelog
-
-https://changelogs.directory/tools/cursor/releases/v0.50
-```
-
 ### generateTerminalTweet
 
-Terminal-style tweet with change type counts (max 4 types shown).
+Terminal-style tweet with change type counts (max 4 types shown). Used for X and Bluesky shares.
 
 ```tsx
 function generateTerminalTweet(
@@ -150,6 +135,17 @@ $ changelog cursor v0.50
 full changelogs 👇
 https://changelogs.directory/tools/cursor/releases/v0.50
 ```
+
+### generateRedditTitle / generateHNTitle
+
+Generate titles for Reddit and Hacker News submissions.
+
+```tsx
+function generateRedditTitle(toolName: string, formattedVersion: string): string
+function generateHNTitle(toolName: string, formattedVersion: string): string
+```
+
+**Output**: `Cursor v0.50 Changelog`
 
 ### generateMarkdown
 
@@ -174,13 +170,16 @@ async function copyToClipboard(text: string): Promise<boolean>
 
 Uses `navigator.clipboard` when available, falls back to `execCommand('copy')`.
 
-### openTwitterShare
+### Social Share Functions
 
-Open Twitter/X share intent in a popup window.
+| Function | Platform | Parameters |
+|----------|----------|------------|
+| `openTwitterShare(text)` | X/Twitter | Full tweet text |
+| `openBlueskyShare(text)` | Bluesky | Full post text |
+| `openRedditShare(url, title)` | Reddit | URL + title |
+| `openHackerNewsShare(url, title)` | Hacker News | URL + title |
 
-```tsx
-function openTwitterShare(text: string): void
-```
+**Removed in v0.8.1**: `openFacebookShare`, `openLinkedInShare` (unreliable share dialogs).
 
 ---
 

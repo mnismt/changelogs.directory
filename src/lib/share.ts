@@ -237,3 +237,46 @@ export function openTwitterShare(text: string): void {
 	const url = `https://twitter.com/intent/tweet?text=${encoded}`
 	window.open(url, '_blank', 'noopener,noreferrer,width=550,height=420')
 }
+
+/**
+ * Open Bluesky share intent with pre-filled text
+ */
+export function openBlueskyShare(text: string): void {
+	const encoded = encodeURIComponent(text)
+	const url = `https://bsky.app/intent/compose?text=${encoded}`
+	window.open(url, '_blank', 'noopener,noreferrer,width=550,height=420')
+}
+
+/**
+ * Generate title for Reddit submission
+ */
+export function generateRedditTitle(toolName: string, version: string): string {
+	return `${toolName} ${version} Changelog`
+}
+
+/**
+ * Open Reddit submit page
+ */
+export function openRedditShare(url: string, title: string): void {
+	const encodedUrl = encodeURIComponent(url)
+	const encodedTitle = encodeURIComponent(title)
+	const shareUrl = `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`
+	window.open(shareUrl, '_blank', 'noopener,noreferrer,width=800,height=600')
+}
+
+/**
+ * Generate title for Hacker News submission
+ */
+export function generateHNTitle(toolName: string, version: string): string {
+	return `${toolName} ${version} Release Notes`
+}
+
+/**
+ * Open Hacker News submit page
+ */
+export function openHackerNewsShare(url: string, title: string): void {
+	const encodedUrl = encodeURIComponent(url)
+	const encodedTitle = encodeURIComponent(title)
+	const shareUrl = `https://news.ycombinator.com/submitlink?u=${encodedUrl}&t=${encodedTitle}`
+	window.open(shareUrl, '_blank', 'noopener,noreferrer,width=800,height=600')
+}

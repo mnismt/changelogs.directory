@@ -186,25 +186,43 @@ The release summary uses a bifurcated interaction model to optimize for screen r
         -   **Content**: Full terminal view rendered inside the sheet.
         -   **Header**: Sticky header with file metadata.
 
-### K. Share System (v0.8.0)
+### K. Share System (v0.8.1)
 
 Release pages include a share system for distributing changelogs across platforms.
 
-**Components**: `ShareMenu` (desktop), `ShareSheet` (mobile), `ShareProvider` (context bridge).
+**Components**: `SharePalette` (desktop), `ShareSheet` (mobile), `ShareProvider` (context bridge).
 
-#### Desktop: Dropdown Menu
-- **Trigger**: `[ SHARE ]` button in the release hero section.
+#### Desktop: Command Palette (v0.8.1)
+- **Trigger**: `[ SHARE ]` button in the release hero section opens centered modal.
+- **Aesthetic**: Terminal-inspired with `$ share v0.50.7` header, `>_` prompts, section comments (`// clipboard`, `// social`).
 - **Options**:
-  - `COPY_LINK` — Copies canonical URL with visual feedback (green checkmark).
-  - `SHARE_TO_X` — Opens Twitter/X intent with simple tweet format.
-  - `SHARE_TO_X --verbose` — (Admin only) Terminal-style tweet with change counts.
-  - `COPY_AS_MARKDOWN` — Full changelog export for docs/READMEs.
-- **Feedback Animation**: Copy states show green checkmark, auto-dismiss after 1.5s.
+  - `copy_link` — Copies canonical URL (⌘C).
+  - `copy_as_markdown` — Full changelog export (⌘M).
+  - `share_to_x` — Opens Twitter/X intent (1).
+  - `share_to_bluesky` — Opens Bluesky intent (2).
+  - `share_to_reddit` — Opens Reddit submit page (3).
+  - `share_to_hn` — Opens Hacker News submit page (4).
+- **Keyboard Navigation**: ↑↓ to navigate, Enter to select, 1-4 for quick share, Esc to close.
+- **Animation Choreography**:
+  ```tsx
+  // Container entrance
+  initial: { opacity: 0, scale: 0.96, y: -8, filter: 'blur(8px)' }
+  animate: { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }
+  transition: { type: 'spring', stiffness: 400, damping: 30, staggerChildren: 0.03 }
+  
+  // Item entrance
+  initial: { opacity: 0, x: -8 }
+  animate: { opacity: 1, x: 0 }
+  ```
+- **Visual States**:
+  - **Idle**: Monochrome icons, muted text.
+  - **Selected**: Green `>_` prompt, icon glow (`drop-shadow`), white text.
+  - **Copied**: Green checkmark icon, `bg-green-500/10` background.
 
 #### Mobile: Bottom Sheet
 - **Trigger**: Share button in MobileDock (appears on release pages).
 - **Entry Animation**: Spring from bottom with drag-to-dismiss.
-- **Options**: Same as desktop, with larger touch targets (48px).
+- **Options**: Same as desktop, with larger touch targets (48px) and colored platform icons for recognition.
 - **Visual Feedback**: Background color transitions to `bg-green-500/10` on copy success.
 
 #### Cross-Tree Communication

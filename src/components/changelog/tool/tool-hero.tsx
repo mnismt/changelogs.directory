@@ -1,7 +1,8 @@
 import { Link, useMatches } from '@tanstack/react-router'
+import { Share2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { ShareMenu } from '@/components/changelog/release/share-menu'
+import { SharePalette } from '@/components/changelog/release/share-palette'
 import { SparklesCore } from '@/components/ui/sparkles'
 import type { Change } from '@/generated/prisma/client'
 import { getToolLogo } from '@/lib/tool-logos'
@@ -24,6 +25,7 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 	const [systemStatus, setSystemStatus] = useState<'BOOTING' | 'READY'>(
 		'BOOTING',
 	)
+	const [shareOpen, setShareOpen] = useState(false)
 	const matches = useMatches()
 	const versionMatch = matches.find(
 		(m) => m.routeId === '/tools/$slug/releases/$version',
@@ -363,14 +365,28 @@ export function ToolHero({ slug, tool }: ToolHeroProps) {
 
 						{/* Share Menu - only visible when viewing a release */}
 						{release && version && (
-							<ShareMenu
-								toolName={tool.name}
-								toolSlug={slug}
-								version={version}
-								formattedVersion={release.formattedVersion || version}
-								changes={release.changes}
-								className="hidden md:flex"
-							/>
+							<>
+								<motion.button
+									type="button"
+									whileTap={{ scale: 0.98 }}
+									onClick={() => setShareOpen(true)}
+									className="hidden md:flex group items-center gap-2 px-3 py-1.5 rounded-sm border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+								>
+									<Share2 className="size-3 text-muted-foreground group-hover:text-foreground transition-colors" />
+									<span className="text-[10px] tracking-widest uppercase text-muted-foreground group-hover:text-foreground transition-colors">
+										[ SHARE ]
+									</span>
+								</motion.button>
+								<SharePalette
+									open={shareOpen}
+									onOpenChange={setShareOpen}
+									toolName={tool.name}
+									toolSlug={slug}
+									version={version}
+									formattedVersion={release.formattedVersion || version}
+									changes={release.changes}
+								/>
+							</>
 						)}
 					</motion.div>
 				</motion.div>

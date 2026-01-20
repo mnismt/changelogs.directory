@@ -3,6 +3,15 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.8.1
+
+> **2026-01-20T22:30:00+07:00** — Share Command Palette
+
+<video src="/changelog-assets/v0.8.1.mp4" autoplay loop muted playsinline width="100%"></video>
+
+- Added Bluesky, Reddit, and Hacker News sharing
+- Redesigned share menu as a terminal-style command palette with keyboard shortcuts
+
 ## 0.8.0
 
 > **2026-01-20T20:55:00+07:00** — Release Sharing System
