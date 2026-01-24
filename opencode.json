@@ -10,11 +10,18 @@
       "type": "local",
       "command": ["npx", "-y", "mcp-remote@latest", "https://mcp.sentry.dev/mcp"],
       "enabled": true
+    },
+    "perplexity": {
+      "type": "local",
+      "command": ["npx", "-y", "@perplexity-ai/mcp-server"],
+      "enabled": true
     }
   },
   "tools": {
     "playwright_*": false,
-    "sentry_*": false
+    "sentry_*": false,
+    "perplexity_reason": false,
+    "perplexity_ask": false
   },
   "agent": {
     "plan": {
