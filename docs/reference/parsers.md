@@ -1,6 +1,6 @@
 # Parser Development Reference
 
-> **Last verified**: 2026-01-11
+> **Last verified**: 2026-03-20
 
 This document explains how to develop custom parsers for extracting structured changelog data from various sources.
 

@@ -1,6 +1,6 @@
 # E2E Testing Troubleshooting
 
-> **Last verified**: 2026-01-11
+> **Last verified**: 2026-03-20
 
 Common issues and solutions for E2E testing.
 

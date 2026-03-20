@@ -1,6 +1,6 @@
 # Configuration Validation Tests
 
-> **Last verified**: 2026-01-11
+> **Last verified**: 2026-03-20
 
 This document describes the static configuration validation tests that ensure all tools are properly configured across the codebase.
 

@@ -1,6 +1,6 @@
 # Email System
 
-> **Last verified**: 2026-01-17
+> **Last verified**: 2026-03-20
 
 This section documents the email infrastructure for Changelogs.directory, including the weekly digest pipeline, email templates, and webhook handling.
 

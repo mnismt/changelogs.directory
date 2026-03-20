@@ -1,6 +1,6 @@
 # Testing Documentation
 
-> **Last verified**: 2026-01-11
+> **Last verified**: 2026-03-20
 
 Comprehensive documentation for testing changelogs.directory, with focus on end-to-end (E2E) testing.
 

@@ -1,6 +1,6 @@
 # Weekly Digest Pipeline
 
-> **Last verified**: 2026-01-17
+> **Last verified**: 2026-03-20
 
 This document describes the automated weekly digest email system.
 

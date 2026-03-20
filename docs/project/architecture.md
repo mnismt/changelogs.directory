@@ -1,6 +1,6 @@
 # System Architecture
 
-> **Last verified**: 2025-12-05
+> **Last verified**: 2026-03-20
 
 This document provides a high-level overview of the Changelogs.directory system architecture, design decisions, and technology choices.
 

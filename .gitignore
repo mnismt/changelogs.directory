@@ -5,15 +5,18 @@ dist-ssr
 *.local
 count.txt
 .env
+.env.production
 .nitro
 .tanstack
 .wrangler
 .output
 .vinxi
 todos.json
-
 .trigger
-.env.production
+
+# IDE
+.cursor
+.vscode
 
 # Prisma generated client
 src/generated/

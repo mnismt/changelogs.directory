@@ -1,6 +1,6 @@
 # Testing Guide
 
-> **Last verified**: 2026-01-11
+> **Last verified**: 2026-03-20
 
 This guide covers testing strategies for Changelogs.directory, including unit tests, integration tests, and ingestion pipeline testing. For comprehensive E2E testing documentation, see [docs/testing/](../testing/README.md).
 

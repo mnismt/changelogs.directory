@@ -1,6 +1,6 @@
 # Browser E2E Tests
 
-> **Last verified**: 2026-01-11
+> **Last verified**: 2026-03-20
 
 This document describes the Playwright browser tests that verify UI rendering and user flows.
 

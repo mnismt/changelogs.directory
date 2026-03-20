@@ -1,6 +1,6 @@
 # Ingestion Pipeline Reference
 
-> **Last verified**: 2026-01-11
+> **Last verified**: 2026-03-20
 
 This document provides a deep dive into the 7-phase changelog ingestion pipeline architecture used by all tools on Changelogs.directory.
 

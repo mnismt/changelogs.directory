@@ -1,6 +1,6 @@
 # Email Webhooks
 
-> **Last verified**: 2026-01-17
+> **Last verified**: 2026-03-20
 
 This document describes webhook handling for email delivery events.
 

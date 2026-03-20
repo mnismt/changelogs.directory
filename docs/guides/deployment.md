@@ -1,6 +1,6 @@
 # Deployment Guide
 
-> **Last verified**: 2025-12-05
+> **Last verified**: 2026-03-20
 
 This guide covers deploying Changelogs.directory to production, including database setup, web app deployment, and Trigger.dev workers.
 

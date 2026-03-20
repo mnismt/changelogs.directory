@@ -1,6 +1,6 @@
 # E2E Test Architecture
 
-> **Last verified**: 2026-01-11
+> **Last verified**: 2026-03-20
 
 This document describes the architecture and design of the end-to-end testing suite for changelogs.directory.
 

@@ -1,6 +1,6 @@
 # Adding a New Tool to Changelogs.directory
 
-> **Last verified**: 2026-01-11 with claude-code, codex, cursor, and gemini-cli examples
+> **Last verified**: 2026-03-20
 
 This guide walks you through adding a new tool (like "Google Antigravity") to the changelog aggregation platform.
 

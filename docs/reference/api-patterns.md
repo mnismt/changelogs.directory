@@ -1,6 +1,6 @@
 # API Patterns Reference
 
-> **Last verified**: 2026-01-06
+> **Last verified**: 2026-03-20
 
 This document explains server-side data fetching patterns used in Changelogs.directory, specifically TanStack Start SSR loaders and server functions.
 

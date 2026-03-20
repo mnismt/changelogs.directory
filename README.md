@@ -1,47 +1,52 @@
 # Changelogs.directory
 
-Changelogs.directory is a centralized platform that tracks, aggregates, and presents changelog information for CLI developer tools. The platform addresses the growing challenge developers face in staying updated with the rapidly evolving landscape of command-line AI coding tools like Claude Code, OpenAI Codex, AMP Code, and Droid CLI.
+A curated aggregator of changelogs for CLI developer tools. Track what's new in Claude Code, Cursor, Codex, Windsurf, Gemini CLI, and more — all in one place.
 
-## Setup
+**Live at [changelogs.directory](https://changelogs.directory)**
 
-### Environment Variables
+## Why
 
-Create a `.env` file in the project root:
+Keeping up with AI coding tools is exhausting. Each has its own blog, changelog format, and release cadence. This project aggregates them into a single, searchable directory with consistent formatting, weekly digests, and a comparison page.
 
-```bash
-# PostHog Analytics
-VITE_PUBLIC_POSTHOG_KEY=phc_your_key_here
-VITE_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+## Stack
 
-# Email Provider (resend or zeptomail, defaults to resend)
-EMAIL_PROVIDER=resend
-RESEND_API_KEY=re_your_key_here
-# ZEPTOMAIL_API_KEY=your_zepto_key  # Only needed if EMAIL_PROVIDER=zeptomail
-```
+- **Framework**: [TanStack Start](https://tanstack.com/start) (React 19, SSR)
+- **Database**: PostgreSQL + [Prisma](https://prisma.io)
+- **Styling**: Tailwind CSS v4 + [shadcn/ui](https://ui.shadcn.com)
+- **Background Jobs**: [Trigger.dev](https://trigger.dev) (ingestion pipelines)
+- **Email**: [Resend](https://resend.com) + React Email
+- **Analytics**: [PostHog](https://posthog.com)
 
-Get your PostHog key from: https://app.posthog.com/project/settings
-
-Get your Resend API key from: https://resend.com/api-keys
-
-### Install Dependencies
+## Getting Started
 
 ```bash
+# Install dependencies
 pnpm install
-```
 
-### Development
+# Set up environment
+cp .env.example .env
+# Fill in the required values (see docs/guides/environment-variables.md)
 
-```bash
+# Run dev server
 pnpm dev
 ```
 
-### Build & Deploy
+## Documentation
 
-```bash
-pnpm build
-pnpm deploy
-```
+Comprehensive docs live in [`docs/`](docs/README.md), covering:
 
-## Analytics
+- [Adding a new tool](docs/guides/adding-a-tool.md)
+- [Environment variables](docs/guides/environment-variables.md)
+- [Database schema](docs/reference/database-schema.md)
+- [Ingestion pipeline](docs/reference/ingestion-pipeline.md)
+- [Design system](docs/design/design-rules.md)
+- [Testing](docs/guides/testing.md)
+- [Deployment](docs/guides/deployment.md)
 
-PostHog is integrated for web analytics. See `src/integrations/posthog/README.md` for usage.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and guidelines.
+
+## License
+
+[MIT](LICENSE)

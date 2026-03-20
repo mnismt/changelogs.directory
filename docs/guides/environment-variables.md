@@ -1,6 +1,6 @@
 # Environment Variables Reference
 
-> **Last verified**: 2025-12-05
+> **Last verified**: 2026-03-20
 
 This document lists all environment variables used across the Changelogs.directory application, including web app, Trigger.dev workers, and deployment infrastructure.
 

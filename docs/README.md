@@ -177,8 +177,8 @@ prisma/             # Database schema and migrations
 
 ## Getting Help
 
-- **Issues**: Report bugs or request features at [GitHub Issues](https://github.com/your-repo/issues)
-- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/your-repo/discussions)
+- **Issues**: Report bugs or request features at [GitHub Issues](https://github.com/mnismt/changelogs.directory/issues)
+- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/mnismt/changelogs.directory/discussions)
 - **Contributing**: See [guides/adding-a-tool.md](guides/adding-a-tool.md) to get started
 
 ## Maintenance
@@ -191,5 +191,5 @@ This documentation is updated as the codebase evolves. If you notice outdated co
 
 ---
 
-**Last Updated**: 2026-01-20
-**Documentation Version**: 2.5 (Release sharing system documentation added)
+**Last Updated**: 2026-03-20
+**Documentation Version**: 3.0 (Open-source release)

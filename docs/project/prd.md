@@ -1,6 +1,6 @@
 # Product Requirements Document
 
-> **Last updated**: 2025-12-05
+> **Last updated**: 2026-03-20
 
 ## Executive Summary
 
