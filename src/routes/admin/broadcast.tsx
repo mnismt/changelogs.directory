@@ -55,9 +55,7 @@ function BroadcastPage() {
 	const [customFromEmail, setCustomFromEmail] = useState(
 		'system@changelogs.directory',
 	)
-	const [customReplyTo, setCustomReplyTo] = useState(
-		'admin@example.com',
-	)
+	const [customReplyTo, setCustomReplyTo] = useState('admin@example.com')
 
 	const VERIFIED_FROM_EMAILS = [
 		{
