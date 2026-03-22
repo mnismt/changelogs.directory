@@ -4,6 +4,16 @@ A curated aggregator of changelogs for CLI developer tools. Track what's new in 
 
 **Live at [changelogs.directory](https://changelogs.directory)**
 
+![changelogs.directory screenshot](resources/github-img.png)
+
+## Features
+
+- **Unified feed** — changelogs from 10+ AI coding tools in one terminal-style interface
+- **Tool comparison** — side-by-side feature comparison across tools
+- **Weekly digests** — subscribe to email summaries of what shipped
+- **Search & filter** — find releases by tool, date, or keyword
+- **Analytics** — track release frequency and trends across the ecosystem
+
 ## Why
 
 Keeping up with AI coding tools is exhausting. Each has its own blog, changelog format, and release cadence. This project aggregates them into a single, searchable directory with consistent formatting, weekly digests, and a comparison page.
@@ -16,6 +26,39 @@ Keeping up with AI coding tools is exhausting. Each has its own blog, changelog 
 - **Background Jobs**: [Trigger.dev](https://trigger.dev) (ingestion pipelines)
 - **Email**: [Resend](https://resend.com) + React Email
 - **Analytics**: [PostHog](https://posthog.com)
+
+## Architecture
+
+```
+                          ┌─────────────────────┐
+                          │       Browser        │
+                          └──────────┬──────────┘
+                                     │
+                          ┌──────────▼──────────┐
+                          │      Dokploy         │
+                          │  TanStack Start SSR  │
+                          └──┬──────────────┬───┘
+                             │              │
+                  ┌──────────▼───┐   ┌──────▼──────┐
+                  │ Neon Postgres│   │ Upstash Redis│
+                  │   (Prisma)   │   │   (Cache)    │
+                  └──────────▲───┘   └──────────────┘
+                             │
+              ┌──────────────┴──────────────────┐
+              │       Trigger.dev Workers        │
+              │                                  │
+              │  Ingestion Pipeline (every 6h):  │
+              │  FETCH → PARSE → FILTER →        │
+              │  ENRICH (Gemini AI) → UPSERT     │
+              │                                  │
+              │  Tools: Claude Code, Cursor,     │
+              │  Codex, Windsurf, Gemini CLI,    │
+              │  OpenCode, Antigravity           │
+              │                                  │
+              │  Weekly Email Digest:             │
+              │  Resend + React Email             │
+              └──────────────────────────────────┘
+```
 
 ## Getting Started
 

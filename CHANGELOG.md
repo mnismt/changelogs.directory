@@ -3,6 +3,15 @@ title: changelogs.directory Changelog
 description: Track updates to the changelog aggregation platform itself
 ---
 
+## 0.9.0
+
+> **2026-03-22T16:20:00+07:00** — Open Source Release
+
+![Open Source Release](/changelog-assets/v0.9.0.png)
+
+- changelogs.directory is now open source under the MIT license
+- Full codebase, documentation, and ingestion pipelines are [publicly available on GitHub](https://github.com/mnismt/changelogs.directory)
+
 ## 0.8.1
 
 > **2026-01-20T22:30:00+07:00** — Share Command Palette
