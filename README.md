@@ -1,18 +1,10 @@
 # Changelogs.directory
 
+![changelogs.directory screenshot](resources/github-img.png)
+
 A curated aggregator of changelogs for CLI developer tools. Track what's new in Claude Code, Cursor, Codex, Windsurf, Gemini CLI, and more — all in one place.
 
 **Live at [changelogs.directory](https://changelogs.directory)**
-
-![changelogs.directory screenshot](resources/github-img.png)
-
-## Features
-
-- **Unified feed** — changelogs from 10+ AI coding tools in one terminal-style interface
-- **Tool comparison** — side-by-side feature comparison across tools
-- **Weekly digests** — subscribe to email summaries of what shipped
-- **Search & filter** — find releases by tool, date, or keyword
-- **Analytics** — track release frequency and trends across the ecosystem
 
 ## Why
 
