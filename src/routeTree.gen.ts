@@ -23,6 +23,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ToolsSlugRouteImport } from './routes/tools/$slug'
 import { Route as OgToolsRouteImport } from './routes/og/tools'
 import { Route as ApiUnsubscribeRouteImport } from './routes/api/unsubscribe'
+import { Route as ApiLatestRouteImport } from './routes/api/latest'
 import { Route as AdminToolsRouteImport } from './routes/admin/tools'
 import { Route as AdminTestEmailRouteImport } from './routes/admin/test-email'
 import { Route as AdminIngestionRouteImport } from './routes/admin/ingestion'
@@ -105,6 +106,11 @@ const OgToolsRoute = OgToolsRouteImport.update({
 const ApiUnsubscribeRoute = ApiUnsubscribeRouteImport.update({
   id: '/api/unsubscribe',
   path: '/api/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLatestRoute = ApiLatestRouteImport.update({
+  id: '/api/latest',
+  path: '/api/latest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminToolsRoute = AdminToolsRouteImport.update({
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/api/latest': typeof ApiLatestRoute
   '/api/unsubscribe': typeof ApiUnsubscribeRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/api/latest': typeof ApiLatestRoute
   '/api/unsubscribe': typeof ApiUnsubscribeRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/admin': typeof AdminIndexRoute
@@ -247,6 +255,7 @@ export interface FileRoutesById {
   '/admin/ingestion': typeof AdminIngestionRoute
   '/admin/test-email': typeof AdminTestEmailRoute
   '/admin/tools': typeof AdminToolsRoute
+  '/api/latest': typeof ApiLatestRoute
   '/api/unsubscribe': typeof ApiUnsubscribeRoute
   '/og/tools': typeof OgToolsRouteWithChildren
   '/tools/$slug': typeof ToolsSlugRouteWithChildren
@@ -278,6 +287,7 @@ export interface FileRouteTypes {
     | '/admin/ingestion'
     | '/admin/test-email'
     | '/admin/tools'
+    | '/api/latest'
     | '/api/unsubscribe'
     | '/og/tools'
     | '/tools/$slug'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/admin/ingestion'
     | '/admin/test-email'
     | '/admin/tools'
+    | '/api/latest'
     | '/api/unsubscribe'
     | '/og/tools'
     | '/admin'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/admin/ingestion'
     | '/admin/test-email'
     | '/admin/tools'
+    | '/api/latest'
     | '/api/unsubscribe'
     | '/og/tools'
     | '/tools/$slug'
@@ -358,6 +370,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SubscribeRoute: typeof SubscribeRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  ApiLatestRoute: typeof ApiLatestRoute
   ApiUnsubscribeRoute: typeof ApiUnsubscribeRoute
   OgToolsRoute: typeof OgToolsRouteWithChildren
   ToolsSlugRoute: typeof ToolsSlugRouteWithChildren
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       path: '/api/unsubscribe'
       fullPath: '/api/unsubscribe'
       preLoaderRoute: typeof ApiUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/latest': {
+      id: '/api/latest'
+      path: '/api/latest'
+      fullPath: '/api/latest'
+      preLoaderRoute: typeof ApiLatestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/tools': {
@@ -631,6 +651,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SubscribeRoute: SubscribeRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  ApiLatestRoute: ApiLatestRoute,
   ApiUnsubscribeRoute: ApiUnsubscribeRoute,
   OgToolsRoute: OgToolsRouteWithChildren,
   ToolsSlugRoute: ToolsSlugRouteWithChildren,
