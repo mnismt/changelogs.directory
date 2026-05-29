@@ -1,161 +1,225 @@
-# Compare Feature Documentation
+# Compare Page
 
-This directory contains the research, data models, and design specs for the `/compare` page - a comprehensive, opinionated comparison of AI coding tools.
+> A directory of pricing plans for the AI coding tools we track, with an
+> API-equivalent value read on every plan.
+> Live at: `/compare` · Last verified: 2026-05-29
 
-## Vision
+## What this is
 
-**Not a spec sheet. A senior dev's honest take.**
+A single page listing every paid tier and free option for each tool we track, grouped into two buckets:
 
-The compare page combines:
-- **Interactive custom components** with structured data (models, pricing, platforms)
-- **Editorial personality** baked into every component (winner badges, snarky one-liners, "worth it?" verdicts)
-- **Dynamic adaptation** based on user filters (solo dev vs team, terminal vs IDE, etc.)
-- **Changelog-derived credibility** - "We've tracked hundreds of releases. Here's what we've learned."
+- **Official providers** — vendor's own CLI for their own model: Claude Code, Codex, Gemini CLI
+- **Harnesses** — editor/IDE/agent that routes to multiple model providers: Cursor, Windsurf, Antigravity, Opencode
 
-## Tools in Scope (v1)
+For each plan we also estimate the **API-equivalent value** — what the same usage would cost on the underlying provider's pay-as-you-go API — and render it as a value bar so the subsidy (or lack of one) is visible at a glance. The methodology lives in [plans.md](./plans.md).
 
-| Tool | Pricing Model | Key Differentiator |
-|------|---------------|-------------------|
-| [Cursor](./cursor.md) | Token consumption | Polished IDE, background agents |
-| [Windsurf](./windsurf.md) | Prompt credits | Free models (SWE-1.5), predictable per-prompt |
-| [Claude Code](./claude-code.md) | Subscription + API | Raw Claude power, terminal-native |
-| [Gemini CLI](./gemini-cli.md) | Free tier + API | 1000 req/day free, 1M context |
+Devs can scan all the plans at once, see which subscription is actually subsidized, and jump straight to the vendor's pricing page — without bouncing between tabs.
 
-## Tools to Add Later (Research Ready)
+## What this is NOT
 
-These are not in `/compare` v1 yet, but we have enough notes to add them later without redesigning the data model:
+The original editorial design (long since removed) framed `/compare` as an opinionated product:
 
-| Tool | Why It's Special | Notes |
-|------|------------------|-------|
-| [Codex](./codex.md) | Quota-based (shared with ChatGPT) | Prompts/5h + agent tasks + reviews/week |
-| [Antigravity](./antigravity.md) | Quota-based (mostly qualitative) | 5h refresh + weekly caps, no BYOK |
-| [Opencode](./opencode.md) | Router/BYOK client | Provider-dependent model menus |
+- "Senior dev's honest take" tone with snark and winner badges
+- Persona filters (`?usage=daily&style=terminal`) with a dynamic winner per persona
+- "Worth it?" verdict sections, pros/cons, category-by-category takes
+- Discriminated-union data model with quota windows, metric/entitlement IDs, shared pools
+- Sticky command bar, mobile swipe carousel, URL state management
+- Live integration with the release/changelog DB (velocity/release-count panel)
 
-## Documentation Structure
+All of that was scrapped: **devs want details, not surface**. Concrete numbers and direct links beat opinionated framing.
 
-| File | Purpose |
-|------|---------|
-| [README.md](./README.md) | This file - overview and unified summary |
-| [data-model.md](./data-model.md) | TypeScript types and data structure spec |
-| [ui-design.md](./ui-design.md) | UI components and layout design |
-| [cursor.md](./cursor.md) | Cursor pricing, models, and editorial |
-| [windsurf.md](./windsurf.md) | Windsurf pricing, models, and editorial |
-| [claude-code.md](./claude-code.md) | Claude Code pricing, models, and editorial |
-| [gemini-cli.md](./gemini-cli.md) | Gemini CLI pricing, models, and editorial |
-| [codex.md](./codex.md) | Codex pricing (quota), editorial |
-| [antigravity.md](./antigravity.md) | Antigravity pricing (quota), editorial |
-| [opencode.md](./opencode.md) | Opencode (future): router/BYOK strategy |
+The Cards/Table toggle that exists today is **not** a return to that — it's a pure lens over the same static data (a browsy grid vs. an alignable matrix), with no opinion, persona state, or URL coupling.
 
-## Key Insights
-
-### Pricing Models Are Fundamentally Different
-
-These tools use **incompatible pricing models**:
-
-| Tool | Model | What You Pay For |
-|------|-------|------------------|
-| **Cursor** | Token consumption | $/million tokens, varies by model. Heavy users: $60-200+/mo |
-| **Windsurf** | Prompt credits | X credits per request. Model determines credit cost (0-20) |
-| **Claude Code** | Subscription OR API | Claude Pro ($20) includes it, or BYOK at Anthropic rates |
-| **Gemini CLI** | Free tier + API | 1000 requests/day FREE. Google One ($20) for more |
-
-### Free Options Matter
-
-**Windsurf** has genuinely free models:
-- SWE-1.5 (0 credits) - Their in-house agentic model, near Claude 4.5-level
-- DeepSeek-R1 (0 credits) - Open reasoning model
-- Grok Code Fast (0 credits) - xAI's fast coding model
-- GPT-5.1-Codex (0 credits) - OpenAI's coding model
-
-**Gemini CLI** has a generous free tier:
-- 1000 requests/day on Gemini Flash
-- That's ~30,000/month - most devs never hit this
-
-### Editorial Voice
-
-The compare page uses a **snarky dev voice** - honest, witty, no marketing fluff:
-
-> "Cursor's $20/mo sounds like a steal until you realize that's just the starting point. Daily agent users? Budget $60-100/mo."
-
-> "Windsurf's SWE-1.5 is free. Yes, actually free. And it's genuinely good."
-
-> "Gemini CLI: It's FREE. What are you waiting for? (The catch: Gemini reasoning.)"
-
-## Dynamic Recommendations
-
-Content adapts based on user persona:
-
-| Persona | Winner | Reason |
-|---------|--------|--------|
-| Solo Dev | Claude Code | Maximum power, minimal overhead |
-| Team | Cursor | Consistent UX, team management |
-| Budget | Windsurf | Free models that actually work |
-| Terminal | Claude Code | Built for the terminal |
-| IDE | Cursor | The IDE is the product |
-| Privacy | Cursor | SOC 2 certified |
-
-## URL Structure
+## File map
 
 ```
-/compare                                     → All 4 tools, no filters
-/compare?tools=cursor,windsurf               → Subset comparison  
-/compare?usage=daily&models=standard         → Persona-filtered view
-/compare?usage=power&models=frontier&privacy=true → Combined filters
+docs/compare/
+├── README.md         ← this file (philosophy + architecture)
+└── plans.md          ← per-tool plan data + value/uptime methodology
+
+src/data/
+└── tool-plans.ts     ← the data (source of truth), in TypeScript
+
+src/lib/
+├── tool-logos.tsx        ← getToolLogo / isMonochromeLogo / hover classes
+├── tool-registry.tsx     ← per-tool logo + monochrome metadata
+└── model-providers.tsx   ← map model names → provider logos (incl. in-house)
+
+src/routes/
+└── compare.tsx       ← the page (hero + desktop view toggle + mobile)
+
+src/components/compare/
+├── plans-card.tsx              ← desktop card + ALL shared primitives
+│                                 (ValueBar, PlanRow, ModelRow, UptimeIndicator,
+│                                  DeprecationBadge, ValueLegend, EfficiencyNote,
+│                                  getHeadlineValue, getGroupMaxValue, …)
+├── plans-table.tsx             ← desktop table view (expandable rows)
+├── compare-view-toggle.tsx     ← desktop Cards ⇄ Table segmented control
+├── hover-context.tsx           ← desktop cross-card tier hover-highlighting
+├── tool-headline-chip.tsx      ← the "~Nx value" headline chip
+│
+│   # mobile (< md) — desktop is untouched by these
+├── compare-mobile.tsx          ← mobile orchestrator (row list + compare mode)
+├── compare-section.tsx         ← glass "settings group" container for a bucket
+├── compare-row.tsx             ← glanceable full-width tap-target row
+├── section-segmented-control.tsx ← Official/Harness filter + compare toggle
+├── compare-tray.tsx            ← floating tray for pin-2-to-compare mode
+├── tool-detail-sheet.tsx       ← single-tool drill-down BottomSheet
+└── two-up-compare-sheet.tsx    ← side-by-side compare of 2 pinned tools
 ```
 
-**Query params:**
-- `tools` - Comma-separated slugs (default: all)
-- `usage` - `light` | `daily` | `power`
-- `models` - `free` | `budget` | `standard` | `frontier`
-- `style` - `terminal` | `ide`
-- `privacy` - `true` if privacy matters
+`plans-card.tsx` is the largest file on purpose: it owns the desktop card **and** exports the shared rendering primitives (value bars, plan rows, model rows, the value legend, the subsidy math). The table view and both mobile sheets import those primitives so every surface renders identical numbers and never diverges.
 
-## Data Flow
+## Data shape
+
+Defined in `src/data/tool-plans.ts`:
+
+```ts
+type ApiValueRange = [low: number, high: number]
+type ApiValueEstimate = { typical: ApiValueRange; heavy: ApiValueRange }
+
+type ToolPlan = {
+  name: string                              // "Pro", "Max 5x", "ChatGPT Pro"
+  priceUSD: number | "custom"               // 0 renders as "Free"
+  period?: "month" | "year" | "one-time"
+  quota?: string                            // headline limit, optional
+  notes?: string                            // one-line caveat, optional
+  apiValueUSD?: ApiValueEstimate            // est. API-equivalent value (the bar)
+  subsidyNote?: string                      // one-line context on the best plan
+}
+
+type ToolPlanGroup = {
+  slug: string                              // matches Tool.slug in DB
+  name: string
+  vendor: string
+  bucket: "official" | "harness"
+  tagline: string                           // factual one-liner, no snark
+  plans: ToolPlan[]
+  models: string[]                          // model names accessible
+  sourceUrl: string                         // vendor's pricing page
+  lastVerified: string                      // ISO date
+  gotchas?: string[]                        // factual "good to know" notes
+  tokenEfficiency?: number                  // default 1 (Claude Code baseline)
+  uptime90d?: number                        // measured 90-day uptime %, optional
+  uptimeAsOf?: string                       // ISO date uptime was sampled
+  bestPlan?: string                         // editorial override of auto best-pick
+  deprecated?: {                            // tool being sunset
+    sunsetDate: string
+    successor?: string
+    announcementUrl?: string
+  }
+}
+
+export const TOOL_PLANS: ToolPlanGroup[] = [...]
+```
+
+Still a flat array — no discriminated unions, no quota-window types, no entitlement enums. Unusual pricing (e.g. Opencode Go's intro month) goes in `notes`.
+
+## Page structure
+
+`src/routes/compare.tsx`:
+
+1. Hero: H1 + one-line subtitle with the verification month.
+2. **Desktop (`>= md`)**: a centered `CompareViewToggle` (Cards / Table), then either:
+   - **Cards** — two `Section`s (Official, Harnesses), each a responsive `md:grid-cols-2 xl:grid-cols-3` grid of `<PlansCard>`.
+   - **Table** — a single `<PlansTable>` spanning both buckets.
+3. **Mobile (`< md`)**: `<CompareMobile>` — a normalized row list with a sticky bucket filter, a drill-down sheet per tool, and an opt-in "pin 2 to compare" mode.
+
+The whole tree is wrapped in `<CompareHoverProvider>` (powers desktop cross-card tier highlighting). No loader, no React Query, no server function — the data is static, so it's a pure SSR-friendly render.
+
+## Card layout (desktop)
+
+`PlansCard` in `src/components/compare/plans-card.tsx`. The redesign traded a dense table for a scannable hierarchy:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         /compare?tools=cursor,claude-code              │
-└─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                    ┌───────────────┴───────────────┐
-                    ▼                               ▼
-        ┌──────────────────────┐        ┌──────────────────────┐
-        │   Static TypeScript  │        │    Database (SSR)    │
-        │ src/data/tool-...ts  │        │   via server funcs   │
-        ├──────────────────────┤        ├──────────────────────┤
-        │ • Models supported   │        │ • Release count      │
-        │ • Model costs        │        │ • Releases/month     │
-        │ • Pricing plans      │        │ • Features added 30d │
-        │ • Agent capabilities │        │ • Bugs fixed 30d     │
-        │ • Editorial content  │        │ • Last release date  │
-        └──────────────────────┘        └──────────────────────┘
-                    │                               │
-                    └───────────────┬───────────────┘
-                                    ▼
-                    ┌──────────────────────────────────┐
-                    │       Compare Page (SSR)         │
-                    │  Merged view of static + live    │
-                    └──────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│ [logo] Tool Name                 [bucket tag] │
+│        Vendor                                 │
+│ Tagline (one factual sentence).               │
+│                                               │
+│ ┌── HERO STRIP (best value) ───────────────┐  │
+│ │ Best plan · $price   ▇▇▇▇▇▇   get ~$X · Nx│  │
+│ │ subsidy note                              │  │
+│ └───────────────────────────────────────────┘ │
+│                                               │
+│ Pro      $20   ▇▇░░░  3×                      │  ← compact one-line rows
+│ Max 5x   $100  ▇▇▇▇░  9×   [best]             │
+│ Max 20x  $200  ▇▇▇▇▇ 23×                      │
+│                                               │
+│ ▸ ◎◎◎ 3 models            (disclosure)        │
+│ ▸ ⚠ 2 things to know       (disclosure)       │
+│                                               │
+│ 🔗 pricing source     ● 99.08%  ·  2026-05-29 │
+└──────────────────────────────────────────────┘
 ```
 
-## Implementation Status
+- **Hero strip** anchors the eye on the best-value plan (or "Starts at …" for free/BYOK/custom tools).
+- **Compact plan rows** are one line each: `name · price · mini value bar · ratio`, with a `best` chip and hover cross-highlighting. Quota/notes move to a row tooltip.
+- **Disclosures** (native `<details>`/`<summary>`, SSR-friendly) tuck the full model list and the "good to know" notes behind chevrons.
+- **Footer** shows the source link, the `UptimeIndicator` (if `uptime90d` is set) or a `DeprecationBadge` (if sunset), and the verified date.
 
-- [ ] Documentation (this directory)
-- [ ] Data model (`src/data/models.ts`, `src/data/tool-comparison.ts`)
-- [ ] Server function (`src/server/compare.ts`)
-- [ ] Route + loader (`src/routes/compare.tsx`)
-- [ ] UI components (`src/components/compare/`)
-- [ ] Mobile swipe UX
-- [ ] URL state management
-- [ ] Animations
+## Table view (desktop)
 
-## Updating Tool Data
+`PlansTable` in `src/components/compare/plans-table.tsx` — the compare-as-matrix lens:
 
-When tool pricing/features change:
+- One row per tool; columns aligned (Tool · Models · Best plan · Price · API value · Status) so values stack vertically for true cross-tool reading.
+- Every value bar shares **one global dollar scale** (the largest "get" across all tools), so a $4.5k bar really is longer than a $1.2k one. (Cards use a per-tool scale, since a card only compares a tool to itself.)
+- **Rows are expandable** — click a row to reveal an inline drill-down (tagline, models grouped by provider, every plan with its value bar, and the gotchas), reusing the same `PlanRow`/`ModelRow` primitives as the mobile sheet. The expanded plans use the per-tool scale. It's a multi-open accordion (a `Set` of slugs), so several tools can be open at once.
 
-1. Update the relevant tool doc (e.g., `docs/compare/cursor.md`)
-2. Update `src/data/tool-comparison.ts` with the new data
-3. Update `lastUpdated` field
-4. Verify the compare page renders correctly
+## Model provider icons
 
-The docs serve as the **source of truth** for research. The TypeScript files are the **implementation** of that research.
+`src/lib/model-providers.tsx` maps each model-name string to the provider logo that represents it (`detectModelProvider` → `getProviderLogo`), grouped first-seen via `groupModelsByProvider`. Detection is **tool-aware**: passing the tool slug lets a harness's in-house models render with the tool's own mark instead of a blank dot —
+
+- **Cursor** → its `Composer` model renders the Cursor mark.
+- **Opencode** → its `Zen`/`Go` open-weight tiers render the Opencode mark; the `BYOK (Claude, GPT, Gemini…)` line reads as **Multi**, not Claude (the multi/BYOK check runs before the frontier-family checks).
+- **Windsurf** → its `SWE-*` models render the Windsurf mark.
+
+Provider clusters appear in the card's models disclosure, the table's Models column, and the mobile detail sheet.
+
+## Uptime & deprecation indicators
+
+- `UptimeIndicator` color-codes the measured 90-day uptime: emerald `≥ 99.9%`, amber `99–99.9%` (below the industry-standard 99.9%), red `< 99%`. Tools with no published number fall back to a "live" pulse.
+- `DeprecationBadge` replaces the status when a tool is being sunset (e.g. Gemini CLI → Antigravity CLI), linking the official announcement.
+- We only show a **measured** uptime — never a contractual SLA target dressed up as one. See [plans.md](./plans.md#90-day-uptime) for which tools publish numbers and which don't.
+
+## Update process
+
+When a vendor changes pricing:
+
+1. Edit the entry in `src/data/tool-plans.ts` (the source of truth).
+2. Mirror the change in [plans.md](./plans.md) and bump `lastVerified` in both.
+3. If you touched the API-value estimate, sanity-check it against the rate cards + assumptions in plans.md.
+4. Skim the rendered card **and** the table row on `/compare` to confirm — `curl -s http://localhost:5173/compare | grep …` for a quick SSR check.
+
+When adding a new tool:
+
+1. Append a `ToolPlanGroup` to `TOOL_PLANS` (see `docs/guides/adding-a-tool.md` for the DB side).
+2. Make sure `slug` matches `Tool.slug` in `prisma/schema.prisma` (see `prisma/seed.ts`).
+3. Confirm `getToolLogo(slug)` returns a logo; if not, add it under `src/components/logo/` and wire it into `src/lib/tool-registry.tsx` (flag `isMonochrome` if the mark needs `fill-foreground`).
+4. If the tool has an in-house model, teach `detectModelProvider` (in `src/lib/model-providers.tsx`) to recognize it by slug.
+5. Add the matching entry to [plans.md](./plans.md).
+
+## Tracked tools
+
+| Slug | Bucket | Vendor | Uptime | Notes |
+|------|--------|--------|--------|-------|
+| `claude-code` | Official | Anthropic | 99.08% (amber) | |
+| `codex` | Official | OpenAI | 99.98% (emerald) | 4× token-efficient |
+| `gemini-cli` | Official | Google | — | Sunsets 2026-06-18 → Antigravity CLI |
+| `cursor` | Harness | Anysphere | 99.64% (amber) | in-house: Composer |
+| `windsurf` | Harness | Cognition | 99.95% (emerald) | in-house: SWE-* |
+| `antigravity` | Harness | Google | — | no public uptime |
+| `opencode` | Harness | SST / Anomaly | — | local/BYOK; in-house: Zen/Go |
+
+Note: Antigravity is a Google product but lives in **Harness** because it's a multi-provider IDE (Claude / GPT-OSS / Gemini), not a CLI for one model.
+
+## Related
+
+- `docs/compare/plans.md` — plan data + value/uptime methodology
+- `src/data/tool-plans.ts` — TypeScript implementation (source of truth)
+- `src/routes/compare.tsx` — page entry
+- `src/components/compare/plans-card.tsx` — desktop card + shared primitives
+- `src/components/compare/plans-table.tsx` — desktop table view
+- `src/lib/model-providers.tsx` — model → provider-logo mapping
+- `prisma/seed.ts` — canonical tool slugs
+```

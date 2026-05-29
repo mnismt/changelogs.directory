@@ -747,10 +747,23 @@ export const getReleasesGroupedByTool = createServerFn({ method: 'GET' })
 				},
 			})
 
-			// 2. For each tool, fetch latest N releases + velocity (parallel)
+			// 2. Single query for all velocity counts (releases today)
 			const today = new Date()
 			today.setHours(0, 0, 0, 0)
 
+			const velocityCounts = await prisma.release.groupBy({
+				by: ['toolId'],
+				where: {
+					toolId: { in: tools.map((t) => t.id) },
+					releaseDate: { gte: today },
+				},
+				_count: { id: true },
+			})
+			const velocityMap = new Map(
+				velocityCounts.map((v) => [v.toolId, v._count.id]),
+			)
+
+			// 3. For each tool, fetch latest N releases (parallel)
 			const toolsWithReleases = await Promise.all(
 				tools.map(async (tool) => {
 					// Build where clause for releases
@@ -787,13 +800,8 @@ export const getReleasesGroupedByTool = createServerFn({ method: 'GET' })
 						},
 					})
 
-					// Calculate velocity (releases today)
-					const releasesToday = await prisma.release.count({
-						where: {
-							toolId: tool.id,
-							releaseDate: { gte: today },
-						},
-					})
+					// Look up velocity from pre-computed map
+					const releasesToday = velocityMap.get(tool.id) ?? 0
 
 					// Get most recent release date for sorting
 					const latestReleaseDate = releases[0]?.releaseDate || null
@@ -842,7 +850,7 @@ export const getReleasesGroupedByTool = createServerFn({ method: 'GET' })
 				}),
 			)
 
-			// 3. Sort by most recent activity
+			// 4. Sort by most recent activity
 			toolsWithReleases.sort((a, b) => {
 				if (!a.latestReleaseDate) return 1
 				if (!b.latestReleaseDate) return -1
@@ -852,7 +860,7 @@ export const getReleasesGroupedByTool = createServerFn({ method: 'GET' })
 				)
 			})
 
-			// 4. Calculate totals
+			// 5. Calculate totals
 			const totalReleases = toolsWithReleases.reduce(
 				(sum, t) => sum + t.totalReleases,
 				0,

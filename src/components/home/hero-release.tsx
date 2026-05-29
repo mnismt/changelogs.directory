@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, Terminal } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { formatDate } from '@/lib/date-utils'
 import {
@@ -65,39 +65,17 @@ export function HeroRelease({
 	const logo = getToolLogo(toolSlug)
 	const isGeminiCli = toolSlug === 'gemini-cli'
 	const [isHovered, setIsHovered] = useState(false)
-
-	// Animation state
-	const [typedCommand, setTypedCommand] = useState('')
 	const [showOutput, setShowOutput] = useState(false)
 	const [isTypingDone, setIsTypingDone] = useState(false)
 
 	const fullCommand = `view release --tool=${toolSlug} --version=${formattedVersion || version}`
+	const charCount = fullCommand.length
+	const typingDuration = charCount * 0.035
 
-	useEffect(() => {
-		let currentIndex = 0
-		const typingSpeed = 35 // ms per char
-		const startDelay = 1200 // Wait for card to slide in
-
-		const startTimeout = setTimeout(() => {
-			const interval = setInterval(() => {
-				if (currentIndex <= fullCommand.length) {
-					setTypedCommand(fullCommand.slice(0, currentIndex))
-					currentIndex++
-				} else {
-					clearInterval(interval)
-					setIsTypingDone(true)
-					// Delay before showing output
-					setTimeout(() => {
-						setShowOutput(true)
-					}, 300)
-				}
-			}, typingSpeed)
-
-			return () => clearInterval(interval)
-		}, startDelay)
-
-		return () => clearTimeout(startTimeout)
-	}, [fullCommand])
+	const handleTypingDone = useCallback(() => {
+		setIsTypingDone(true)
+		setTimeout(() => setShowOutput(true), 300)
+	}, [])
 
 	return (
 		<Card
@@ -125,12 +103,20 @@ export function HeroRelease({
 				<div className="mb-8 flex flex-wrap items-center gap-2 text-sm">
 					<span className="text-green-500 font-bold">➜</span>
 					<span className="text-blue-400 font-bold">~</span>
-					<span className="text-foreground/90">
-						{typedCommand}
-						{!isTypingDone && (
-							<span className="animate-pulse inline-block w-2 h-4 bg-foreground/50 align-middle ml-1" />
-						)}
+					<span
+						className="inline-block overflow-hidden whitespace-nowrap align-bottom text-foreground/90"
+						style={{
+							animation: `typewriter ${typingDuration}s steps(${charCount}) forwards`,
+							animationDelay: '1.2s',
+							width: isTypingDone ? 'auto' : '0',
+						}}
+						onAnimationEnd={handleTypingDone}
+					>
+						{fullCommand}
 					</span>
+					{!isTypingDone && (
+						<span className="animate-pulse inline-block w-2 h-4 bg-foreground/50 align-middle ml-1" />
+					)}
 				</div>
 
 				{/* Output Area */}

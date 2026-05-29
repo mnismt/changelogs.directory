@@ -235,6 +235,25 @@ code {
 	animation: fade-in 0.3s ease-out;
 }
 
+@keyframes typewriter {
+	from { width: 0; }
+	to { width: 100%; }
+}
+
+@keyframes typewriter-title {
+	from { width: 0; }
+	to { width: 100%; }
+}
+
+.animate-typewriter-title {
+	animation: typewriter-title 2.1s steps(21) forwards;
+}
+
+@keyframes typewriter-prompt {
+	from { width: 0; }
+	to { width: 100%; }
+}
+
 @theme inline {
   --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
   var(--delay, 0ms);

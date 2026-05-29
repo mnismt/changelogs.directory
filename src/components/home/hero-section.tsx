@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { HeroRelease } from '@/components/home/hero-release'
 import { LogoShowcase } from '@/components/shared/logo-showcase'
 import { Badge } from '@/components/ui/badge'
@@ -36,53 +36,26 @@ export function HeroSection({
 	onAnimationComplete,
 	platformVersion,
 }: HeroSectionProps) {
-	const fullText = 'changelogs.directory'
 	const STORAGE_KEY = 'changelogs-hero-animated'
 
-	// Start with full text on server, then animate on client
-	const [text, setText] = useState(fullText)
+	const [skipTypewriter, setSkipTypewriter] = useState(false)
+	const heroAnimCompleteCalled = useRef(false)
 
-	// Typewriter effect - only runs once per session
 	useEffect(() => {
 		if (!isMounted) return
-
-		// Check if animation has already played this session
-		const hasPlayedThisSession = sessionStorage.getItem(STORAGE_KEY)
-		if (hasPlayedThisSession) {
-			// Skip animation, keep full text
-			return
+		if (sessionStorage.getItem(STORAGE_KEY)) {
+			setSkipTypewriter(true)
 		}
+	}, [isMounted])
 
-		// Reset to empty and start typing
-		setText('')
-
-		let currentIndex = 0
-		const interval = setInterval(() => {
-			if (currentIndex <= fullText.length) {
-				setText(fullText.slice(0, currentIndex))
-				currentIndex++
-			} else {
-				clearInterval(interval)
-				// Mark animation as played for this session
-				sessionStorage.setItem(STORAGE_KEY, 'true')
-			}
-		}, 100)
-
-		return () => clearInterval(interval)
-	}, [isMounted, fullText])
-
-	// Notify parent when all animations are complete
-	useEffect(() => {
-		if (!isMounted) return
-
-		// The longest delay is 1000ms (hero card) + 1500ms duration = 2500ms
-		// Adding a small buffer to be safe and ensure smooth transition
-		const timeout = setTimeout(() => {
+	// Use motion's onAnimationComplete on the hero release wrapper
+	const handleHeroReleaseAnimComplete = () => {
+		if (!heroAnimCompleteCalled.current) {
+			heroAnimCompleteCalled.current = true
+			sessionStorage.setItem(STORAGE_KEY, 'true')
 			onAnimationComplete?.()
-		}, 2600)
-
-		return () => clearTimeout(timeout)
-	}, [isMounted, onAnimationComplete])
+		}
+	}
 
 	return (
 		<section
@@ -120,7 +93,14 @@ export function HeroSection({
 						)}
 					>
 						<h1 className="font-mono text-3xl font-bold tracking-tighter sm:text-5xl">
-							{text}
+							<span
+								className={cn(
+									'inline-block overflow-hidden whitespace-nowrap align-bottom',
+									isMounted && !skipTypewriter && 'animate-typewriter-title',
+								)}
+							>
+								changelogs.directory
+							</span>
 							<span className="animate-pulse text-muted-foreground">_</span>
 						</h1>
 					</div>
@@ -165,6 +145,11 @@ export function HeroSection({
 									? 'translate-y-0 opacity-100'
 									: 'translate-y-12 opacity-0',
 							)}
+							onTransitionEnd={(e) => {
+								if (e.propertyName === 'opacity' && isMounted) {
+									handleHeroReleaseAnimComplete()
+								}
+							}}
 						>
 							<div className="relative mx-auto max-w-3xl">
 								{/* Glow effect behind card */}

@@ -54,15 +54,10 @@ Welcome to the documentation for Changelogs.directory - a curated aggregator of 
   - [system-errors.md](design/animations/system-errors.md) - Error page choreography (404/500)
 
 ### ⚖️ compare/
-**Tool comparison feature documentation** - pricing, models, and editorial research.
+**Plans directory documentation** - pricing snapshots for tracked AI coding tools.
 
-- [README.md](compare/README.md) - Overview and implementation status
-- [data-model.md](compare/data-model.md) - TypeScript types and data structure spec
-- [ui-design.md](compare/ui-design.md) - UI components and layout design
-- [cursor.md](compare/cursor.md) - Cursor pricing, models, and editorial
-- [windsurf.md](compare/windsurf.md) - Windsurf pricing, models, and editorial
-- [claude-code.md](compare/claude-code.md) - Claude Code pricing, models, and editorial
-- [gemini-cli.md](compare/gemini-cli.md) - Gemini CLI pricing, models, and editorial
+- [README.md](compare/README.md) - Architecture, philosophy, file map, data shape, update process
+- [plans.md](compare/plans.md) - Source-of-truth plan/pricing reference for the /compare page
 
 ### 📧 email/
 **Email system documentation** - weekly digest, templates, and webhook handling.
