@@ -82,6 +82,7 @@
     "husky": "^9.1.7",
     "jsdom": "^27.0.0",
     "lint-staged": "^16.2.6",
+    "png-to-ico": "^3.0.1",
     "prisma": "^7.2.0",
     "sharp": "^0.34.5",
     "trigger.dev": "4.1.2",
@@ -133,7 +134,8 @@
     "test:e2e:config": "vitest run tests/e2e/config/",
     "test:e2e:headed": "playwright test --headed",
     "test:all": "pnpm test && pnpm test:e2e:config && pnpm test:e2e",
-    "extract-logos": "tsx scripts/extract-logos.ts"
+    "extract-logos": "tsx scripts/extract-logos.ts",
+    "generate-favicon": "tsx scripts/generate-favicon.ts"
   },
   "type": "module"
 }
