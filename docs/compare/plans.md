@@ -1,7 +1,7 @@
 # Plans Reference
 
 > Data source-of-truth for each tool's plans. Mirror of `src/data/tool-plans.ts`.
-> Last verified: 2026-05-29
+> Last verified: 2026-06-09
 
 When pricing changes, update **both** this file and `src/data/tool-plans.ts`, then bump `lastVerified` in both places. See [README.md](./README.md) for architecture.
 
@@ -52,10 +52,10 @@ Reliability sourced from each vendor's public status page, sampled 2026-05-29. `
 
 | Tool | 90-day uptime | Tier | Source (component) |
 |---|---|---|---|
-| Codex (OpenAI) | 99.98% | emerald | OpenAI status |
+| Codex (OpenAI) | 99.96% | emerald | OpenAI status |
 | Windsurf (Cognition) | 99.95% | emerald | status.windsurf.com (Cascade) |
 | Cursor (Anysphere) | 99.64% | amber | status.cursor.com (IDE; range 99.33–99.87% across 6 components) |
-| Claude Code (Anthropic) | 99.08% | amber | Anthropic status |
+| Claude Code (Anthropic) | 99.0% | amber | Anthropic status |
 
 We show **measured** uptime only — never a contractual SLA target substituted for a real number. Tools omitted from the indicator:
 
@@ -73,17 +73,17 @@ CLIs from the model vendor — the model and the agent ship together.
 ### Claude Code (Anthropic)
 
 - **Token efficiency**: 1× (baseline)
-- **90-day uptime**: 99.17% (amber tier)
+- **90-day uptime**: 99.0% (amber tier)
 
 | Plan | Price | Typical API value | Heavy API value | Subsidy |
 |---|---|---|---|---|
-| Pro | $20/mo | $25–80 | $100–150 | 3–6× |
+| Pro | $20/mo ($17 annual) | $25–80 | $100–150 | 3–6× |
 | Max 5x | $100/mo | $300–600 | $1,500–3,000 | 5–22× |
 | Max 20x | $200/mo | $800–1,500 | $3,500–5,500 | 6–22× ✦ (highest raw $) |
-| Team Premium | $100/seat/mo | $250–500 | $1,000–2,000 | 4–15× |
+| Team Premium | $100/seat/mo ($125 monthly) | $250–500 | $1,000–2,000 | 4–15× |
 | API (BYOK) | PAYG | — | — | 1× |
 
-- **Models**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+- **Models**: Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5
 - **Window**: 5h rolling + weekly active-compute cap
 - **Quota shared with**: claude.ai web/desktop
 - **Gotchas**:
@@ -96,17 +96,18 @@ CLIs from the model vendor — the model and the agent ship together.
 ### Codex (OpenAI)
 
 - **Token efficiency**: 4× — multiply raw subsidies below for apples-to-apples comparison
-- **90-day uptime**: 99.98% (emerald tier — best in class)
+- **90-day uptime**: 99.96% (emerald tier — best in class)
 
 | Plan | Price | Typical API value | Heavy API value | Raw subsidy | Effective subsidy |
 |---|---|---|---|---|---|
+| ChatGPT Go | $8/mo | $8–20 | $20–50 | 2–5× | 8–20× |
 | ChatGPT Plus | $20/mo | $25–60 | $80–150 | 2–6× | 8–24× |
-| ChatGPT Pro $100 (Apr 2026 preview) | $100/mo | $200–400 | $700–1,200 | 3–10× | 12–40× |
-| ChatGPT Pro $200 | $200/mo | $500–900 | $1,500–2,500 | 4–10× | **16–40× ✦ best heavy-user deal** |
-| Business | $30/seat/mo | $50–120 | $200–400 | 3–10× | 12–40× |
+| ChatGPT Pro 5x | $100/mo | $125–300 | $400–750 | 4–7× | 16–28× |
+| ChatGPT Pro 20x | $200/mo | $500–900 | $1,500–2,500 | 4–10× | **16–40× ✦ best heavy-user deal** |
+| Business | $25/seat/mo ($20 annual) | $50–120 | $200–400 | 3–10× | 12–40× |
 | API (BYOK) | PAYG | — | — | 1× | 1× |
 
-- **Models**: GPT-5 family (Codex-tuned variants)
+- **Models**: GPT-5.5 (default), GPT-5.4, GPT-5.4-mini, GPT-5.3-Codex, GPT-5.3-Codex-Spark (Pro tiers)
 - **Window**: 5h rolling for interactive + agent tasks; weekly window for code reviews
 - **Quota shared with**: ChatGPT (web, desktop, mobile)
 - **Gotchas**:
@@ -122,9 +123,10 @@ CLIs from the model vendor — the model and the agent ship together.
 |---|---|---|---|---|
 | Free (Google login) | $0 | $0–10 | $0–20 | ∞ |
 | Free (API key, Flash only) | $0 | $0–5 | $0–10 | ∞ |
-| AI Plus | $7.99/mo | $10–25 | $40–80 | 2–8× |
-| AI Pro | $19.99/mo | $30–80 | $150–300 | 3–11× |
-| AI Ultra | $249.99/mo | $300–600 | $1,000–2,500 | 2–7× ⚠ |
+| AI Plus | $4.99/mo (400 GB) | $10–25 | $40–80 | 2–16× (Gemini app only — not CLI) |
+| AI Pro | $19.99/mo (5 TB) | $30–80 | $150–300 | 3–11× |
+| AI Ultra (5x) | $99.99/mo (20 TB) | $150–300 | $500–1,000 | 3–7× |
+| AI Ultra (20x) | $199.99/mo (30 TB) | $300–600 | $1,000–2,500 | 2–7× ⚠ |
 | Vertex / API PAYG | PAYG | — | — | 1× |
 
 - **Models**: Gemini 3.1 Pro, Gemini 3 Flash

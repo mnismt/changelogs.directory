@@ -10,7 +10,6 @@ import {
 	formatPrice,
 	getGroupMaxValue,
 	getHeadlineValue,
-	ModelRow,
 	PlanRow,
 	SectionLabel,
 	subsidyValueClass,
@@ -23,6 +22,7 @@ import {
 	getProviderLabel,
 	getProviderLogo,
 	groupModelsByProvider,
+	type ModelProvider,
 } from '@/lib/model-providers'
 import {
 	getLogoHoverClasses,
@@ -37,6 +37,19 @@ interface PlansTableProps {
 }
 
 const COLS = 6
+
+// Motion language for the row drawer. The structural height move uses
+// SINE in-out — deliberately the gentlest easing, not the steepest. What makes
+// a reveal "feel fast" isn't its total duration but its PEAK velocity: ease-out
+// dumps the travel into the first instant, and quart/quint in-out whip through a
+// steep middle (peak ~5.8% of travel per 1% of time). Sine in-out's peak is
+// ~1.6 — dead-even pacing with no burst anywhere — so even a long 1.2s open
+// never lurches; it just glides. The chevron and row tint stay a touch quicker
+// (700ms) to give immediate click feedback while the panel itself is the slow,
+// calm star. Content fades/drifts in alongside the opening panel and finishes
+// with it; closing fades it out first, then folds the panel away.
+const DRAWER_EASE = [0.37, 0, 0.63, 1] as const
+const CONTENT_EASE = [0.22, 1, 0.36, 1] as const
 
 /**
  * The compare-as-matrix view: one row per tool, every column aligned so values
@@ -196,7 +209,7 @@ function ToolTableRow({
 				onClick={onToggle}
 				aria-expanded={isExpanded}
 				className={cn(
-					'group cursor-pointer border-b border-border/40 transition-colors hover:bg-secondary/30',
+					'group cursor-pointer border-b border-border/40 transition-colors duration-700 ease-out hover:bg-secondary/30',
 					isExpanded && 'bg-secondary/40',
 				)}
 			>
@@ -205,7 +218,7 @@ function ToolTableRow({
 					<div className="flex items-center gap-2.5">
 						<ChevronRight
 							className={cn(
-								'size-3.5 shrink-0 text-muted-foreground/40 transition-transform duration-200 group-hover:text-muted-foreground',
+								'size-3.5 shrink-0 text-muted-foreground/40 transition-[transform,color] duration-700 [transition-timing-function:cubic-bezier(0.37,0,0.63,1)] group-hover:text-muted-foreground',
 								isExpanded && 'rotate-90 text-muted-foreground',
 							)}
 						/>
@@ -221,7 +234,7 @@ function ToolTableRow({
 								{logo ? (
 									<span
 										className={cn(
-											'flex size-7 items-center justify-center rounded p-1 transition-all duration-500',
+											'flex size-7 items-center justify-center rounded p-1',
 											'[&>svg]:h-full [&>svg]:w-full',
 											isMonochromeLogo(group.slug) &&
 												!isGeminiCli &&
@@ -360,17 +373,39 @@ function ToolTableRow({
 				</td>
 			</motion.tr>
 
-			{/* Expandable detail — always mounted so the height tween runs both ways;
-			    collapses to a zero-height, border-free row when closed. */}
+			{/* Expandable detail — always mounted so the tween runs both ways;
+			    collapses to a zero-height, border-free row when closed. Two layers
+			    give the reveal its unhurried feel: the outer clip eases the height
+			    open over ~0.55s, and the inner content settles in (fade + drift +
+			    de-blur) a beat behind it so the panel arrives rather than snaps.
+			    Closing reverses fast and without delay, so the row tucks away
+			    cleanly instead of lingering half-faded. */}
 			<tr className={cn(isExpanded ? 'border-b border-border/40' : 'border-0')}>
 				<td colSpan={COLS} className="p-0">
 					<motion.div
 						initial={false}
 						animate={{ height: isExpanded ? 'auto' : 0 }}
-						transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+						transition={{
+							duration: isExpanded ? 1.2 : 0.9,
+							ease: DRAWER_EASE,
+						}}
 						className="overflow-hidden"
 					>
-						<ToolTableDetail group={group} />
+						<motion.div
+							initial={false}
+							animate={{
+								opacity: isExpanded ? 1 : 0,
+								y: isExpanded ? 0 : 8,
+								filter: isExpanded ? 'blur(0px)' : 'blur(6px)',
+							}}
+							transition={{
+								duration: isExpanded ? 0.9 : 0.35,
+								delay: isExpanded ? 0.32 : 0,
+								ease: CONTENT_EASE,
+							}}
+						>
+							<ToolTableDetail group={group} />
+						</motion.div>
 					</motion.div>
 				</td>
 			</tr>
@@ -390,69 +425,120 @@ function ToolTableDetail({ group }: { group: ToolPlanGroup }) {
 	const eff = group.tokenEfficiency ?? 1
 
 	return (
-		<div className="grid gap-x-8 gap-y-5 px-4 pt-1 pb-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
-			{/* Left: tagline, models, gotchas */}
-			<div className="flex flex-col gap-4">
-				<p className="text-[13px] leading-relaxed text-muted-foreground">
-					{group.tagline}
-				</p>
+		// A recessed drawer: a subtle top-lit inset tone and a hairline rule set
+		// the detail apart from the row above; roomy px-8/py-7 padding gives it air.
+		<div className="border-t border-border/30 bg-gradient-to-b from-secondary/[0.18] to-transparent px-8 py-7">
+			{/* Lead: the tagline anchors the whole drawer at full width, with a
+			    hairline divider handing off to the two-up body below. */}
+			<p className="max-w-3xl text-sm leading-relaxed text-muted-foreground/90">
+				{group.tagline}
+			</p>
 
-				<section className="flex flex-col gap-2">
-					<SectionLabel>Models</SectionLabel>
-					<div className="flex flex-col gap-1.5">
-						{providerGroups.map((pg) => (
-							<ModelRow key={pg.provider} group={pg} dense={false} />
-						))}
-					</div>
-				</section>
-
-				{group.gotchas && group.gotchas.length > 0 && (
-					<section className="flex flex-col gap-2 rounded-xl border border-border/50 bg-card/40 p-3.5">
-						<div className="flex items-center gap-1.5">
-							<Info className="size-3.5 shrink-0 text-muted-foreground" />
-							<SectionLabel>Good to know</SectionLabel>
-						</div>
-						<ul className="flex flex-col gap-1.5 text-[13px] leading-relaxed text-muted-foreground">
-							{group.gotchas.map((g) => (
-								<li key={g} className="flex gap-1.5">
-									<span className="select-none text-muted-foreground/40">
-										›
-									</span>
-									<span>{g}</span>
-								</li>
+			{/* Meta rail (models + notes) beside the plans panel. Rebalanced to a
+			    calmer ~43/57 split with a healthier left min-width: the old 0.8:1.55
+			    left the rail's chips/notes cramped while the plans panel over-
+			    stretched its value bars. Now the two columns read as a related pair. */}
+			<div className="mt-6 grid gap-x-10 gap-y-8 border-t border-border/30 pt-6 lg:grid-cols-[minmax(260px,1fr)_minmax(0,1.32fr)]">
+				{/* Left: meta rail */}
+				<div className="flex flex-col gap-6">
+					<section className="flex flex-col gap-3">
+						<SectionLabel>Models</SectionLabel>
+						<div className="flex flex-col gap-3">
+							{providerGroups.map((pg) => (
+								<ModelChips key={pg.provider} group={pg} />
 							))}
-						</ul>
+						</div>
 					</section>
-				)}
-			</div>
 
-			{/* Right: every plan with its value bar */}
-			<section className="flex flex-col gap-2">
-				<div className="flex items-center justify-between gap-2">
-					<SectionLabel>Plans · API value</SectionLabel>
-					<ValueLegend />
+					{group.gotchas && group.gotchas.length > 0 && (
+						<section className="flex flex-col gap-2.5">
+							<div className="flex items-center gap-1.5">
+								<Info className="size-3.5 shrink-0 text-muted-foreground" />
+								<SectionLabel>Good to know</SectionLabel>
+							</div>
+							{/* De-boxed: a quiet left rule instead of a card, so the only
+							    framed element in the drawer is the best plan. */}
+							<ul className="flex flex-col gap-2.5 border-l border-border/50 pl-4 text-[13px] leading-relaxed text-muted-foreground">
+								{group.gotchas.map((g) => (
+									<li key={g} className="flex gap-2">
+										<span className="select-none text-muted-foreground/40">
+											›
+										</span>
+										<span>{g}</span>
+									</li>
+								))}
+							</ul>
+						</section>
+					)}
 				</div>
-				<ul className="-mx-2 flex flex-col gap-1">
-					{group.plans.map((plan) => {
-						const isBest = plan.name === bestPlanName
-						return (
-							<PlanRow
-								key={plan.name}
-								plan={plan}
-								groupSlug={group.slug}
-								isBest={isBest}
-								forceBest={isBest}
-								dense={false}
-								tokenEfficiency={eff}
-								maxValue={maxValue}
-							/>
-						)
-					})}
-				</ul>
-				{group.tokenEfficiency && group.tokenEfficiency > 1 && (
-					<EfficiencyNote name={group.name} factor={group.tokenEfficiency} />
+
+				{/* Right: every plan with its value bar */}
+				<section className="flex flex-col gap-3">
+					<div className="flex items-center justify-between gap-2">
+						<SectionLabel>Plans · API value</SectionLabel>
+						<ValueLegend />
+					</div>
+					<ul className="-mx-2 flex flex-col gap-1.5">
+						{group.plans.map((plan) => {
+							const isBest = plan.name === bestPlanName
+							return (
+								<PlanRow
+									key={plan.name}
+									plan={plan}
+									groupSlug={group.slug}
+									isBest={isBest}
+									forceBest={isBest}
+									dense={false}
+									tokenEfficiency={eff}
+									maxValue={maxValue}
+								/>
+							)
+						})}
+					</ul>
+					{group.tokenEfficiency && group.tokenEfficiency > 1 && (
+						<EfficiencyNote name={group.name} factor={group.tokenEfficiency} />
+					)}
+				</section>
+			</div>
+		</div>
+	)
+}
+
+/**
+ * Models for one provider, rendered as the provider mark plus a wrapped row of
+ * model chips. Gives the Models section real visual rhythm in the narrow rail
+ * instead of the single dot-joined line that used to float there.
+ */
+function ModelChips({
+	group,
+}: {
+	group: { provider: ModelProvider; models: string[] }
+}) {
+	const logo = getProviderLogo(group.provider)
+	const label = getProviderLabel(group.provider)
+
+	return (
+		<div className="flex items-start gap-2.5">
+			<span
+				className="mt-1 flex size-4 shrink-0 items-center justify-center [&>svg]:size-full"
+				role="img"
+				title={label}
+				aria-label={label}
+			>
+				{logo ?? (
+					<span className="size-1.5 rounded-full bg-muted-foreground/50" />
 				)}
-			</section>
+			</span>
+			<div className="flex flex-wrap gap-1.5">
+				{group.models.map((model) => (
+					<span
+						key={model}
+						className="rounded-md border border-border/50 bg-secondary/30 px-2 py-0.5 text-[11px] text-foreground/80"
+					>
+						{model}
+					</span>
+				))}
+			</div>
 		</div>
 	)
 }
