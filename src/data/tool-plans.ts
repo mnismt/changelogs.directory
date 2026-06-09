@@ -344,7 +344,14 @@ export const TOOL_PLANS: ToolPlanGroup[] = [
 		lastVerified: '2026-05-29',
 		uptime90d: 99.95,
 		uptimeAsOf: '2026-05-29',
+		deprecated: {
+			sunsetDate: '2026-07-01',
+			successor: 'Devin Desktop',
+			announcementUrl: 'https://devin.ai/blog/windsurf-is-now-devin-desktop',
+		},
 		gotchas: [
+			'Windsurf is now Devin Desktop — it ships as an over-the-air update; your plan, pricing, and extensions carry over unchanged.',
+			'Cascade is replaced by Devin Local (rewritten in Rust, ~30% more token-efficient); the legacy Cascade agent still works through July 1, 2026.',
 			'March 19, 2026: switched from credit pool to rate-limited quotas; overage billed at API price.',
 			'Existing subscribers grandfathered on legacy $15 Pro pricing.',
 			'Tab autocomplete never costs credits, on every plan.',
