@@ -40,6 +40,9 @@ WORKDIR /app
 ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0
 RUN groupadd --gid 1001 nodejs && useradd --uid 1001 --gid nodejs --create-home appuser
 COPY --from=build --chown=appuser:nodejs /app/.output ./.output
+# The site renders its own CHANGELOG.md at runtime (src/server/platform.ts reads
+# process.cwd()/CHANGELOG.md), so it must be present in the working directory.
+COPY --from=build --chown=appuser:nodejs /app/CHANGELOG.md ./CHANGELOG.md
 USER appuser
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]
