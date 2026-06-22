@@ -184,40 +184,9 @@ const PODIUM_CAPTION: Record<Sort, string> = {
 
 const COLLAPSED = 12
 
-/**
- * The headline takeaway, derived from the data (never hardcoded): who returns the
- * most absolute value, who returns the most per dollar, and whether token
- * efficiency is what's lifting the leader. So the prose stays true as plans move.
- */
-type Takeaway = {
-	valueLeader: RowDatum
-	ratioLeader: RowDatum
-	sameTool: boolean
-	sameRow: boolean
-	eff: number | null
-}
-
-function buildTakeaway(rows: RowDatum[]): Takeaway | null {
-	if (rows.length === 0) return null
-	const valueLeader = rows.reduce((a, b) =>
-		COMPARATORS.value(a, b) <= 0 ? a : b,
-	)
-	const ratioLeader = rows.reduce((a, b) =>
-		COMPARATORS.ratio(a, b) <= 0 ? a : b,
-	)
-	return {
-		valueLeader,
-		ratioLeader,
-		sameTool: valueLeader.slug === ratioLeader.slug,
-		sameRow: valueLeader.key === ratioLeader.key,
-		eff: valueLeader.eff > 1 ? valueLeader.eff : null,
-	}
-}
-
 export function CompareValueChart({ groups }: { groups: ToolPlanGroup[] }) {
 	const allRows = useMemo(() => buildRows(groups), [groups])
 	const shelf = useMemo(() => buildShelf(groups), [groups])
-	const takeaway = useMemo(() => buildTakeaway(allRows), [allRows])
 	const reduce = useReducedMotion()
 
 	const [sort, setSort] = useState<Sort>('value')
@@ -243,7 +212,7 @@ export function CompareValueChart({ groups }: { groups: ToolPlanGroup[] }) {
 			transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
 			className="mb-12 overflow-hidden rounded-2xl border border-border/60 bg-card/30 backdrop-blur-sm"
 		>
-			{/* Header: title + takeaway, then sort control + filter + legend. */}
+			{/* Header: title + blurb, then sort control + filter + legend. */}
 			<div className="flex flex-col gap-4 border-b border-border/40 px-6 py-5">
 				<div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
 					<div className="flex max-w-2xl flex-col gap-1.5">
@@ -251,42 +220,8 @@ export function CompareValueChart({ groups }: { groups: ToolPlanGroup[] }) {
 							Dollar for dollar
 						</h2>
 						<p className="text-xs leading-relaxed text-muted-foreground">
-							Every paid plan, ranked by the value it hands back.
-							{takeaway && (
-								<>
-									{' '}
-									{takeaway.sameRow ? (
-										<>
-											<span className="text-foreground/80">
-												{takeaway.valueLeader.toolName}
-											</span>{' '}
-											wins both ways — most value and the best return per dollar
-										</>
-									) : (
-										<>
-											<span className="text-foreground/80">
-												{takeaway.valueLeader.toolName}
-											</span>{' '}
-											returns the most outright
-											<span className="text-foreground/55"> · </span>
-											{takeaway.sameTool
-												? 'its'
-												: `${takeaway.ratioLeader.toolName}'s`}{' '}
-											${takeaway.ratioLeader.price} tier stretches a dollar
-											furthest
-										</>
-									)}
-									{takeaway.eff && (
-										<>
-											<span className="text-foreground/55"> · </span>
-											<span className="text-sky-200/80">
-												{takeaway.eff}× token efficiency
-											</span>{' '}
-											tips the scale
-										</>
-									)}
-								</>
-							)}
+							Every paid plan on one shared scale, sorted by what each dollar
+							buys back.
 						</p>
 					</div>
 					<ChartLegend />
@@ -427,13 +362,8 @@ function ValueRow({
 
 				{/* col 3 — plan + tool name (+ podium caption) */}
 				<div className="col-start-3 flex min-w-0 flex-col">
-					<span className="flex items-center gap-1.5 truncate font-mono text-xs font-medium text-foreground/95">
-						<span className="truncate">{row.planName}</span>
-						{row.isBest && (
-							<span className="shrink-0 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-1 py-[0.5px] font-mono text-[7px] uppercase tracking-wider text-emerald-300/95">
-								best
-							</span>
-						)}
+					<span className="truncate font-mono text-xs font-medium text-foreground/95">
+						{row.planName}
 					</span>
 					<span className="truncate text-[10px] text-muted-foreground">
 						{row.toolName}
