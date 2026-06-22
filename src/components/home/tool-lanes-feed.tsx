@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { ItemErrorBoundary } from '@/components/shared/item-error-boundary'
 import type { getReleasesGroupedByTool } from '@/server/tools'
 import { ToolLane } from './tool-lane'
@@ -17,37 +18,35 @@ export function ToolLanesFeed({
 }: ToolLanesFeedProps) {
 	const { tools } = data
 
-	// Filter tools by selected tool slugs (if any)
-	const visibleTools =
-		selectedTools.length > 0
-			? tools.filter((tool) => selectedTools.includes(tool.slug))
-			: tools
+	const toolsWithFilteredReleases = useMemo(() => {
+		// Filter tools by selected tool slugs (if any)
+		const visibleTools =
+			selectedTools.length > 0
+				? tools.filter((tool) => selectedTools.includes(tool.slug))
+				: tools
 
-	// Apply search filter to releases within each tool
-	const toolsWithFilteredReleases = visibleTools.map((tool) => {
-		let filteredReleases = tool.releases
+		// Apply search filter to releases within each tool
+		return visibleTools.map((tool) => {
+			let filteredReleases = tool.releases
 
-		// Apply search query filter (client-side)
-		if (searchQuery) {
-			const query = searchQuery.toLowerCase()
-			filteredReleases = filteredReleases.filter((release) => {
-				const matchesVersion = release.version.toLowerCase().includes(query)
-				const matchesFormattedVersion = release.formattedVersion
-					?.toLowerCase()
-					.includes(query)
-				return matchesVersion || matchesFormattedVersion
-			})
-		}
+			if (searchQuery) {
+				const query = searchQuery.toLowerCase()
+				filteredReleases = filteredReleases.filter((release) => {
+					const matchesVersion = release.version.toLowerCase().includes(query)
+					const matchesFormattedVersion = release.formattedVersion
+						?.toLowerCase()
+						.includes(query)
+					return matchesVersion || matchesFormattedVersion
+				})
+			}
 
-		// Apply change type filter (already applied server-side, but we track if there are matches)
-		const hasMatchingReleases = filteredReleases.length > 0
-
-		return {
-			...tool,
-			releases: filteredReleases,
-			hasMatchingReleases,
-		}
-	})
+			return {
+				...tool,
+				releases: filteredReleases,
+				hasMatchingReleases: filteredReleases.length > 0,
+			}
+		})
+	}, [tools, selectedTools, searchQuery])
 
 	if (toolsWithFilteredReleases.length === 0) {
 		return (

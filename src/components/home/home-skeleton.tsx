@@ -1,3 +1,43 @@
+export function FeedSkeleton() {
+	return (
+		<div className="px-4 pb-12 sm:px-6 lg:px-8">
+			<div className="mx-auto max-w-7xl">
+				<div className="rounded-none border border-border/60 bg-card/40 md:rounded-sm">
+					<div className="border-b border-border/40 p-4">
+						<SkeletonBlock className="h-8 w-full" />
+					</div>
+					<div className="border-b border-border/40 p-4">
+						<SkeletonBlock className="h-10 w-full" />
+					</div>
+					<div className="p-6 space-y-6">
+						{HOME_FEED_SKELETON_KEYS.map((key) => (
+							<div
+								key={key}
+								className="space-y-3 rounded border border-border/60 bg-card/60 p-4"
+							>
+								<SkeletonBlock className="h-4 w-24" />
+								<div className="flex gap-4 overflow-hidden">
+									{[1, 2, 3, 4].map((i) => (
+										<div
+											key={i}
+											className="w-64 sm:w-72 lg:w-80 shrink-0 space-y-2 rounded border border-border/40 bg-card/40 p-3"
+										>
+											<SkeletonBlock className="h-4 w-20" />
+											<SkeletonBlock className="h-3 w-full" />
+											<SkeletonBlock className="h-3 w-3/4" />
+											<SkeletonBlock className="h-3 w-1/2" />
+										</div>
+									))}
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
+			</div>
+		</div>
+	)
+}
+
 function SkeletonBlock({ className }: { className?: string }) {
 	return (
 		<div

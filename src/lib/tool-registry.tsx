@@ -140,10 +140,20 @@ export function isMonochromeLogo(slug: string): boolean {
 	return MONOCHROME_SLUGS.has(slug)
 }
 
+/**
+ * Canonical logo hover treatment — the single source of truth shared by the
+ * homepage, the compare table, and the value chart. The transition timing
+ * (slow, eased) is baked in here so every logo animates identically; consumers
+ * must NOT add their own `transition-*`/`duration-*` or the timings will fight.
+ * The element still needs a `group` ancestor for the `group-hover:` to fire.
+ */
+const LOGO_TRANSITION = 'transition-transform duration-700 ease-out'
+
 /** Get hover animation classes for a tool's logo */
 export function getLogoHoverClasses(slug: string): string {
 	const config = getToolConfig(slug)
-	if (!config) return 'group-hover:rotate-45 group-hover:scale-110'
+	if (!config)
+		return `${LOGO_TRANSITION} group-hover:rotate-45 group-hover:scale-110`
 
 	// Simple icons (monochrome or specific tools) only scale, no rotation
 	if (
@@ -152,7 +162,7 @@ export function getLogoHoverClasses(slug: string): string {
 		slug === 'antigravity' ||
 		slug === 'gemini-cli'
 	) {
-		return 'group-hover:scale-110'
+		return `${LOGO_TRANSITION} group-hover:scale-110`
 	}
-	return 'group-hover:rotate-45 group-hover:scale-110'
+	return `${LOGO_TRANSITION} group-hover:rotate-45 group-hover:scale-110`
 }

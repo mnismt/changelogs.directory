@@ -13,6 +13,8 @@ interface BottomSheetProps {
 	onClose: () => void
 	children: ReactNode
 	title?: string
+	/** Optional leading element in the header (e.g. a tool logo) shown before the title. */
+	icon?: ReactNode
 	maxHeight?: string
 	className?: string
 }
@@ -48,6 +50,7 @@ export function BottomSheet({
 	onClose,
 	children,
 	title,
+	icon,
 	maxHeight = "60vh",
 	className,
 }: BottomSheetProps) {
@@ -121,11 +124,13 @@ export function BottomSheet({
 						}}
 						drag="y"
 						dragControls={dragControls}
+						dragListener={false}
 						dragConstraints={{ top: 0, bottom: 0 }}
 						dragElastic={{ top: 0, bottom: 0.5 }}
 						onDragEnd={handleDragEnd}
 						className={cn(
 							"fixed inset-x-0 bottom-0 z-50",
+							"flex flex-col",
 							"rounded-t-2xl border-t border-white/10",
 							"bg-black/90 backdrop-blur-xl",
 							"pb-[env(safe-area-inset-bottom)]",
@@ -134,9 +139,10 @@ export function BottomSheet({
 						)}
 						style={{ maxHeight }}
 					>
-						{/* Drag Handle */}
+						{/* Drag Handle — the only region that initiates a dismiss drag, so
+						    scrolling the content below never gets hijacked by the sheet. */}
 						<div
-							className="flex justify-center py-3 cursor-grab active:cursor-grabbing"
+							className="flex shrink-0 cursor-grab justify-center py-3 touch-none active:cursor-grabbing"
 							onPointerDown={(e) => dragControls.start(e)}
 						>
 							<div className="h-1 w-10 rounded-full bg-white/20" />
@@ -144,14 +150,17 @@ export function BottomSheet({
 
 						{/* Header */}
 						{title && (
-							<div className="flex items-center justify-between px-4 pb-3 border-b border-white/5">
-								<h2 className="font-mono text-sm font-bold uppercase tracking-wider text-muted-foreground">
-									{title}
-								</h2>
+							<div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-3 border-b border-white/5">
+								<div className="flex min-w-0 items-center gap-2.5">
+									{icon}
+									<h2 className="truncate font-mono text-sm font-bold uppercase tracking-wider text-muted-foreground">
+										{title}
+									</h2>
+								</div>
 								<button
 									type="button"
 									onClick={onClose}
-									className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
+									className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
 									aria-label="Close"
 								>
 									<X className="size-4" />
@@ -159,8 +168,9 @@ export function BottomSheet({
 							</div>
 						)}
 
-						{/* Content */}
-						<div className="overflow-y-auto overscroll-contain">
+						{/* Content — the flexible, scrollable region (min-h-0 lets it shrink
+						    below content height so overflow actually scrolls). */}
+						<div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
 							{children}
 						</div>
 					</motion.div>

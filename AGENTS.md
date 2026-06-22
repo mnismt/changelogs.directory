@@ -51,6 +51,21 @@ pnpm biome check --write <file>  # Auto-fix issues
 pnpx shadcn@latest add <component>
 ```
 
+### Dev server etiquette (CRITICAL for AI assistants)
+
+The user almost always has `pnpm dev` already running on port 5173. Do NOT
+start your own dev server, and NEVER kill processes by pattern.
+
+- To smoke-test: `curl -s -o /tmp/x.html -w "HTTP %{http_code}\n" http://localhost:5173/<path>`
+- If port 5173 is dead, ask the user to start it (`! pnpm dev` in their prompt)
+- NEVER run `pnpm dev &` followed by `pkill -f vite` / `pkill -f tsr-server` /
+  `pkill -f node` — these pattern-kills SIGTERM the user's own server
+  (exit code 143) and destroy their HMR session.
+- NEVER `lsof -ti:5173 | xargs kill` for the same reason.
+- If you must start a server yourself, capture its PID
+  (`pnpm dev > /tmp/log 2>&1 & echo $! > /tmp/pid`) and only kill that exact
+  PID (`kill "$(cat /tmp/pid)"`).
+
 ## Project Structure
 
 ```

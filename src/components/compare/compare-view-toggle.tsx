@@ -1,79 +1,59 @@
-import { Database, Lightbulb } from 'lucide-react'
+import { LayoutGrid, Table2 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 
-export type CompareViewMode = 'decision' | 'data'
+export type CompareView = 'cards' | 'table'
 
 interface CompareViewToggleProps {
-	view: CompareViewMode
-	onViewChange: (view: CompareViewMode) => void
+	value: CompareView
+	onChange: (view: CompareView) => void
 }
 
-export function CompareViewToggle({
-	view,
-	onViewChange,
-}: CompareViewToggleProps) {
-	return (
-		<div className="flex items-center gap-1 rounded-md border border-border/40 bg-background/20 p-1">
-			<motion.button
-				type="button"
-				onClick={() => onViewChange('decision')}
-				whileHover={{ scale: 1.02 }}
-				whileTap={{ scale: 0.98 }}
-				className={cn(
-					'relative flex items-center gap-2 rounded px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors duration-300',
-					view === 'decision'
-						? 'text-background'
-						: 'text-muted-foreground hover:text-foreground',
-				)}
-			>
-				{view === 'decision' && (
-					<motion.div
-						layoutId="compare-view-toggle-active"
-						className="absolute inset-0 rounded bg-foreground"
-						transition={{
-							type: 'spring',
-							stiffness: 200,
-							damping: 25,
-							mass: 1.2,
-						}}
-					/>
-				)}
-				<span className="relative z-10 flex items-center gap-2">
-					<Lightbulb className="h-3 w-3" />
-					<span className="hidden sm:inline">Decision</span>
-				</span>
-			</motion.button>
+const OPTIONS: {
+	value: CompareView
+	label: string
+	Icon: typeof LayoutGrid
+}[] = [
+	{ value: 'cards', label: 'Cards', Icon: LayoutGrid },
+	{ value: 'table', label: 'Table', Icon: Table2 },
+]
 
-			<motion.button
-				type="button"
-				onClick={() => onViewChange('data')}
-				whileHover={{ scale: 1.02 }}
-				whileTap={{ scale: 0.98 }}
-				className={cn(
-					'relative flex items-center gap-2 rounded px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors duration-300',
-					view === 'data'
-						? 'text-background'
-						: 'text-muted-foreground hover:text-foreground',
-				)}
-			>
-				{view === 'data' && (
-					<motion.div
-						layoutId="compare-view-toggle-active"
-						className="absolute inset-0 rounded bg-foreground"
-						transition={{
-							type: 'spring',
-							stiffness: 200,
-							damping: 25,
-							mass: 1.2,
-						}}
-					/>
-				)}
-				<span className="relative z-10 flex items-center gap-2">
-					<Database className="h-3 w-3" />
-					<span className="hidden sm:inline">Data</span>
-				</span>
-			</motion.button>
+/**
+ * Desktop-only segmented control switching the /compare page between the browsy
+ * card grid and the alignable matrix. A shared `layoutId` pill slides between
+ * the two — both views read the same TOOL_PLANS data, so it's purely a lens.
+ */
+export function CompareViewToggle({ value, onChange }: CompareViewToggleProps) {
+	return (
+		<div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card/40 p-1 backdrop-blur-sm">
+			{OPTIONS.map(({ value: v, label, Icon }) => {
+				const active = v === value
+				return (
+					<button
+						key={v}
+						type="button"
+						onClick={() => onChange(v)}
+						aria-pressed={active}
+						className={cn(
+							'relative inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5',
+							'font-mono text-[11px] uppercase tracking-wider transition-colors',
+							active
+								? 'text-foreground'
+								: 'text-muted-foreground hover:text-foreground/80',
+						)}
+					>
+						{active && (
+							<motion.span
+								layoutId="compare-view-pill"
+								transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+								className="absolute inset-0 rounded-full border border-border/70 bg-secondary/70"
+							/>
+						)}
+						<Icon className="relative z-10 size-3.5" />
+						<span className="relative z-10">{label}</span>
+					</button>
+				)
+			})}
 		</div>
 	)
 }
